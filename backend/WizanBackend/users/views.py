@@ -37,7 +37,7 @@ class LoginView (APIView):
             "tokens": tokens,
         }, status= status.HTTP_200_OK
 
-        ),
+        )
 
 class RefreshTokenView(APIView):
 
