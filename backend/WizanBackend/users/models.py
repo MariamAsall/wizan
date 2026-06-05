@@ -30,9 +30,18 @@ class User(AbstractUser):
         choices=Language.choices,
         default=Language.ENGLISH
     )
+    phone_number = models.CharField(max_length=20, blank=True)
+
+    profile_picture = models.ImageField(
+        upload_to="profile_pictures/",
+        null=True,
+        blank=True,
+    )
+    date_of_birth = models.DateField(null=True, blank=True)
+
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username"]
 
-    def __str__(self):
-        return self.email
+def __str__(self) -> str:
+        return f"{self.get_full_name()} ({self.role}) — {self.email}"
