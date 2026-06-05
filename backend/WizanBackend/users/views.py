@@ -10,6 +10,7 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics
 
+
 def get_tokens_for_user(user):
     refresh= RefreshToken.for_user(user)
 
