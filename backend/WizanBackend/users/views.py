@@ -10,7 +10,8 @@ def get_tokens_for_user(user):
     refresh= RefreshToken.for_user(user)
 
     refresh["email"]=user.email
-    refresh["fullname"]= user.fullname
+    refresh["username"]= user.username
+    refresh["role"]= user.role
 
     return{
         "refresh" : str(refresh),

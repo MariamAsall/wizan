@@ -77,7 +77,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'WizanBackend.wsgi.application'
 
-
+import os
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 DATABASES = {
