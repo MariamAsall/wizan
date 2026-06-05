@@ -25,6 +25,8 @@ class User(AbstractUser):
 
     email = models.EmailField(unique=True)
 
+    is_approved = models.BooleanField(default=True)
+
     language = models.CharField(
         max_length=2,
         choices=Language.choices,

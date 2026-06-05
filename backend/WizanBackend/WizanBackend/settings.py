@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 
 from pathlib import Path
 
-from dotenv import load_dotenv
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -150,6 +150,9 @@ REST_FRAMEWORK = {
     ),
 }
 
+
+AUTH_USER_MODEL = "users.User"
+
 SIMPLE_JWT = {
 
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
@@ -167,7 +170,14 @@ SIMPLE_JWT = {
     "SIGNING_KEY": SECRET_KEY,
 
     "AUTH_HEADER_TYPES": ("Bearer",),
+
+    "USER_ID_FIELD":           "id",
+
+    "USER_ID_CLAIM":           "user_id",
+
+    "TOKEN_OBTAIN_SERIALIZER":  "rest_framework_simplejwt.serializers.TokenObtainPairSerializer",
+
+    "TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSerializer",
     
 }
 
-AUTH_USER_MODEL = "users.User"

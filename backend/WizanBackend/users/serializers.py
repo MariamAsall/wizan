@@ -100,7 +100,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         user = User(**validated_data)
         user.set_password(password)
-        user.is_approved = False
+        user.is_approved = True
         user.is_active   = True
         user.save()
 
