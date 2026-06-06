@@ -45,8 +45,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+
     'users',
     'quiz',
+    'cognitive_logs',
 
     #SIMPLE_JWT
     'rest_framework',
