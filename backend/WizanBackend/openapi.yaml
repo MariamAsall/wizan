@@ -1,0 +1,30 @@
+
+#Auth
+POST /api/auth/register
+POST /api/auth/login
+POST /api/auth/refresh
+POST /api/auth/logout
+
+#Tasks 
+GET    /api/tasks
+POST   /api/tasks
+GET    /api/tasks/{id}
+PUT    /api/tasks/{id}
+DELETE /api/tasks/{id}
+
+
+#Voice
+POST /api/voice/transcribe
+
+#Quiz
+GET  /api/quizzes/morning
+POST /api/quizzes/submit
+
+#PDF / RAG
+POST /api/documents/upload
+POST /api/ask
+
+# Cognitive Score
+GET /api/cognitive-score
+GET /api/allowed-tasks
+
