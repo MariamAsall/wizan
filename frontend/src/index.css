@@ -1,5 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap');
 @import "tailwindcss";
+@custom-variant rtl (&:where([dir="rtl"], [dir="rtl"] *));
+@custom-variant ltr (&:where([dir="ltr"], [dir="ltr"] *));
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/inter";
@@ -117,4 +119,11 @@
     text-transform: uppercase;
     letter-spacing: 0.08em;
     font-weight: 500;
+}
+
+
+
+/* Smooth direction transition */
+* {
+  transition: margin 0.2s ease, padding 0.2s ease;
 }
