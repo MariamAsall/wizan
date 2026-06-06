@@ -3,6 +3,8 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework import generics
+from .serializers import CognitiveLogSerializers
 
 from .models import CognitiveLog
 
@@ -57,3 +59,10 @@ class AllowedTaskViews(APIView):
             "score":score,
             "allowed_tasks":allowed_tasks
         })
+    
+class CognitiveLogCreateView(generics.CreatedAPIView):
+    serializer_class= CognitiveLogSerializers
+    permission_classes=[IsAuthenticated]
+
+    def perform_create(self,serializer):
+        serializer.save(user=self.request.user)
