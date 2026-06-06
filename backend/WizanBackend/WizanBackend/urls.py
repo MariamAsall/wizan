@@ -7,4 +7,6 @@ urlpatterns = [
 
     path('api/auth/', include('users.urls')),
 
+    path('api/',include('cognitive_logs.urls')),
+
 ]
