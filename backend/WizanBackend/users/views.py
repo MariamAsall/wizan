@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import User
-from .serializers import RegisterSerializer, LoginSerializer
+from .serializers import RegisterSerializer, LoginSerializer, UserProfileSerializer
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics
@@ -35,9 +35,11 @@ class LoginView (APIView):
         return Response({
             "message":"Login successful",
             "tokens": tokens,
+            "user":    UserProfileSerializer(user).data,
+
         }, status= status.HTTP_200_OK
 
-        ),
+        )
 
 class RefreshTokenView(APIView):
 
