@@ -60,7 +60,7 @@ class AllowedTaskViews(APIView):
             "allowed_tasks":allowed_tasks
         })
     
-class CognitiveLogCreateView(generics.CreatedAPIView):
+class CognitiveLogCreateView(generics.CreateAPIView):
     serializer_class= CognitiveLogSerializers
     permission_classes=[IsAuthenticated]
 

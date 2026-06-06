@@ -1,19 +1,28 @@
 # views.py
 
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import (
+    IsAuthenticated,
+    IsAdminUser,
+)
 
 from .models import QuizQuestion, QuizAnswer
 from .serializers import (
     QuizQuestionSerializer,
-    QuizAnswerSerializer
+    QuizAnswerSerializer,
 )
 
 
 class QuizQuestionViewSet(viewsets.ModelViewSet):
     queryset = QuizQuestion.objects.all()
     serializer_class = QuizQuestionSerializer
-    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action in ["create", "update", "partial_update", "destroy"]:
+            return [IsAdminUser()]
+
+        return [IsAuthenticated()]
+
 
 
 class QuizAnswerViewSet(viewsets.ModelViewSet):
