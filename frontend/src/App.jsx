@@ -3,6 +3,13 @@ import './App.css'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import LoginPage from "./pages/Login";
+import QuizPage from "./pages/Quiz";
+import DashboardPage from "./pages/Dashboard";
+import TasksPage from "./pages/Tasks";
+import ChatPage from "./pages/Chat";
+
 function App() {
   const { i18n } = useTranslation()
 
@@ -15,10 +22,17 @@ function App() {
   }, [])
 
   return (
-    <>
-      <h1>Wizan</h1>
-    </>
-  )
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/quiz" element={<QuizPage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/tasks" element={<TasksPage />} />
+          <Route path="/chat" element={<ChatPage />} />
+          <Route path="/" element={<Navigate to="/login" />} />
+        </Routes>
+    </BrowserRouter>
+  );
 }
 
 export default App

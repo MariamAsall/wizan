@@ -6,6 +6,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     path('api/auth/', include('users.urls')),
+    path('api/quiz/', include('quiz.urls')),
 
     path('api/',include('cognitive_logs.urls')),
 
