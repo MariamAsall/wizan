@@ -5,12 +5,12 @@ import { useTranslation } from 'react-i18next'
 
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import MainLayout    from "./layouts/MainLayout"
-import LoginPage     from "./pages/Login"
+import LoginPage     from "./pages/LoginPage"
 import RegisterPage  from "./pages/Register"
-import QuizPage from "./pages/Quiz";
-import DashboardPage from "./pages/Dashboard";
+import QuizPage from "./pages/QuizPage";
+import DashboardPage from "./pages/DashboardPage";
 import TasksPage from "./pages/Tasks";
-import ChatPage from "./pages/Chat";
+import ChatPage from "./pages/ChatPage";
 
 function App() {
   const { i18n } = useTranslation()
