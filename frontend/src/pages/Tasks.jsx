@@ -1,4 +1,7 @@
-export default function Tasks() 
-    { return 
-    <div> TASKS Page </div>; 
-    }
+import React from 'react'
+
+export default function Tasks() {
+  return (
+    <div>Tasks</div>
+  )
+}
