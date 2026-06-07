@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import './App.css'
+import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./pages/Login";
@@ -9,6 +11,15 @@ import TasksPage from "./pages/Tasks";
 import ChatPage from "./pages/Chat";
 
 function App() {
+  const { i18n } = useTranslation()
+
+  useEffect(() => {
+    // Restore saved language on first load
+    const saved = localStorage.getItem('wizan-lang') || 'en'
+    i18n.changeLanguage(saved)
+    document.documentElement.dir  = saved === 'ar' ? 'rtl' : 'ltr'
+    document.documentElement.lang = saved
+  }, [])
 
   return (
       <BrowserRouter>

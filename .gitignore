@@ -3,7 +3,7 @@
 __pycache__/
 *.pyc
 .env
-venv/
+env/
 
 # Node
 node_modules/
@@ -13,3 +13,4 @@ dist/
 # General
 .DS_Store
 *.log
+
