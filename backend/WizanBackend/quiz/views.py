@@ -25,16 +25,12 @@ class QuizQuestionViewSet(viewsets.ModelViewSet):
 
 
 
-class QuizAnswerViewSet(viewsets.ModelViewSet):
+
+class QuizAnswerViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = QuizAnswerSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return QuizAnswer.objects.filter(
             user=self.request.user
-        )
-
-    def perform_create(self, serializer):
-        serializer.save(
-            user=self.request.user
-        )
+        ).order_by("-created_at")
