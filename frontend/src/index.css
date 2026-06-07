@@ -11,6 +11,9 @@
 
 @theme inline {
     --font-sans: 'Inter Variable', sans-serif;
+    --font-heading: var(--font-heading);
+    --font-ar: var(--font-ar);
+    --font-en: var(--font-en);
     --color-background: var(--background);
     --color-foreground: var(--foreground);
     --color-card: var(--card);
