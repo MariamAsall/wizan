@@ -5,6 +5,11 @@ __pycache__/
 .env
 venv/
 
+# .gitignore
+# .env
+# myenv/
+# __pycache__/
+
 # Node
 node_modules/
 dist/
@@ -13,3 +18,5 @@ dist/
 # General
 .DS_Store
 *.log
+
+
