@@ -6,10 +6,10 @@ import { useTranslation } from 'react-i18next'
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import MainLayout    from "./layouts/MainLayout"
 import LoginPage     from "./pages/LoginPage"
-import RegisterPage  from "./pages/Register"
+import RegisterPage  from "./pages/RegisterPage"
 import QuizPage from "./pages/QuizPage";
 import DashboardPage from "./pages/DashboardPage";
-import TasksPage from "./pages/Tasks";
+import TasksPage from "./pages/TasksPage";
 import ChatPage from "./pages/ChatPage";
 
 function App() {
