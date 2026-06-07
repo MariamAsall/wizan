@@ -22,4 +22,3 @@ class CognitiveLog(models.Model):
 
 
 
-# Create your models here.
