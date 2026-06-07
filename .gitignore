@@ -3,7 +3,7 @@
 __pycache__/
 *.pyc
 .env
-venv/
+env/
 
 # .gitignore
 # .env
