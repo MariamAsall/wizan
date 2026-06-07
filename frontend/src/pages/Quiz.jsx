@@ -1,4 +1,7 @@
-export default function Quiz() 
-    { return 
-    <div> Morning Quiz </div>; 
-    }
+import React from 'react'
+
+export default function Quiz() {
+  return (
+    <div>Quiz</div>
+  )
+}

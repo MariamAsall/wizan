@@ -1,5 +1,7 @@
 {
+  "wizan": "Wizān",
   "nav": {
+    "quiz": "Quiz",
     "dashboard": "Dashboard",
     "tasks": "Tasks",
     "chat": "Chat"
