@@ -1,0 +1,15 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "tasks": "Tasks",
+    "chat": "Chat"
+  },
+  "quiz": {
+    "title": "Morning Check-in",
+    "start": "Start Quiz"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong"
+  }
+}
