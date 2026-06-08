@@ -1,13 +1,16 @@
 
+from urllib import request
+
 from quiz.models import QuizAnswer, QuizQuestion
 from rest_framework.views import APIView
 from rest_framework import status, generics
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.db import transaction
-from django.utils.timezone import localdate # أفضل من date.today() للتعامل مع فرق التوقيت
+from django.utils.timezone import localdate 
 from .models import CognitiveLog
 from .serializers import CognitiveLogSerializers
+
 
 
 class CognitiveScoreView(APIView):
@@ -91,57 +94,90 @@ class SubmitQuizAPIView(APIView):
             return Response({"error": "Answers are required."}, status=status.HTTP_400_BAD_REQUEST)
 
    
-        question_ids = [item.get("question_id") for item in answers if item.get("question_id")]
-        if len(question_ids) != len(set(question_ids)):
-            return Response({"error": "Duplicate questions are not allowed."}, status=status.HTTP_400_BAD_REQUEST)
+        question_ids = [
+    item.get("question_id")
+    for item in answers
+    if item.get("question_id")
+]
 
-        questions_map = {q.id: q for q in QuizQuestion.objects.filter(id__in=question_ids)}
+        if len(question_ids) != len(set(question_ids)):
+            return Response(
+                {"error": "Duplicate questions are not allowed."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        questions_map = {
+            str(q.id): q
+            for q in QuizQuestion.objects.filter(id__in=question_ids)
+        }
 
         total_score = 0
         max_score = 0
         saved_answers = []
-        quiz_answer_objects = [] 
+        quiz_answer_objects = []
 
-      
         for item in answers:
-            q_id = item.get("question_id")
+            q_id = str(item.get("question_id"))
             raw_answer = item.get("answer")
 
             if q_id not in questions_map:
-                return Response({"error": f"Question {q_id} does not exist."}, status=status.HTTP_404_NOT_FOUND)
-
+                return Response(
+                    {"error": f"Question {q_id} does not exist."},
+                    status=status.HTTP_404_NOT_FOUND
+                )
 
             question = questions_map[q_id]
             answer_value = str(raw_answer).strip()
 
-            try:
-                if question.question_type == "scale_1_5":
-                    value = int(answer_value)
-                    if not (1 <= value <= 5):
-                        return Response({"error": f"Value for question {q_id} must be between 1 and 5."}, status=status.HTTP_400_BAD_REQUEST)
-                    total_score += value * question.weight
-                    max_score += 5 * question.weight
+        try:
+            if question.question_type == "scale_1_5":
+                value = int(answer_value)
 
-                elif question.question_type == "yes_no":
-                    value = 1 if answer_value.lower() == "yes" else 0
-                    total_score += value * question.weight
-                    max_score += question.weight
-            except (ValueError, TypeError):
-                return Response({"error": f"Invalid answer format for question {q_id}."}, status=status.HTTP_400_BAD_REQUEST)
+                if not (1 <= value <= 5):
+                    return Response(
+                        {
+                            "error": f"Value for question {q_id} must be between 1 and 5."
+                        },
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
 
-            quiz_answer_objects.append(
-                QuizAnswer(
-                    user=request.user,
-                    question=question,
-                    answer=answer_value
-                )
+                total_score += value * question.weight
+                max_score += 5 * question.weight
+
+            elif question.question_type == "yes_no":
+
+                if answer_value.lower() not in ["yes", "no"]:
+                    return Response(
+                        {
+                            "error": f"Answer for question {q_id} must be yes or no."
+                        },
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+                value = 1 if answer_value.lower() == "yes" else 0
+
+                total_score += value * question.weight
+                max_score += question.weight
+
+        except (ValueError, TypeError):
+            return Response(
+                {"error": f"Invalid answer format for question {q_id}."},
+                status=status.HTTP_400_BAD_REQUEST
             )
 
-            saved_answers.append({
-                "question_en": question.question_text_en,
-                "question_ar": question.question_text_ar,
-                "answer": answer_value
-            })
+        quiz_answer_objects.append(
+            QuizAnswer(
+                user=request.user,
+                question=question,
+                answer=answer_value
+            )
+        )
+
+        saved_answers.append({
+            "question_en": question.question_text_en,
+            "question_ar": question.question_text_ar,
+            "answer": answer_value
+        })
 
       
         score = int((total_score / max_score) * 100) if max_score > 0 else 0
