@@ -1,0 +1,61 @@
+@reference "../index.css";
+/* ── Dashboard page ─────────────────────────────────────────────── */
+.dash-root { @apply min-h-[calc(100vh-56px)] bg-background; }
+.dash-wrap { @apply max-w-[800px] mx-auto px-5 py-8; }
+
+/* greeting */
+.dash-eyebrow { @apply text-[11px] font-bold uppercase tracking-[.08em] mb-1.5 text-muted-foreground; }
+.dash-hello { @apply text-[32px] font-extrabold leading-tight text-foreground; }
+.dash-hello em { @apply italic text-primary font-heading; }
+.dash-sub { @apply text-sm mt-1 text-muted-foreground; }
+
+/* top grid */
+.dash-grid { @apply grid grid-cols-2 gap-4 mb-6; }
+
+/* score card */
+.score-card { @apply rounded-[20px] border p-6 overflow-hidden relative bg-card border-border; }
+.score-card-bar {
+  @apply absolute top-0 left-0 right-0 h-1;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+}
+.score-card-label { @apply text-[11px] font-bold uppercase tracking-[.08em] mb-3 text-muted-foreground; }
+.score-num-overlay { @apply absolute font-extrabold text-[22px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-foreground; }
+.score-status { @apply flex justify-center mt-3; }
+.score-status-pill { @apply text-[13px] font-bold px-3 py-1 rounded-full bg-primary/15 text-primary; }
+
+/* mini chart */
+.mini-chart { @apply rounded-[20px] border p-6 bg-card border-border; }
+.mini-chart-label { @apply text-[11px] font-bold uppercase tracking-[.08em] mb-3.5 text-muted-foreground; }
+.bars { @apply flex items-end gap-1.5 h-[70px]; }
+.bar-col { @apply flex flex-col items-center gap-1 flex-1; }
+.bar { @apply w-full rounded-t bg-muted; }
+.bar-day { @apply text-[10px] font-bold text-muted-foreground; }
+
+/* stats */
+.dash-stats { @apply grid grid-cols-3 gap-4 mb-8; }
+.stat-card { @apply p-4 rounded-2xl border text-center bg-card border-border; }
+.stat-num { @apply text-2xl font-extrabold mb-1 text-foreground; }
+.stat-lbl { @apply text-xs font-medium text-muted-foreground; }
+
+/* today's plan */
+.today-plan { @apply rounded-[20px] border p-6 mb-8 bg-card border-border; }
+.section-head { @apply flex items-center justify-between mb-4; }
+.section-title { @apply text-base font-extrabold text-foreground; }
+.badge-green { @apply text-xs font-bold px-3 py-1 rounded-full bg-primary/15 text-primary; }
+
+/* task row */
+.task-row { @apply flex items-center gap-3 py-3; }
+.task-row + .task-row { @apply border-t border-muted; }
+.task-checkbox { @apply w-[22px] h-[22px] rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all cursor-pointer bg-transparent border-border; }
+.task-checkbox.done { @apply bg-primary border-primary; }
+.task-text { @apply flex-1 text-sm font-medium text-foreground; }
+.task-text.done { @apply line-through text-muted-foreground; }
+
+/* cost badges */
+.cost-low  { @apply text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-primary/15 text-primary; }
+.cost-med  { @apply text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-accent/15 text-accent; }
+.cost-high { @apply text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-destructive/15 text-destructive; }
+
+/* CTA */
+.dash-cta { @apply text-center; }
+.btn-dash-cta { @apply px-6 py-3 rounded-full text-sm font-bold transition-all cursor-pointer border bg-card border-border text-foreground hover:border-primary hover:text-primary; }

@@ -6,6 +6,8 @@ export default function ThemeToggle() {
 
   return (
     <Button
+    variant="destructive"
+    className="font-bold"
       onClick={() =>
         setTheme(theme === "dark" ? "light" : "dark")
       }
