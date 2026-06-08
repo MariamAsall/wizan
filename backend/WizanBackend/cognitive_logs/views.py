@@ -116,7 +116,8 @@ class SubmitQuizAPIView(APIView):
             )
 
             saved_answers.append({
-                "question": question.question_text,
+                "question_en": question.question_text_en,
+                "question_ar": question.question_text_ar,
                 "answer": answer_value
             })
 
