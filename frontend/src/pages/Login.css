@@ -32,3 +32,6 @@
 .btn-google { @apply w-full flex items-center justify-center gap-3 py-3.5 rounded-[10px] text-[14px] font-bold transition-all cursor-pointer border-[1.5px] border-border bg-card text-foreground font-sans hover:bg-muted; }
 .google-icon { @apply w-[18px] h-[18px] relative flex flex-wrap rounded-full overflow-hidden flex-shrink-0; }
 .google-icon span { @apply w-1/2 h-1/2; }
+
+
+.login-error { @apply text-sm text-red-600 bg-red-50 border border-red-200 rounded-[8px] px-4 py-2.5 mb-4; }
