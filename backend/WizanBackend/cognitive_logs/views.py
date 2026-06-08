@@ -95,7 +95,6 @@ class SubmitQuizAPIView(APIView):
         if len(question_ids) != len(set(question_ids)):
             return Response({"error": "Duplicate questions are not allowed."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # 3. الحل السحري لمشكلة الأداء: جلب كل الأسئلة دفعة واحدة من Supabase
         questions_map = {q.id: q for q in QuizQuestion.objects.filter(id__in=question_ids)}
 
         total_score = 0
