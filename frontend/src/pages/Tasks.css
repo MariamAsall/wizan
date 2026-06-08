@@ -1,0 +1,39 @@
+@reference "../index.css";
+/* ── Tasks page ─────────────────────────────────────────────────── */
+.tasks-root { @apply min-h-[calc(100vh-56px)] bg-background; }
+.tasks-wrap { @apply max-w-[720px] mx-auto px-5 py-8; }
+
+/* header */
+.tasks-title { @apply text-[28px] font-extrabold mb-1 text-foreground; }
+.tasks-sub   { @apply text-sm text-muted-foreground; }
+.score-pill  { @apply inline-flex items-center gap-1.5 font-bold px-3 py-0.5 rounded-full text-[13px] bg-primary/15 text-primary; }
+
+/* add-task bar */
+.add-task-bar { @apply flex gap-2.5 mb-7; }
+.add-task-input { @apply flex-1 px-4 py-3 text-sm rounded-[10px] outline-none transition-all border-[1.5px] border-border bg-background text-foreground font-sans focus:border-primary focus:bg-card; }
+.btn-mic { @apply px-3.5 py-3 text-lg rounded-[10px] border-[1.5px] transition-all cursor-pointer bg-card border-border hover:border-destructive hover:bg-destructive/10 text-foreground hover:text-destructive; }
+.btn-add-task { @apply px-5 py-3 rounded-[10px] text-sm font-bold whitespace-nowrap transition-all cursor-pointer border-0 bg-primary text-primary-foreground font-sans hover:bg-primary/90; }
+
+/* section divider */
+.task-section-divider { @apply flex items-center gap-2 mb-3; }
+.task-section-divider span { @apply text-[11px] font-bold uppercase tracking-[.08em] whitespace-nowrap text-muted-foreground; }
+.task-section-divider::after { @apply content-[''] block h-px w-full bg-border; }
+
+/* task cards */
+.task-card { @apply rounded-2xl border p-4 mb-2.5 transition-all cursor-pointer bg-card border-border hover:border-primary hover:translate-x-[3px]; }
+.task-card.postponed { @apply bg-muted opacity-60 hover:border-border hover:translate-x-0; }
+
+.task-card-top { @apply flex items-center gap-2.5 mb-2; }
+.task-card-title { @apply flex-1 text-[15px] font-bold text-foreground; }
+
+/* steps */
+.task-steps { @apply pl-4 border-l-2 border-muted; }
+.task-step  { @apply flex items-center gap-2 text-[13px] py-0.5 text-muted-foreground; }
+.step-dot   { @apply w-1.5 h-1.5 rounded-full flex-shrink-0 bg-border; }
+.step-dot.done { @apply bg-primary; }
+
+/* postponed reason */
+.postpone-reason { @apply text-xs mt-1 text-muted-foreground; }
+
+/* override btn */
+.btn-override { @apply text-xs font-bold px-2.5 py-1 rounded-full cursor-pointer border-0 transition-all bg-destructive/15 text-destructive hover:bg-destructive/25 hover:text-destructive; }
