@@ -48,26 +48,33 @@ class AllowedTaskViews(APIView):
 
         score = latest_log.score
 
-        if score >= 80:
+        if score <= 30:
+            cognitive_load = "high"
+            message = "High cognitive load. Be very gentle and supportive."
+            allowed_tasks = ["basic_task"]
+
+        elif score <= 60:
+            cognitive_load = "moderate"
+            message = "Moderate cognitive load. Be calm and structured."
+            allowed_tasks = ["intermediate_task", "basic_task"]
+
+        else:
+            cognitive_load = "low"
+            message = "Low cognitive load. Be energetic and motivating."
             allowed_tasks = [
                 "advanced_task",
                 "intermediate_task",
                 "basic_task",
             ]
-        elif score >= 50:
-            allowed_tasks = [
-                "intermediate_task",
-                "basic_task",
-            ]
-        else:
-            allowed_tasks = [
-                "basic_task"
-            ]
 
         return Response({
             "score": score,
+            "cognitive_load": cognitive_load,
+            "message": message,
             "allowed_tasks": allowed_tasks
         })
+            
+    
 
 
 class CognitiveLogListView(generics.ListAPIView):
@@ -80,6 +87,8 @@ class CognitiveLogListView(generics.ListAPIView):
 
 
 
+
+
 class SubmitQuizAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -87,18 +96,23 @@ class SubmitQuizAPIView(APIView):
         today = localdate()
 
         if CognitiveLog.objects.filter(user=request.user, log_date=today).exists():
-            return Response( {"error": "You have already completed the quiz today."},   status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "You have already completed the quiz today."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         answers = request.data.get("answers", [])
         if not answers:
-            return Response({"error": "Answers are required."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Answers are required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-   
         question_ids = [
-    item.get("question_id")
-    for item in answers
-    if item.get("question_id")
-]
+            item.get("question_id")
+            for item in answers
+            if item.get("question_id")
+        ]
 
         if len(question_ids) != len(set(question_ids)):
             return Response(
@@ -129,74 +143,74 @@ class SubmitQuizAPIView(APIView):
             question = questions_map[q_id]
             answer_value = str(raw_answer).strip()
 
-        try:
-            if question.question_type == "scale_1_5":
-                value = int(answer_value)
+            try:
+                if question.question_type == "scale_1_5":
+                    value = int(answer_value)
 
-                if not (1 <= value <= 5):
-                    return Response(
-                        {
-                            "error": f"Value for question {q_id} must be between 1 and 5."
-                        },
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
+                    if not (1 <= value <= 5):
+                        return Response(
+                            {
+                                "error": f"Value for question {q_id} must be between 1 and 5."
+                            },
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
 
-                total_score += value * question.weight
-                max_score += 5 * question.weight
+                    total_score += value * question.weight
+                    max_score += 5 * question.weight
 
-            elif question.question_type == "yes_no":
+                elif question.question_type == "yes_no":
+                    if answer_value.lower() not in ["yes", "no"]:
+                        return Response(
+                            {
+                                "error": f"Answer for question {q_id} must be yes or no."
+                            },
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
 
-                if answer_value.lower() not in ["yes", "no"]:
-                    return Response(
-                        {
-                            "error": f"Answer for question {q_id} must be yes or no."
-                        },
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
+                    value = 1 if answer_value.lower() == "yes" else 0
 
-                value = 1 if answer_value.lower() == "yes" else 0
+                    total_score += value * question.weight
+                    max_score += question.weight
 
-                total_score += value * question.weight
-                max_score += question.weight
+            except (ValueError, TypeError):
+                return Response(
+                    {"error": f"Invalid answer format for question {q_id}."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
-        except (ValueError, TypeError):
-            return Response(
-                {"error": f"Invalid answer format for question {q_id}."},
-                status=status.HTTP_400_BAD_REQUEST
+            # ✅ important: inside loop
+            quiz_answer_objects.append(
+                QuizAnswer(
+                    user=request.user,
+                    question=question,
+                    answer=answer_value
+                )
             )
 
-        quiz_answer_objects.append(
-            QuizAnswer(
-                user=request.user,
-                question=question,
-                answer=answer_value
-            )
-        )
+            saved_answers.append({
+                "question_en": question.question_text_en,
+                "question_ar": question.question_text_ar,
+                "answer": answer_value
+            })
 
-        saved_answers.append({
-            "question_en": question.question_text_en,
-            "question_ar": question.question_text_ar,
-            "answer": answer_value
-        })
-
-      
         score = int((total_score / max_score) * 100) if max_score > 0 else 0
-
-        # transation to save all answers and if error happen rollback
 
         try:
             with transaction.atomic():
                 QuizAnswer.objects.bulk_create(quiz_answer_objects)
 
-                
                 cognitive_log = CognitiveLog.objects.create(
                     user=request.user,
                     score=score,
                     quiz_answers=saved_answers,
                     log_date=today
                 )
-        except Exception as e:
-            return Response({"error": "Failed to save quiz data. Please try again."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        except Exception:
+            return Response(
+                {"error": "Failed to save quiz data. Please try again."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
         return Response(
             {
