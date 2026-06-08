@@ -8,7 +8,19 @@
   },
   "quiz": {
     "title": "Morning Check-in",
-    "start": "Start Quiz"
+    "start": "Start Quiz",
+    "step": "Question",
+    "of": "of",
+    "drag": "Drag to select",
+    "tap": "Tap to select",
+    "back": "← Back",
+    "next": "Next →",
+    "submit": "See my score →",
+    "submitting": "Submitting...",
+    "loading": "Loading your check-in...",
+    "already_done": "You've already completed today's check-in.",
+    "error_generic": "Something went wrong. Please try again.",
+    "error_load": "Failed to load questions. Please refresh."
   },
   "common": {
     "loading": "Loading...",
