@@ -8,17 +8,20 @@ class QuizQuestion(models.Model):
     QUESTION_TYPES = [
         ("yes_no", "Yes/No"),
         ("scale_1_5", "Scale 1-5"),
-        ("text", "Text"), ]
+        ("text", "Text"),
+    ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    question_text = models.CharField(max_length=255)
+
+    question_text_en = models.CharField(max_length=255)
+    question_text_ar = models.CharField(max_length=255)
+
     question_type = models.CharField(max_length=20, choices=QUESTION_TYPES)
     weight = models.IntegerField(default=1)
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
-        return self.question_text
-    
+        return self.question_text_en
 
 
 
@@ -41,4 +44,4 @@ class QuizAnswer(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user} - {self.question.question_text}"
+        return f"{self.user.email} - {self.question.question_text_en}"

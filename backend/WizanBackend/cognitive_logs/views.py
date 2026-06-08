@@ -1,12 +1,11 @@
-from datetime import date
 
 from quiz.models import QuizAnswer, QuizQuestion
-
 from rest_framework.views import APIView
 from rest_framework import status, generics
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-
+from django.db import transaction
+from django.utils.timezone import localdate # أفضل من date.today() للتعامل مع فرق التوقيت
 from .models import CognitiveLog
 from .serializers import CognitiveLogSerializers
 
@@ -76,77 +75,93 @@ class CognitiveLogListView(generics.ListAPIView):
         return (CognitiveLog.objects.filter(user=self.request.user).order_by("-created_at"))
 
 
+
+
 class SubmitQuizAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        today = localdate()
 
-        if CognitiveLog.objects.filter( user=request.user, log_date=date.today() ).exists():
-            return Response({"error": "You have already completed the quiz today."},  status=status.HTTP_400_BAD_REQUEST)
+        if CognitiveLog.objects.filter(user=request.user, log_date=today).exists():
+            return Response( {"error": "You have already completed the quiz today."},   status=status.HTTP_400_BAD_REQUEST)
 
         answers = request.data.get("answers", [])
-
         if not answers:
-            return Response( {"error": "Answers are required."  }, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Answers are required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        question_ids = [ item.get("question_id")
-            for item in answers
-        ]
-
+   
+        question_ids = [item.get("question_id") for item in answers if item.get("question_id")]
         if len(question_ids) != len(set(question_ids)):
-            return Response({"error": "Duplicate questions are not allowed." }, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Duplicate questions are not allowed."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 3. الحل السحري لمشكلة الأداء: جلب كل الأسئلة دفعة واحدة من Supabase
+        questions_map = {q.id: q for q in QuizQuestion.objects.filter(id__in=question_ids)}
 
         total_score = 0
         max_score = 0
         saved_answers = []
+        quiz_answer_objects = [] 
 
+      
         for item in answers:
-            question_id = item.get("question_id")
-            answer_value = str(item.get("answer"))
+            q_id = item.get("question_id")
+            raw_answer = item.get("answer")
+
+            if q_id not in questions_map:
+                return Response({"error": f"Question {q_id} does not exist."}, status=status.HTTP_404_NOT_FOUND)
+
+
+            question = questions_map[q_id]
+            answer_value = str(raw_answer).strip()
 
             try:
-                question = QuizQuestion.objects.get(id=question_id)
-            except QuizQuestion.DoesNotExist:
-                return Response({"error": f"Question {question_id} does not exist."},status=status.HTTP_404_NOT_FOUND)
+                if question.question_type == "scale_1_5":
+                    value = int(answer_value)
+                    if not (1 <= value <= 5):
+                        return Response({"error": f"Value for question {q_id} must be between 1 and 5."}, status=status.HTTP_400_BAD_REQUEST)
+                    total_score += value * question.weight
+                    max_score += 5 * question.weight
 
-            QuizAnswer.objects.create(
-                user=request.user,
-                question=question,
-                answer=answer_value
+                elif question.question_type == "yes_no":
+                    value = 1 if answer_value.lower() == "yes" else 0
+                    total_score += value * question.weight
+                    max_score += question.weight
+            except (ValueError, TypeError):
+                return Response({"error": f"Invalid answer format for question {q_id}."}, status=status.HTTP_400_BAD_REQUEST)
+
+            quiz_answer_objects.append(
+                QuizAnswer(
+                    user=request.user,
+                    question=question,
+                    answer=answer_value
+                )
             )
 
             saved_answers.append({
-                "question": question.question_text,
+                "question_en": question.question_text_en,
+                "question_ar": question.question_text_ar,
                 "answer": answer_value
             })
 
-            if question.question_type == "scale_1_5":
-                value = int(answer_value)
-                total_score += value * question.weight
-                max_score += 5 * question.weight
+      
+        score = int((total_score / max_score) * 100) if max_score > 0 else 0
 
-            elif question.question_type == "yes_no":
-                value = (
-                    1
-                    if answer_value.lower() == "yes"
-                    else 0
+        # transation to save all answers and if error happen rollback
+
+        try:
+            with transaction.atomic():
+                QuizAnswer.objects.bulk_create(quiz_answer_objects)
+
+                
+                cognitive_log = CognitiveLog.objects.create(
+                    user=request.user,
+                    score=score,
+                    quiz_answers=saved_answers,
+                    log_date=today
                 )
-
-                total_score += value * question.weight
-                max_score += question.weight
-
-        score = (
-            int((total_score / max_score) * 100)
-            if max_score > 0
-            else 0
-        )
-
-        cognitive_log = CognitiveLog.objects.create(
-            user=request.user,
-            score=score,
-            quiz_answers=saved_answers,
-            log_date=date.today()
-        )
+        except Exception as e:
+            return Response({"error": "Failed to save quiz data. Please try again."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response(
             {
