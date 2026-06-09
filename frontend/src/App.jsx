@@ -11,6 +11,7 @@ import QuizPage from "./pages/QuizPage";
 import DashboardPage from "./pages/DashboardPage";
 import TasksPage from "./pages/TasksPage";
 import ChatPage from "./pages/ChatPage";
+import QuizResultPage from './pages/QuizResultPage';
 
 function App() {
   const { i18n } = useTranslation()
@@ -33,6 +34,7 @@ function App() {
         {/* Protected — with navbar via MainLayout */}
         <Route element={<MainLayout />}>
           <Route path="/quiz"      element={<QuizPage />} />
+          <Route path="/result" element={<QuizResultPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/tasks"     element={<TasksPage />} />
           <Route path="/chat"      element={<ChatPage />} />

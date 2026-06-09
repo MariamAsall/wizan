@@ -15,6 +15,7 @@ export function Navbar() {
     const [open, setOpen] = useState(false)
     const links = [
     { to: "/quiz", label: t("nav.quiz") },
+    { to: "/result", label: t("nav.result") },
     { to: "/tasks", label: t("nav.tasks") },
     { to: "/dashboard", label: t("nav.dashboard") },
     { to: "/chat", label: t("nav.chat") },

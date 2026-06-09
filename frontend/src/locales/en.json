@@ -2,6 +2,7 @@
   "wizan": "Wizān",
   "nav": {
     "quiz": "Quiz",
+    "result": "Score Result",
     "dashboard": "Dashboard",
     "tasks": "Tasks",
     "chat": "Chat"
@@ -22,6 +23,48 @@
     "error_generic": "Something went wrong. Please try again.",
     "error_load": "Failed to load questions. Please refresh."
   },
+  "result": 
+  {
+  "loading": "Calculating your score...",
+  "error": "Failed to load your results. Please try again.",
+
+  "allowedToday": "Allowed today",
+  "postponed": "Postponed",
+  "wizanTip": "Wizān tip",
+  "goDashboard": "Go to my dashboard →",
+
+  "taskType": "type",
+  "taskTypes": "types",
+
+  "postponedDesc": "{{count}} task {{label}} moved to tomorrow when your score is higher",
+
+ "load": {
+  "LOW": {
+    "title": "Great cognitive day",
+    "desc": "You're energized and ready. Wizan unlocked all your tasks for today."
+  },
+  "MEDIUM": {
+    "title": "Good cognitive day",
+    "desc": "You're in solid shape today. Wizan has arranged your tasks efficiently."
+  },
+  "HIGH": {
+    "title": "High cognitive load",
+    "desc": "Take it easy today. Only essential tasks are available."
+  }
+},
+
+  "tips": {
+  "LOW": "Great energy! Tackle your hardest tasks first while you're sharp.",
+  "MEDIUM": "Take a 5-minute break every 45 minutes to maintain focus.",
+  "HIGH": "Try to keep today's workload light and prioritize rest."
+},
+
+  "tasks": {
+    "advanced_task": "Deep focus tasks",
+    "intermediate_task": "Intermediate tasks",
+    "basic_task": "Basic tasks"
+  }
+},
   "common": {
     "loading": "Loading...",
     "error": "Something went wrong"
