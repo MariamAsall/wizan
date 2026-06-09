@@ -13,8 +13,8 @@ function validate({ email, password }) {
 
   if (!password)
     errors.password = "Password is required."
-  else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/.test(password))
-    errors.password = "Password must be 8+ chars with uppercase, lowercase, number, and special character (@$!%*?&)."
+  // else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/.test(password))
+  //   errors.password = "Password must be 8+ chars with uppercase, lowercase, number, and special character (@$!%*?&)."
 
   return errors
 }
