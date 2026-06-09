@@ -9,6 +9,7 @@ from .serializers import RegisterSerializer, LoginSerializer, UserProfileSeriali
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics
+from django.contrib.auth.models import update_last_login
 
 
 def get_tokens_for_user(user):
@@ -30,6 +31,7 @@ class LoginView (APIView):
         serializer= LoginSerializer(data= request.data)
         serializer.is_valid(raise_exception=True)
         user= serializer.validated_data["user"]
+        update_last_login(None, user)
         tokens= get_tokens_for_user(user)
 
         return Response({
