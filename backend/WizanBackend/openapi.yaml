@@ -17,14 +17,21 @@ DELETE /api/tasks/{id}
 POST /api/voice/transcribe
 
 #Quiz
-GET  /api/quizzes/morning
-POST /api/quizzes/submit
+GET  /api/cognitive-log/ 
+POST /api/submit-quiz/
+
+GET /api/allowed-tasks/
+Get /api/cognitive-score/
+
+Get /api/quiz/questions/
+
+
+
+
 
 #PDF / RAG
 POST /api/documents/upload
 POST /api/ask
 
-# Cognitive Score
-GET /api/cognitive-score
-GET /api/allowed-tasks
+
 
