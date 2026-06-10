@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'quiz',
     'cognitive_logs',
     'ai',
+    'tasks',
 
     #SIMPLE_JWT
     'rest_framework',
