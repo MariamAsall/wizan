@@ -4,6 +4,7 @@ from django.conf import settings
 
 class Task(models.Model):
     STATUS_CHOICES = [
+        ('pending', 'Pending'),
         ('allowed', 'Allowed'),
         ('postponed', 'Postponed'),
         ('overridden', 'Overridden'),
@@ -16,15 +17,16 @@ class Task(models.Model):
     ]
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='tasks')
-    title = models.CharField(max_length=255)
+    name = models.CharField(max_length=255)
     priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='medium')
     deadline = models.DateField(null=True, blank=True)
+    cognitive_cost = models.IntegerField(default=50)
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='allowed')
     postponed_to = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.title} ({self.status})"
+        return f"{self.name} ({self.status})"
 
 
 class TaskLog(models.Model):
