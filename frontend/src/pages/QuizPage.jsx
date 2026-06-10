@@ -111,7 +111,7 @@ export default function QuizPage() {
       try {
         const { data } = await api.post("/submit-quiz/", { answers })
         localStorage.setItem("cognitive_score", data.score)
-        navigate("/quiz/result")
+        navigate("/result")
       } catch (e) {
         const serverMessage = e.response?.data?.error
         if (e.response?.status === 400 && serverMessage?.includes("already")) {
@@ -172,7 +172,7 @@ export default function QuizPage() {
             </div>
           )}
 
-          {/* Slider — always LTR */}
+          {/* Slider */}
           {current?.type === "slider" && (
             <div className="quiz-slider-wrap" dir="ltr">
               <div className="quiz-slider-val">{currentVal ?? 3}</div>
