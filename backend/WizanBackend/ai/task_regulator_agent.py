@@ -1,14 +1,19 @@
 import google.generativeai as genai
 from .task_regulator_tools import check_score, get_tasks, postpone_task, get_tool_declarations
 from .task_regulator_memory import get_session, save_session
-from .prompt_builder import build_system_prompt       # ← your prompt builder
-from .total_score import calculate_total_score        # ← your existing score pipeline
+from .task_regulator_limits import apply_limits
+from .prompt_builder import build_system_prompt
+from .total_score import calculate_total_score
 
 BASE_PROMPT = """
 You are the Task Regulator Agent for Wizan.
 Your job is to look at the user's cognitive score and their tasks,
 then decide which tasks are allowed today and which should be postponed.
 Always call check_score() first, then get_tasks(), then make your decisions.
+Rules:
+- blocked tasks must be postponed, user cannot override them
+- warned tasks should be postponed but user can override if they insist
+- allowed tasks should stay as they are
 """
 
 TOOLS = {
@@ -20,7 +25,8 @@ TOOLS = {
 def run_task_regulator(user_id, user_message, session_memory):
 
     # Step 1 — calculate score for this user
-    score_data = calculate_total_score(user_id)   # returns the full dict
+    score_data = calculate_total_score(user_id)
+    current_score = score_data.get("total_score", 50)
 
     # Step 2 — build the system prompt by injecting score data
     system_prompt = build_system_prompt(BASE_PROMPT, score_data)
@@ -61,6 +67,15 @@ def run_task_regulator(user_id, user_message, session_memory):
             fn_args["user_id"] = str(user_id)
 
             result = TOOLS[fn_name](**fn_args)
+
+            # apply limits right after get_tasks() 
+            if fn_name == "get_tasks":
+                tagged_tasks, limit_message = apply_limits(result, current_score)
+                result = {
+                    "tasks": tagged_tasks,
+                    "limit_message": limit_message
+                }
+
             tool_results.append({
                 "function_response": {
                     "name": fn_name,

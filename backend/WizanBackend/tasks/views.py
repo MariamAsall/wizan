@@ -4,6 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models import Task, TaskLog
 from .serializers import TaskSerializer, TaskOverrideSerializer
+from ai.task_regulator_agent import run_task_regulator
+from ai.task_regulator_memory import get_session, save_session
 
 
 class TaskViewSet(viewsets.ModelViewSet):
@@ -70,3 +72,14 @@ class TaskViewSet(viewsets.ModelViewSet):
             "new_status": "overridden",
             "warning": "You are overriding the agent's recommendation. This may affect your productivity."
         })
+
+
+    @action(detail=False, methods=['post'], url_path='regulate')
+    def regulate(self, request):
+        user = request.user
+        message = request.data.get("message", "Show me what I can do today")
+        session_id = f"regulate_{user.id}"
+        memory = get_session(session_id)
+        result = run_task_regulator(user.id, message, memory)
+        save_session(session_id, result["memory"])
+        return Response({"response": result["response"]})
