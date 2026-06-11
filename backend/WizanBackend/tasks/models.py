@@ -22,6 +22,7 @@ class Task(models.Model):
     deadline = models.DateField(null=True, blank=True)
     cognitive_cost = models.IntegerField(default=50)
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='allowed')
+    source = models.CharField(max_length=20,default='user_added')
     postponed_to = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

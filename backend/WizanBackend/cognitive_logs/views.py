@@ -235,10 +235,10 @@ class SubmitQuizAPIView(APIView):
                     log_date=today
                 )
 
-        except Exception:
+        except Exception as e:
 
             return Response(
-                {"error": "Failed to save quiz data. Please try again."},
+                {"error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
