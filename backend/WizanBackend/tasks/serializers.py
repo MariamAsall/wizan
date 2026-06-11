@@ -11,10 +11,16 @@ class TaskLogSerializer(serializers.ModelSerializer):
 class TaskSerializer(serializers.ModelSerializer):
     logs = TaskLogSerializer(many=True, read_only=True)
 
+   
     class Meta:
-        model = Task
-        fields = "__all__"
-        read_only_fields = ['status', 'postponed_to', 'created_at']
+            model = Task
+            fields = "__all__"
+            read_only_fields = [
+                "user",
+                "status",
+                "postponed_to",
+                "created_at",
+            ]
 
 
 class TaskOverrideSerializer(serializers.Serializer):
