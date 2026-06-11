@@ -2,10 +2,12 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from .models import Task, TaskLog
+from .models import Task, TaskLog, TaskStep
 from .serializers import TaskSerializer, TaskOverrideSerializer
 from ai.task_regulator_agent import run_task_regulator
 from ai.task_regulator_memory import get_session, save_session
+from ai.agents.task_decompose_agent import run_task_decompose_agent
+from ai.total_score import calculate_total_score
 
 
 class TaskViewSet(viewsets.ModelViewSet):
@@ -92,3 +94,30 @@ class TaskViewSet(viewsets.ModelViewSet):
         "response":   result["response"],
         "session_id": result["session_id"]   # ← NEW: return it so frontend can send it back next message
     })
+
+    @action(detail=True, methods=['post'], url_path='decompose')
+    def decompose(self, request, pk=None):
+        task = self.get_object()
+        # get cognitive score 
+        score_data = calculate_total_score(request.user, quiz_score=None)
+        # call the decompose agent 
+        result = run_task_decompose_agent(
+            task_name=task.name,
+            score_data=score_data
+        )
+        # clear old steps and save new ones 
+        TaskStep.objects.filter(task=task).delete()
+        for step in result.get("steps", []):
+            TaskStep.objects.create(
+                task=task,
+                step_order=step["order"],
+                description=step["description"]
+            )
+        # return to frontend 
+        return Response({
+            "task_id": task.id,
+            "task_name": task.name,
+            "tone": result.get("tone"),
+            "estimated_time": result.get("estimated_time"),
+            "steps": result.get("steps", [])
+        })
