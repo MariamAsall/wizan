@@ -1,6 +1,6 @@
 # backend/ai/prompt_builder.py
 
-def build_system_prompt(base_prompt: str, score_data: dict) -> str:
+def build_system_prompt(base_prompt: str, score_data: dict , past_summaries: str = "")  -> str:
     """
     Called by EVERY agent before talking to Gemini.
     base_prompt  = the agent's own instructions (comes from the agent file)
@@ -56,8 +56,20 @@ Tone Instructions:
 ============================
 
 """
+    memory_section = ""
+    if past_summaries:
+        memory_section = f"""   
+    === PAST SESSION MEMORY ===
+{past_summaries}
+
+Use this to understand the user's recent patterns.
+If the user has been struggling for multiple sessions, be extra gentle.
+===========================
+"""
+    
     # injection goes FIRST, then the agent's own base_prompt follows
-    return injection + base_prompt
+    
+    return base_prompt + memory_section + injection
 
 
 if __name__ == "__main__":

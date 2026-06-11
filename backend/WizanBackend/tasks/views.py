@@ -78,8 +78,17 @@ class TaskViewSet(viewsets.ModelViewSet):
     def regulate(self, request):
         user = request.user
         message = request.data.get("message", "Show me what I can do today")
-        session_id = f"regulate_{user.id}"
+        # session_id = f"regulate_{user.id}"
+        session_id = request.data.get("session_id", None)  # ← NEW: frontend sends this back on follow-up messages (aml)
+            # if no session_id came from frontend, build a default one
+        if session_id is None:
+            session_id = f"regulate_{user.id}"
         memory = get_session(session_id)
-        result = run_task_regulator(user.id, message, memory)
-        save_session(session_id, result["memory"])
-        return Response({"response": result["response"]})
+        # result = run_task_regulator(user.id, message, memory)
+        result = run_task_regulator(user.id, message, memory, session_id)  # ← NEW: pass session_id (aml)
+        save_session(result["session_id"], result["memory"])               # ← use result's session_id
+        # save_session(session_id, result["memory"])
+        return Response({
+        "response":   result["response"],
+        "session_id": result["session_id"]   # ← NEW: return it so frontend can send it back next message
+    })
