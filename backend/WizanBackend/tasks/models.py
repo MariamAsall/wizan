@@ -49,3 +49,17 @@ class AgentMemory(models.Model):
 
     def __str__(self):
         return f"Memory for user {self.user.id} - session {self.session_id}"
+
+
+class TaskStep(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='steps')
+    step_order = models.PositiveIntegerField()
+    description = models.CharField(max_length=500)
+    is_completed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['step_order']
+
+    def __str__(self):
+        return f"Step {self.step_order}: {self.description}"
