@@ -23,25 +23,34 @@ def run_planning_agent(
 ) -> str:
     """
     Run one turn of the Planning Agent.
-
-    Args:
-        user_message:  The student's input for this turn.
-        score_data:    Dict from total_score pipeline:
-                         { score, zone, tone, allowed_tasks, ... }
-        user:          Django User instance (for DB-scoped memory).
-        session_id:    Unique session key, e.g. f"planning_{user.id}".
-
-    Returns:
-        The agent's reply as a plain string.
     """
 
-    # ── 1. Load system prompt from YAML ──────────────────────────────────────
-    base_prompt = load_prompt(AGENT_NAME)
+    # ── 1. Load and Format system prompt from YAML ───────────────────────────
+    # load_prompt returns a dictionary parsed from the YAML file
+    yaml_data = load_prompt(AGENT_NAME)
+    
+    # Extract the raw string template waiting for variable formatting
+    raw_template = yaml_data.get("system_prompt", "")
+    
+    # Format the template placeholders ({score}, {zone}, etc.)
+    # We map both formats (e.g., score vs final_score) so it's robust
+    formatted_base_prompt = raw_template.format(
+        score=score_data.get("score", score_data.get("final_score", 50)),
+        zone=score_data.get("zone", "MEDIUM"),
+        tone=score_data.get("tone", "calm"),
+        allowed_tasks=score_data.get("allowed_tasks", 3),
+        today=date.today().isoformat(),
+        language=getattr(user, "language", "en"),
+    )
 
+    # Now we pass a clean string to build_system_prompt
     system_prompt = build_system_prompt(
-        base_prompt,
-        {
+        base_prompt=formatted_base_prompt,
+        score_data={
             **score_data,
+            # Ensure prompt_builder gets the exact key names it expects as well
+            "final_score": score_data.get("final_score", score_data.get("score", 50)),
+            "label": score_data.get("label", f"{score_data.get('zone', 'Medium')} Cognitive Load"),
             "today": date.today().isoformat(),
             "language": getattr(user, "language", "en"),
         },
