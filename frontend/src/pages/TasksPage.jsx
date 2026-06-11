@@ -84,7 +84,7 @@ export default function TasksPage() {
       const token = localStorage.getItem("access_token");
 
       await axios.post(
-        "http://localhost:8000/api/tasks/override/",
+        "http://localhost:8000/api/tasks/",
         {
           task_id: taskId,
           reason: "User decided to proceed",
