@@ -1,126 +1,287 @@
-import { useState } from "react"
-import "./Tasks.css"
-
-const INITIAL_ALLOWED = [
-  {
-    id: 1, title: "Review lecture notes — Chapter 4", cost: "med",
-    steps: [
-      { text: "Re-read slides 1–15",           done: true  },
-      { text: "Highlight key formulas",         done: true  },
-      { text: "Write a 1-page summary",         done: false },
-      { text: "Test yourself with 5 questions", done: false },
-    ],
-  },
-  {
-    id: 2, title: "Submit database assignment", cost: "high",
-    steps: [
-      { text: "Finish ERD diagram",          done: true  },
-      { text: "Write SQL migration files",   done: false },
-      { text: "Upload to submission portal", done: false },
-    ],
-  },
-  { id: 3, title: "Reply to team messages", cost: "low", steps: [] },
-]
-
-const INITIAL_POSTPONED = [
-  {
-    id: 4, title: "Write project report — 3000 words", cost: "high",
-    reason: "Moved to tomorrow — cognitive cost too high for today's score",
-  },
-  {
-    id: 5, title: "Prepare presentation slides", cost: "high",
-    reason: "Moved to Saturday — deadline not urgent",
-  },
-]
-
-const COST_LABEL = { low: "Low", med: "Medium", high: "High" }
+import { useState, useEffect } from "react";
+import axios from "axios";
+import "./Tasks.css";
 
 export default function TasksPage() {
-  const [input, setInput]         = useState("")
-  const [allowed, setAllowed]     = useState(INITIAL_ALLOWED)
-  const [postponed, setPostponed] = useState(INITIAL_POSTPONED)
+  const [input, setInput] = useState("");
+  const [priority, setPriority] = useState("medium");
+  const [deadline, setDeadline] = useState("")
 
-  const addTask = () => {
-    if (!input.trim()) return
-    setAllowed((p) => [...p, { id: Date.now(), title: input.trim(), cost: "low", steps: [] }])
-    setInput("")
+  const [allowed, setAllowed] = useState([]);
+  const [postponed, setPostponed] = useState([]);
+
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
+  const fetchTasks = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+
+      const res = await axios.get(
+        "http://localhost:8000/api/tasks/",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const tasks = res.data;
+
+      setAllowed(
+        tasks.filter(
+          (task) =>
+            task.status === "allowed" ||
+            task.status === "pending" ||
+            task.status === "overridden"
+        )
+      );
+
+      setPostponed(
+        tasks.filter((task) => task.status === "postponed")
+      );
+    } catch (error) {
+      console.error("Fetch Tasks Error:", error.response?.data || error);
+    }
+  };
+
+  const addTask = async () => {
+    if (!input.trim()) return;
+
+    try {
+      const token = localStorage.getItem("access_token");
+
+      const response = await axios.post(
+        "http://localhost:8000/api/tasks/",
+      {
+        name: input.trim(),
+        priority,
+        cognitive_cost: 50,
+        deadline: deadline || null,
+      },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setAllowed((prev) => [...prev, response.data]);
+
+      setInput("");
+      setPriority("medium");
+    } catch (error) {
+      console.error(
+        "Add Task Error:",
+        error.response?.data || error
+      );
+    }
+  };
+
+  const overrideTask = async (taskId) => {
+    try {
+      const token = localStorage.getItem("access_token");
+
+      await axios.post(
+        "http://localhost:8000/api/tasks/override/",
+        {
+          task_id: taskId,
+          reason: "User decided to proceed",
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      fetchTasks();
+    } catch (error) {
+      console.error(
+        "Override Error:",
+        error.response?.data || error
+      );
+
+      alert(
+        error.response?.data?.error ||
+          "Override failed"
+      );
+    }
+  };
+
+  const regulateTasks = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+
+      const res = await axios.post(
+        "http://localhost:8000/api/tasks/",
+        {
+          message: "Show me what I can do today",
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log(res.data);
+
+      fetchTasks();
+    } catch (error) {
+      console.error(
+        "Regulate Error:",
+        error.response?.data || error
+      );
+    }
+  };
+
+  const deleteTask = async (taskId) => {
+  try {
+    const token = localStorage.getItem("access_token");
+
+    await axios.delete(
+      `http://localhost:8000/api/tasks/${taskId}/`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    fetchTasks(); // refresh UI
+  } catch (error) {
+    console.error(error.response?.data || error);
   }
+};
 
   return (
     <div className="tasks-root">
       <div className="tasks-wrap">
 
-        {/* Header */}
         <div className="mb-7">
-          <h1 className="tasks-title">Task board</h1>
-          <p className="tasks-sub">
-            Score today:{" "}
-            <span className="score-pill">74 — Good 🌿</span>
-          </p>
+          <h1 className="tasks-title">Task Board</h1>
         </div>
 
-        {/* Add task */}
         <div className="add-task-bar">
           <input
             type="text"
             className="add-task-input"
-            placeholder="Add a new task…"
+            placeholder="Add a new task..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && addTask()}
+            onKeyDown={(e) =>
+              e.key === "Enter" && addTask()
+            }
           />
-          <button className="btn-mic" title="Add by voice">🎙️</button>
-          <button className="btn-add-task" onClick={addTask}>+ Add task</button>
+
+          <select
+            value={priority}
+            onChange={(e) =>
+              setPriority(e.target.value)
+            }
+          >
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
+
+          <input
+            type="date"
+            value={deadline}
+            onChange={(e) => setDeadline(e.target.value)}
+          />
+
+          <button
+            className="btn-add-task"
+            onClick={addTask}
+          >
+            + Add Task
+          </button>
+
+          <button onClick={regulateTasks}>
+            Regulate Tasks
+          </button>
         </div>
 
-        {/* Allowed */}
         <div className="task-section-divider mb-3">
-          <span>✅ Allowed today</span>
+          <span>✅ Allowed Today</span>
         </div>
+
         {allowed.map((task) => (
           <div key={task.id} className="task-card">
             <div className="task-card-top">
-              <span className="task-card-title">{task.title}</span>
-              <span className={`cost-${task.cost}`}>{COST_LABEL[task.cost]}</span>
+              <span className="task-card-title">
+                {task.name}
+              </span>
+
+              <span
+                className={`cost-${task.priority}`}
+              >
+                {task.priority}
+              </span>
+
+
+              <button
+  className="btn-delete"
+  onClick={() => deleteTask(task.id)}
+>
+  Delete
+</button>
             </div>
-            {task.steps.length > 0 && (
-              <div className="task-steps">
-                {task.steps.map((s, i) => (
-                  <div key={i} className="task-step">
-                    <span className={`step-dot ${s.done ? "done" : ""}`} />
-                    {s.text}
-                  </div>
-                ))}
-              </div>
-            )}
+            
+                {task.deadline && (
+      <div className="task-deadline">
+        📅 {task.deadline}
+      </div>
+    )}
+
           </div>
         ))}
 
-        {/* Postponed */}
         {postponed.length > 0 && (
           <>
             <div className="task-section-divider mt-6 mb-3">
-              <span>⏳ Postponed (score too low)</span>
+              <span>
+                ⏳ Postponed (score too low)
+              </span>
+
+              
             </div>
+
             {postponed.map((task) => (
-              <div key={task.id} className="task-card postponed">
+              <div
+                key={task.id}
+                className="task-card postponed"
+              >
                 <div className="task-card-top">
-                  <span className="task-card-title">{task.title}</span>
-                  <span className={`cost-${task.cost}`}>{COST_LABEL[task.cost]}</span>
+                  <span className="task-card-title">
+                    {task.name}
+                  </span>
+
+                  <span
+                    className={`cost-${task.priority}`}
+                  >
+                    {task.priority}
+                  </span>
+                  
+                  
+
                   <button
                     className="btn-override"
-                    onClick={() => setPostponed((p) => p.filter((t) => t.id !== task.id))}
+                    onClick={() =>
+                      overrideTask(task.id)
+                    }
                   >
                     Override
                   </button>
                 </div>
-                <p className="postpone-reason">{task.reason}</p>
               </div>
             ))}
           </>
         )}
-
       </div>
     </div>
-  )
+  );
 }
