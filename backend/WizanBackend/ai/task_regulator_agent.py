@@ -6,7 +6,7 @@ from .task_regulator_limits import apply_limits
 from .prompt_builder import build_system_prompt
 from .total_score import calculate_total_score
 from .memory_manager import save_session_summary, load_past_summaries  # ← NEW
-
+from google.api_core.exceptions import ResourceExhausted
 BASE_PROMPT = """
 You are the Task Regulator Agent for Wizan.
 Your job is to look at the user's cognitive score and their tasks,
@@ -56,7 +56,17 @@ def run_task_regulator(user_id, user_message, session_memory, session_id=None): 
     # Step 5 — agent loop (unchanged)
     max_iterations = 5
     for _ in range(max_iterations):
-        response = model.generate_content(session_memory)
+        try:
+
+            response = model.generate_content(session_memory)
+        except ResourceExhausted:
+            # Handle the case where the API limit is exceeded
+            return {
+                "response": "Gemini API quota exceeded. Please try again later.",
+                "memory": session_memory,
+                "session_id": session_id
+            }
+
         candidate = response.candidates[0]
 
         tool_calls = [p for p in candidate.content.parts if hasattr(p, 'function_call')]

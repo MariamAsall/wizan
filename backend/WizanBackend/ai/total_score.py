@@ -4,16 +4,19 @@ from ai.history_score import calculate_history_score
 from ai.behavioral_score import calculate_behavioral_score
 
 
-def calculate_total_score(user, quiz_score: int) -> dict:
+def calculate_total_score(user, quiz_score=None) -> dict:
     """
     Handles all real-world cases:
     - First time user
     - User skipping quiz (quiz_score=None)
     - User returning after days away
     """
-
-    history_data    = calculate_history_score(user)
+    history_data = calculate_history_score(user)
     behavioral_data = calculate_behavioral_score(user)
+
+    history_score = history_data.get("history_score", 0)
+    behavioral_score = behavioral_data.get("behavioral_score", 0)
+    days = history_data.get("days_available", 0)
 
     history_score    = history_data["history_score"]
     behavioral_score = behavioral_data["behavioral_score"]
@@ -23,8 +26,7 @@ def calculate_total_score(user, quiz_score: int) -> dict:
     # no history, no behavioral data worth using
     # quiz score IS the final score — simple and honest
     if is_first_time:
-        final = quiz_score
-        note  = "first_time"
+        final = quiz_score if quiz_score is not None else 50
 
     # ── CASE 2: User skipped quiz today ─────────────────────
     # carry yesterday's score forward with a small decay

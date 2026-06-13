@@ -88,7 +88,11 @@ class TaskViewSet(viewsets.ModelViewSet):
         memory = get_session(session_id)
         # result = run_task_regulator(user.id, message, memory)
         result = run_task_regulator(user.id, message, memory, session_id)  # ← NEW: pass session_id (aml)
-        save_session(result["session_id"], result["memory"])               # ← use result's session_id
+        save_session(
+    result["session_id"],
+    result["memory"],
+    user=request.user
+)             # ← use result's session_id
         # save_session(session_id, result["memory"])
         return Response({
         "response":   result["response"],
