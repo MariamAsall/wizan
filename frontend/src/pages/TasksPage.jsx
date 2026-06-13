@@ -276,7 +276,10 @@ const deleteTask = async (taskId) => {
             + Add Task
           </button>
 
-          <button onClick={regulateTasks}>
+          <button
+            className="btn-regulate"
+            onClick={regulateTasks}
+          >
             Regulate Tasks
           </button>
         </div>
@@ -316,7 +319,7 @@ const deleteTask = async (taskId) => {
                 </button>
 
 
-                <button
+              <button
                   className="btn-delete"
                   onClick={() => deleteTask(task.id)}
                 >
