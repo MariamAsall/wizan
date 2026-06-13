@@ -18,6 +18,8 @@ const [editName, setEditName] = useState("");
 const [editPriority, setEditPriority] = useState("medium");
 const [editDeadline, setEditDeadline] = useState("");
 
+const [agentResponse, setAgentResponse] = useState("");
+
 
 
 
@@ -143,6 +145,7 @@ console.log("OVERRIDE CLICKED", taskId);
     try {
       const token = localStorage.getItem("access_token");
 
+
 const res = await axios.post(
   "http://localhost:8000/api/tasks/regulate/",
   {
@@ -155,6 +158,7 @@ const res = await axios.post(
           },
         }
       );
+setAgentResponse(res.data.response);
 
       console.log(res.data);
       if (res.data.session_id) {
@@ -299,32 +303,32 @@ const deleteTask = async (taskId) => {
                 {task.priority}
               </span>
 
-<button
-  className="btn-edit"
-  onClick={() => {
-    setEditingTask(task.id);
-    setEditName(task.name);
-    setEditPriority(task.priority);
-    setEditDeadline(task.deadline || "");
-  }}
->
-  Edit
-</button>
+                <button
+                  className="btn-edit"
+                  onClick={() => {
+                    setEditingTask(task.id);
+                    setEditName(task.name);
+                    setEditPriority(task.priority);
+                    setEditDeadline(task.deadline || "");
+                  }}
+                >
+                  Edit
+                </button>
 
 
-              <button
-  className="btn-delete"
-  onClick={() => deleteTask(task.id)}
->
-  Delete
-</button>
+                <button
+                  className="btn-delete"
+                  onClick={() => deleteTask(task.id)}
+                >
+                  Delete
+                </button>
             </div>
             
                 {task.deadline && (
-      <div className="task-deadline">
-        📅 {task.deadline}
-      </div>
-    )}
+                  <div className="task-deadline">
+                    📅 {task.deadline}
+                  </div>
+                )}
 
 
 
@@ -380,6 +384,14 @@ const deleteTask = async (taskId) => {
     </div>
   </div>
 )}
+
+{agentResponse && (
+  <div className="agent-response">
+    {agentResponse}
+  </div>
+)}
+
+
         {postponed.length > 0 && (
           <>
             <div className="task-section-divider mt-6 mb-3">
@@ -423,6 +435,7 @@ const deleteTask = async (taskId) => {
           </>
         )}
       </div>
+      
     </div>
   );
 }
