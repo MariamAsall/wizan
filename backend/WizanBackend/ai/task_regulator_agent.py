@@ -54,7 +54,7 @@ def run_task_regulator(user_id, user_message, session_memory, session_id=None): 
     })
 
     # Step 5 — agent loop (unchanged)
-    max_iterations = 5
+    max_iterations = 3
     for _ in range(max_iterations):
         response = model.generate_content(session_memory)
         candidate = response.candidates[0]
