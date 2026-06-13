@@ -160,3 +160,9 @@
   opacity: 0.9;
 }
 
+.btn-regulate {
+  @apply px-5 py-3 rounded-[10px] text-sm font-bold
+  transition-all cursor-pointer border-0
+  bg-emerald-600 text-white
+  hover:bg-emerald-700;
+}
