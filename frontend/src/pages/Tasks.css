@@ -37,3 +37,17 @@
 
 /* override btn */
 .btn-override { @apply text-xs font-bold px-2.5 py-1 rounded-full cursor-pointer border-0 transition-all bg-destructive/15 text-destructive hover:bg-destructive/25 hover:text-destructive; }
+
+.btn-delete {
+  @apply px-3 py-1 rounded-full text-xs font-bold
+  transition-all cursor-pointer
+  bg-destructive/15 text-destructive
+  hover:bg-destructive hover:text-white;
+}
+
+.btn-regulate {
+  @apply px-5 py-3 rounded-[10px] text-sm font-bold
+  transition-all cursor-pointer border-0
+  bg-emerald-600 text-white
+  hover:bg-emerald-700;
+}

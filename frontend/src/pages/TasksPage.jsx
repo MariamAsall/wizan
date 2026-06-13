@@ -84,7 +84,7 @@ export default function TasksPage() {
       const token = localStorage.getItem("access_token");
 
       await axios.post(
-        "http://localhost:8000/api/tasks/",
+        "http://localhost:8000/api/tasks/override/",
         {
           task_id: taskId,
           reason: "User decided to proceed",
@@ -115,7 +115,7 @@ export default function TasksPage() {
       const token = localStorage.getItem("access_token");
 
       const res = await axios.post(
-        "http://localhost:8000/api/tasks/",
+        "http://localhost:8000/api/tasks/regulate/",
         {
           message: "Show me what I can do today",
         },
@@ -200,7 +200,10 @@ export default function TasksPage() {
             + Add Task
           </button>
 
-          <button onClick={regulateTasks}>
+          <button
+            className="btn-regulate"
+            onClick={regulateTasks}
+          >
             Regulate Tasks
           </button>
         </div>
@@ -224,11 +227,11 @@ export default function TasksPage() {
 
 
               <button
-  className="btn-delete"
-  onClick={() => deleteTask(task.id)}
->
-  Delete
-</button>
+                  className="btn-delete"
+                  onClick={() => deleteTask(task.id)}
+                >
+                  Delete
+                </button>
             </div>
             
                 {task.deadline && (
