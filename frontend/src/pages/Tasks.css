@@ -35,19 +35,128 @@
 /* postponed reason */
 .postpone-reason { @apply text-xs mt-1 text-muted-foreground; }
 
+.override-badge {
+  background: #f59e0b;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  margin-left: 8px;
+}
 /* override btn */
 .btn-override { @apply text-xs font-bold px-2.5 py-1 rounded-full cursor-pointer border-0 transition-all bg-destructive/15 text-destructive hover:bg-destructive/25 hover:text-destructive; }
 
-.btn-delete {
-  @apply px-3 py-1 rounded-full text-xs font-bold
-  transition-all cursor-pointer
-  bg-destructive/15 text-destructive
-  hover:bg-destructive hover:text-white;
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 9999;
 }
 
-.btn-regulate {
-  @apply px-5 py-3 rounded-[10px] text-sm font-bold
-  transition-all cursor-pointer border-0
-  bg-emerald-600 text-white
-  hover:bg-emerald-700;
+.edit-modal {
+  background: white;
+  width: 420px;
+  max-width: 90vw;
+
+  border-radius: 18px;
+  padding: 24px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  box-shadow:
+    0 20px 40px rgba(0,0,0,0.18);
+
+  animation: popup 0.25s ease;
 }
+
+.edit-modal h2 {
+  margin: 0 0 8px;
+  text-align: center;
+}
+
+.edit-modal input,
+.edit-modal select {
+  width: 100%;
+  padding: 12px;
+
+  border: 1px solid #ddd;
+  border-radius: 10px;
+
+  font-size: 15px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.btn-save {
+  flex: 1;
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.btn-save:hover {
+  opacity: 0.9;
+}
+
+.btn-cancel {
+  flex: 1;
+  background: #e5e7eb;
+  border: none;
+  padding: 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.btn-edit {
+  background: #6aae55;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn-edit:hover {
+  opacity: 0.9;
+}
+
+@keyframes popup {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.btn-delete {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn-delete:hover {
+  opacity: 0.9;
+}
+
