@@ -20,6 +20,7 @@ const [editDeadline, setEditDeadline] = useState("");
 
 const [agentResponse, setAgentResponse] = useState("");
 
+const [plan, setPlan] = useState(null);
 
 
 
@@ -159,7 +160,7 @@ const res = await axios.post(
         }
       );
 setAgentResponse(res.data.response);
-
+      setPlan(res.data.plan);
       console.log(res.data);
       if (res.data.session_id) {
   setSessionId(res.data.session_id);
@@ -391,6 +392,23 @@ const deleteTask = async (taskId) => {
 {agentResponse && (
   <div className="agent-response">
     {agentResponse}
+  </div>
+)}
+{plan && (
+  <div className={`plan-card ${plan.tone}`}>
+    <h3>Today's Plan</h3>
+
+    <p>
+      ⏱ Estimated Time:
+      {plan.estimated_time} min
+    </p>
+
+    {plan.steps.map((step, index) => (
+      <label key={index} className="check-item">
+        <input type="checkbox" />
+        {step}
+      </label>
+    ))}
   </div>
 )}
 
