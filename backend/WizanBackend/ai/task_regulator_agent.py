@@ -1,5 +1,6 @@
 import uuid                                                          # ← NEW
 import google.generativeai as genai
+from ai.llm import safe_llm_call 
 from .task_regulator_tools import check_score, get_tasks, postpone_task, get_tool_declarations
 from .task_regulator_memory import get_session, save_session
 from .task_regulator_limits import apply_limits
@@ -42,11 +43,18 @@ def run_task_regulator(user_id, user_message, session_memory, session_id=None): 
     # Step 2 — (was build_system_prompt, now handled above with summaries)
 
     # Step 3 — create the Gemini model with that system prompt
-    model = genai.GenerativeModel(
-        model_name="gemini-2.0-flash",
-        system_instruction=system_prompt,
-        tools=get_tool_declarations()
-    )
+    try:
+        model = genai.GenerativeModel(
+            model_name="gemini-2.5-flash",
+            system_instruction=system_prompt,
+            tools=get_tool_declarations()
+        )
+    except ResourceExhausted:
+        return {
+            "response": "Gemini API quota exceeded.",
+            "memory": session_memory,
+            "session_id": session_id
+        }
 
     # Step 4 — add user message to memory
     session_memory.append({
@@ -55,19 +63,35 @@ def run_task_regulator(user_id, user_message, session_memory, session_id=None): 
     })
 
     # Step 5 — agent loop (unchanged)
-    max_iterations = 5
+    max_iterations =5
     for _ in range(max_iterations):
         try:
 
             response = model.generate_content(session_memory)
-        except ResourceExhausted:
-            # Handle the case where the API limit is exceeded
-            return {
-                "response": "Gemini API quota exceeded. Please try again later.",
-                "memory": session_memory,
-                "session_id": session_id
-            }
+        except Exception as e:
+            error_message = str(e).lower()
 
+            if (
+                "quota" in error_message
+                or "429" in error_message
+                or "rate" in error_message
+                or "permissiondenied" in error_message
+                or "403" in error_message
+                or "denied access" in error_message
+            ):
+                print("Gemini unavailable, switching to Groq")
+
+                result = safe_llm_call(
+                    system_prompt + "\n\n" + user_message
+                )
+
+                return {
+                    "response": result,
+                    "memory": session_memory,
+                    "session_id": session_id,
+                }
+
+            raise
         candidate = response.candidates[0]
 
         tool_calls = [p for p in candidate.content.parts if hasattr(p, 'function_call')]

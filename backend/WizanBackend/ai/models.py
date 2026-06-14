@@ -10,7 +10,7 @@ class AgentMemory(models.Model):
     created_at  = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['-created_at']            # newest first
+        ordering = ['created_at']            # newest first
 
     def __str__(self):
         return f"{self.user} | {self.session_id} | {self.created_at.date()}"

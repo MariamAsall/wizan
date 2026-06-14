@@ -91,7 +91,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         save_session(
     result["session_id"],
     result["memory"],
-    user=request.user
+    
 )             # ← use result's session_id
         # save_session(session_id, result["memory"])
         return Response({

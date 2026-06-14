@@ -1,13 +1,12 @@
-from ai.models import AgentMemory
+from tasks.models import AgentMemory
+from ai.llm import safe_llm_call   # ← THE fix — use our safe function
 
 def save_session_summary(user_id, session_id, conversation_history):
     """
     Called at the END of every session.
-    Sends the conversation to Gemini, gets a summary, saves to DB.
+    Why? So next session the agent remembers what happened before.
     """
-    import google.generativeai as genai
-
-    # Build a readable transcript from the history list
+    # Build a readable transcript from the conversation history
     transcript = ""
     for turn in conversation_history:
         role = turn["role"]
@@ -16,9 +15,8 @@ def save_session_summary(user_id, session_id, conversation_history):
                 transcript += f"{role}: {part['text']}\n"
 
     if not transcript.strip():
-        return  # nothing to summarize
+        return  
 
-    model = genai.GenerativeModel("gemini-2.0-flash")
     prompt = f"""
 Summarize this conversation in 2-3 lines maximum.
 Focus on: what tasks were allowed, what was postponed, and how the user felt.
@@ -27,8 +25,8 @@ Be factual and brief.
 Conversation:
 {transcript}
 """
-    response = model.generate_content(prompt)
-    summary_text = response.text.strip()
+    # Simply call your safe function
+    summary_text = safe_llm_call(prompt)
 
     AgentMemory.objects.create(
         user_id=user_id,
@@ -40,14 +38,14 @@ Conversation:
 def load_past_summaries(user_id, count=3):
     """
     Called at the START of every session.
-    Returns the last N session summaries as a single string.
+    Why 3? Enough context without overloading the prompt.
     """
     records = AgentMemory.objects.filter(
         user_id=user_id
     ).order_by('-created_at')[:count]
 
     if not records:
-        return ""
+        return ""  # first time user — no history yet
 
     lines = []
     for i, record in enumerate(reversed(records), 1):

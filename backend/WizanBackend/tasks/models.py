@@ -47,9 +47,15 @@ class AgentMemory(models.Model):
     memory_data = models.JSONField(default=dict)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    summary     = models.TextField()    
+
+    class Meta:
+        ordering = ['created_at']     
 
     def __str__(self):
-        return f"Memory for user {self.user.id} - session {self.session_id}"
+        return f"Memory for user {self.user.id} - session {self.session_id}   {self.created_at.date()}"
+
+       # newest first
 
 
 class TaskStep(models.Model):

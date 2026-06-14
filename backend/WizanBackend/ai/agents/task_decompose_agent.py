@@ -1,7 +1,7 @@
 from ai.llm import get_llm
 from ai.prompt_builder import build_system_prompt
 import json
-
+from ai.llm import safe_llm_call 
 BASE_PROMPT = """
 You are Wizan's Task Decompose Agent.
 Your job is to break down a single task into small manageable steps
@@ -56,11 +56,11 @@ Respond with ONLY the JSON object.
 
     # Step 4 — parse JSON response
     try:
-        raw = response.content.strip()
+        # safe_llm_call returns the raw string content directly
+        raw = safe_llm_call(messages).strip()
         raw = raw.replace("```json", "").replace("```", "").strip()
         result = json.loads(raw)
-    except json.JSONDecodeError:
-        # fallback if AI returns invalid JSON
+    except Exception: # Catches both JSONDecodeError or total LLM failure
         result = {
             "steps": [
                 {"order": 1, "description": f"Start working on: {task_name}"},

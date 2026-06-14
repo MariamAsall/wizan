@@ -11,6 +11,9 @@ from ai.memory_manager import get_session, save_session
 from ai.prompt_builder import build_system_prompt
 from ai.prompt_loader import load_prompt
 
+from ai.llm import safe_llm_call  # Changed import
+
+
 AGENT_NAME = "planning_agent"
 MAX_TURNS = 5
 
@@ -69,7 +72,8 @@ def run_planning_agent(
     # Build the messages list in the format expected by the LLM wrapper
     messages = [{"role": "system", "content": system_prompt}] + history
 
-    reply = ""
+
+    reply = safe_llm_call(messages)
     for _ in range(MAX_TURNS):
         response = llm.invoke(messages)
 
