@@ -23,7 +23,7 @@ class TaskSerializer(serializers.ModelSerializer):
             fields = "__all__"
             read_only_fields = [
                 "user",
-                "status",
+                
                 "postponed_to",
                 "created_at",
             ]

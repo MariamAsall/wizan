@@ -60,23 +60,6 @@
 from ai.models import AgentMemory
 from ai.llm import safe_llm_call    # ← the only new import
 
-# ai/memory_manager.py
-
-_sessions = {}
-
-MAX_MESSAGES = 10
-
-
-def get_session(session_id, user=None):
-    return _sessions.get(session_id, [])
-
-
-def save_session(session_id, messages, user=None):
-    _sessions[session_id] = messages[-MAX_MESSAGES:]
-
-
-def clear_session(session_id, user=None):
-    _sessions.pop(session_id, None)
 
 def save_session_summary(user_id, session_id, conversation_history):
     """
@@ -131,10 +114,55 @@ def load_past_summaries(user_id, count=3):
 
     # First time user — no history yet, return empty string safely
     if not records:
-        return ""  # first time user — no history yet
+        return ""
 
     lines = []
     for i, record in enumerate(reversed(records), 1):
         lines.append(f"Session {i} ({record.created_at.date()}): {record.summary}")
 
     return "\n".join(lines)
+
+
+# ADD to the bottom of ai/memory_manager.py
+# (keep everything above exactly as it is)
+
+import json
+from ai.models import AgentSession   # make sure this model exists in ai/models.py
+
+MAX_MESSAGES = 20  # keep last 20 turns — older ones already summarized
+
+def get_session(session_id: str, user=None) -> list:
+    """
+    Load conversation turns for this session from DB.
+    Why DB instead of RAM? So history survives server restarts.
+    Returns empty list if session doesn't exist yet — safe for first turn.
+    """
+    try:
+        record = AgentSession.objects.get(session_id=session_id)
+        return json.loads(record.history)
+    except AgentSession.DoesNotExist:
+        return []   # first time — no history yet
+
+
+def save_session(session_id: str, history: list, user=None) -> None:
+    """
+    Save updated conversation turns back to DB.
+    Why update_or_create? Because we don't know if this session
+    already exists or is being created for the first time.
+    Why trim to MAX_MESSAGES? To prevent the DB record growing forever.
+    """
+    trimmed = history[-MAX_MESSAGES:]
+    AgentSession.objects.update_or_create(
+        session_id=session_id,
+        defaults={
+            "user_id": user.id if user else None,
+            "history": json.dumps(trimmed)
+        }
+    )
+
+
+def clear_session(session_id: str, user=None) -> None:
+    """
+    Delete session from DB — called on logout or manual reset.
+    """
+    AgentSession.objects.filter(session_id=session_id).delete()
