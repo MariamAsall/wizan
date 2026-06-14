@@ -60,6 +60,23 @@
 from ai.models import AgentMemory
 from ai.llm import safe_llm_call    # ← the only new import
 
+# ai/memory_manager.py
+
+_sessions = {}
+
+MAX_MESSAGES = 10
+
+
+def get_session(session_id, user=None):
+    return _sessions.get(session_id, [])
+
+
+def save_session(session_id, messages, user=None):
+    _sessions[session_id] = messages[-MAX_MESSAGES:]
+
+
+def clear_session(session_id, user=None):
+    _sessions.pop(session_id, None)
 
 def save_session_summary(user_id, session_id, conversation_history):
     """
