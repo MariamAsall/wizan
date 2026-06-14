@@ -40,7 +40,8 @@ def _get_groq():
         raise EnvironmentError("GROQ_API_KEY not found in .env")
 
     return ChatGroq(
-        model="llama-3.3-70b-versatile",  # ✅ UPDATED
+        # REPLACE with:
+        model="llama-3.3-70b-versatile",
         api_key=groq_key,
         temperature=0.3,
         max_tokens=1000,

@@ -138,3 +138,48 @@ def load_past_summaries(user_id, count=3):
         lines.append(f"Session {i} ({record.created_at.date()}): {record.summary}")
 
     return "\n".join(lines)
+
+
+# ADD to the bottom of ai/memory_manager.py
+# (keep everything above exactly as it is)
+
+import json
+from ai.models import AgentSession   # make sure this model exists in ai/models.py
+
+MAX_MESSAGES = 20  # keep last 20 turns — older ones already summarized
+
+def get_session(session_id: str, user=None) -> list:
+    """
+    Load conversation turns for this session from DB.
+    Why DB instead of RAM? So history survives server restarts.
+    Returns empty list if session doesn't exist yet — safe for first turn.
+    """
+    try:
+        record = AgentSession.objects.get(session_id=session_id)
+        return json.loads(record.history)
+    except AgentSession.DoesNotExist:
+        return []   # first time — no history yet
+
+
+def save_session(session_id: str, history: list, user=None) -> None:
+    """
+    Save updated conversation turns back to DB.
+    Why update_or_create? Because we don't know if this session
+    already exists or is being created for the first time.
+    Why trim to MAX_MESSAGES? To prevent the DB record growing forever.
+    """
+    trimmed = history[-MAX_MESSAGES:]
+    AgentSession.objects.update_or_create(
+        session_id=session_id,
+        defaults={
+            "user_id": user.id if user else None,
+            "history": json.dumps(trimmed)
+        }
+    )
+
+
+def clear_session(session_id: str, user=None) -> None:
+    """
+    Delete session from DB — called on logout or manual reset.
+    """
+    AgentSession.objects.filter(session_id=session_id).delete()
