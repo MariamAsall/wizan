@@ -30,13 +30,22 @@
 
 
 # In-memory session store (use Redis in production)
-_sessions = {}
+f# ai/task_regulator_memory.py
 
-def get_session(session_id):
-    return _sessions.get(session_id, [])
+from ai.memory_manager import (
+    get_session  as _db_get_session,
+    save_session as _db_save_session,
+    clear_session as _db_clear_session,
+)
 
-def save_session(session_id, memory):
-    _sessions[session_id] = memory
+# Why aliases with underscore?
+# To avoid the function name colliding with what we define below.
 
-def clear_session(session_id):
-    _sessions.pop(session_id, None)
+def get_session(session_id: str, user=None) -> list:
+    return _db_get_session(session_id, user=user)
+
+def save_session(session_id: str, messages: list, user=None) -> None:
+    _db_save_session(session_id, messages, user=user)
+
+def clear_session(session_id: str, user=None) -> None:
+    _db_clear_session(session_id, user=user)
