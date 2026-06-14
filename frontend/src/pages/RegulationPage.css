@@ -1,0 +1,21 @@
+.status {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.allowed {
+  background: #d4f8d4;
+  color: #1b5e20;
+}
+
+.postponed {
+  background: #ffe0e0;
+  color: #c62828;
+}
+
+.overridden {
+  background: #fff3cd;
+  color: #856404;
+}
