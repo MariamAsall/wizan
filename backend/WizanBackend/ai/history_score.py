@@ -40,3 +40,5 @@ def calculate_history_score(user) -> dict:
         "days_available": days_available,
         "is_first_time":  False,
     }
+
+

@@ -1,3 +1,4 @@
+from datetime import date 
 from rest_framework import serializers
 from .models import Task, TaskLog, AgentMemory, TaskStep
 
@@ -16,7 +17,6 @@ class TaskStepSerializer(serializers.ModelSerializer):
 class TaskSerializer(serializers.ModelSerializer):
     logs = TaskLogSerializer(many=True, read_only=True)
     steps = TaskStepSerializer(many=True, read_only=True)
-
    
     class Meta:
             model = Task
@@ -28,6 +28,10 @@ class TaskSerializer(serializers.ModelSerializer):
                 "created_at",
             ]
 
+    def validate_deadline(self, value):
+        if value and value < date.today():
+            raise serializers.ValidationError("Deadline cannot be in the past.")
+        return value
 
 class TaskOverrideSerializer(serializers.Serializer):
     task_id = serializers.IntegerField()
