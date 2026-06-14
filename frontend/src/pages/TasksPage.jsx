@@ -186,6 +186,13 @@ const regulateTasks = async () => {
 const updateTask = async () => {
   try {
     const token = localStorage.getItem("access_token");
+    const today = new Date().toISOString().split("T")[0];
+
+    if (deadline && deadline < today) {
+    alert("Deadline cannot be in the past");
+    return;
+    }
+
 
     await axios.patch(
       `http://localhost:8000/api/tasks/${editingTask}/`,
@@ -236,6 +243,15 @@ const deleteTask = async (taskId) => {
   } catch (error) {
     console.error(error.response?.data || error);
   }
+};
+const handleOverride = (taskId) => {
+  const confirmed = window.confirm(
+    "⚠️ This task was postponed because your cognitive load may be too high.\n\nIt might be too much for you today and could affect your productivity.\n\nAre you sure you want to continue?"
+  );
+
+  if (!confirmed) return;
+
+  overrideTask(taskId);
 };
 
 
@@ -445,14 +461,12 @@ const deleteTask = async (taskId) => {
                   
                   
 
-                  <button
-                    className="btn-override"
-                    onClick={() =>
-                      overrideTask(task.id)
-                    }
-                  >
-                    Override
-                  </button>
+                 <button
+        className="btn-override"
+        onClick={() => handleOverride(task.id)}
+        >
+        Override
+        </button>
                 </div>
               </div>
             ))}

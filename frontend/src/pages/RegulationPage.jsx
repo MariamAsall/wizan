@@ -72,6 +72,16 @@ const overrideTask = async (taskId) => {
   }
 };
 
+const handleOverride = (taskId) => {
+  const confirmed = window.confirm(
+    "⚠️ This task was postponed because your cognitive load may be too high.\n\nIt might be too much for you today and could affect your productivity.\n\nAre you sure you want to continue?"
+  );
+
+  if (!confirmed) return;
+
+  overrideTask(taskId);
+};
+
 
 
   return (
@@ -130,12 +140,12 @@ const overrideTask = async (taskId) => {
         Postponed
       </span>
 
-      <button
+        <button
         className="btn-override"
-        onClick={() => overrideTask(task.id)}
-      >
+        onClick={() => handleOverride(task.id)}
+        >
         Override
-      </button>
+        </button>
     </div>
   </div>
 ))}
