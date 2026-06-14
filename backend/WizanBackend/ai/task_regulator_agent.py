@@ -1,22 +1,31 @@
-import uuid                                                          # ← NEW
+import uuid
 import google.generativeai as genai
-from .task_regulator_tools import check_score, get_tasks, postpone_task, get_tool_declarations
-from .task_regulator_memory import get_session, save_session
+
+from .task_regulator_tools import (
+    check_score,
+    get_tasks,
+    postpone_task,
+    get_tool_declarations,
+)
 from .task_regulator_limits import apply_limits
 from .prompt_builder import build_system_prompt
 from .total_score import calculate_total_score
-from .memory_manager import save_session_summary, load_past_summaries  # ← NEW
-from google.api_core.exceptions import ResourceExhausted
+from .memory_manager import save_session_summary, load_past_summaries
+from google.api_core.exceptions import ResourceExhausted  # for catching quota errors
+from ai.llm import safe_llm_call  # for fallback when quota is hit
 BASE_PROMPT = """
 You are the Task Regulator Agent for Wizan.
 Your job is to look at the user's cognitive score and their tasks,
 then decide which tasks are allowed today and which should be postponed.
-Always call check_score() first, then get_tasks(), then make your decisions.
+
+Always call check_score() first, then get_tasks(), then make decisions.
+
 Rules:
 - blocked tasks must be postponed, user cannot override them
-- warned tasks should be postponed but user can override if they insist
-- allowed tasks should stay as they are
+- warned tasks should be postponed but user can override
+- allowed tasks remain unchanged
 """
+
 
 TOOLS = {
     "check_score": check_score,
@@ -24,99 +33,165 @@ TOOLS = {
     "postpone_task": postpone_task,
 }
 
-def run_task_regulator(user_id, user_message, session_memory, session_id=None):  # ← NEW: session_id param
 
-    # NEW: generate a session ID if this is a brand new session
+def run_task_regulator(user_id, user_message, session_memory, session_id=None):
+
+    # ---------------------------
+    # Session ID
+    # ---------------------------
     if session_id is None:
         session_id = f"session_{user_id}_{uuid.uuid4().hex[:8]}"
 
-    # Step 1 — calculate score for this user
+    # ---------------------------
+    # Score
+    # ---------------------------
     score_data = calculate_total_score(user_id)
     current_score = score_data.get("total_score", 50)
 
-    # Step 1.5 — load past summaries and inject into prompt  ← NEW BLOCK
+    # ---------------------------
+    # Memory injection
+    # ---------------------------
     past_summaries = load_past_summaries(user_id, count=3)
     system_prompt = build_system_prompt(BASE_PROMPT, score_data, past_summaries)
 
-    # Step 2 — (was build_system_prompt, now handled above with summaries)
-
-    # Step 3 — create the Gemini model with that system prompt
+    # ---------------------------
+    # Gemini model
+    # ---------------------------
     model = genai.GenerativeModel(
-        model_name="gemini-2.0-flash",
+        model_name="gemini-3.5-flash",
         system_instruction=system_prompt,
-        tools=get_tool_declarations()
+        tools=get_tool_declarations(),
     )
 
-    # Step 4 — add user message to memory
+    # ---------------------------
+    # Add user message ONLY
+    # ---------------------------
     session_memory.append({
         "role": "user",
         "parts": [{"text": user_message}]
     })
 
-    # Step 5 — agent loop (unchanged)
-    max_iterations = 5
+    # ---------------------------
+    # Agent loop
+    # ---------------------------
+    max_iterations = 3
+
     for _ in range(max_iterations):
+
+       
+
         try:
-
             response = model.generate_content(session_memory)
-        except ResourceExhausted:
-            # Handle the case where the API limit is exceeded
-            return {
-                "response": "Gemini API quota exceeded. Please try again later.",
-                "memory": session_memory,
-                "session_id": session_id
-            }
 
+        except ResourceExhausted:
+            print("[QUOTA HIT] Switching FULLY to Groq fallback")
+
+            prompt = ""
+
+            for msg in session_memory:
+                role = msg.get("role", "")
+                for part in msg.get("parts", []):
+                    if isinstance(part, dict) and "text" in part:
+                        prompt += f"{role}: {part['text']}\n"
+
+            result = safe_llm_call(prompt)
+
+            return {
+                "response": result,
+                "memory": session_memory,
+                "session_id": session_id,
+            }
         candidate = response.candidates[0]
 
-        tool_calls = [p for p in candidate.content.parts if hasattr(p, 'function_call')]
+        parts = candidate.content.parts or []
 
+        # -----------------------
+        # Extract tool calls safely
+        # -----------------------
+        tool_calls = [
+            p for p in parts
+            if getattr(p, "function_call", None)
+        ]
+
+        # -----------------------
+        # NO TOOL CALLS → FINAL ANSWER
+        # -----------------------
         if not tool_calls:
-            final_text = candidate.content.parts[0].text
+            final_text = ""
+
+            for p in parts:
+                if getattr(p, "text", None):
+                    final_text += p.text
+
             session_memory.append({
                 "role": "model",
                 "parts": [{"text": final_text}]
             })
 
-            # NEW: save this session's summary to DB before returning
             save_session_summary(user_id, session_id, session_memory)
 
             return {
-                "response":   final_text,
-                "memory":     session_memory,
-                "session_id": session_id        # ← NEW: return it so view can store it
+                "response": final_text,
+                "memory": session_memory,
+                "session_id": session_id,
             }
 
+        # -----------------------
+        # TOOL EXECUTION
+        # -----------------------
         tool_results = []
+
         for tc in tool_calls:
+
             fn_name = tc.function_call.name
-            fn_args = dict(tc.function_call.args)
+            fn_args = dict(tc.function_call.args or {})
             fn_args["user_id"] = str(user_id)
+
+            if fn_name not in TOOLS:
+                continue
 
             result = TOOLS[fn_name](**fn_args)
 
+            # apply cognitive limits
             if fn_name == "get_tasks":
-                tagged_tasks, limit_message = apply_limits(result, current_score)
+                tagged_tasks, limit_message = apply_limits(
+                    result,
+                    current_score
+                )
                 result = {
                     "tasks": tagged_tasks,
-                    "limit_message": limit_message
+                    "limit_message": limit_message,
                 }
 
             tool_results.append({
                 "function_response": {
                     "name": fn_name,
-                    "response": result
+                    "response": result,
                 }
             })
 
-        session_memory.append({"role": "model", "parts": tool_calls})
-        session_memory.append({"role": "user", "parts": tool_results})
+        # -----------------------
+        # Safe memory update (IMPORTANT)
+        # -----------------------
+        session_memory.append({
+            "role": "model",
+            "parts": [{
+                "text": "[TOOL CALL EXECUTED]"
+            }]
+        })
 
-    # NEW: also save if we hit max iterations without finishing
+        session_memory.append({
+            "role": "user",
+            "parts": tool_results
+        })
+
+    # ---------------------------
+    # Fallback if loop fails
+    # ---------------------------
     save_session_summary(user_id, session_id, session_memory)
 
     return {
-        "response":   "Could not complete task regulation.",
-        "memory":     session_memory,
-        "session_id": session_id                # ← NEW
+        "response": "Could not complete task regulation.",
+        "memory": session_memory,
+        "session_id": session_id,
     }

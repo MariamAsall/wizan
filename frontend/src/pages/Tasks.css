@@ -166,3 +166,18 @@
   bg-emerald-600 text-white
   hover:bg-emerald-700;
 }
+
+.plan-card.calm {
+  background: #eef7ee;
+  border: 1px solid #b7d8b7;
+}
+
+.plan-card.focused {
+  background: #eef3ff;
+  border: 1px solid #8ea7ff;
+}
+
+.plan-card.urgent {
+  background: #fff0f0;
+  border: 1px solid #ff9b9b;
+}

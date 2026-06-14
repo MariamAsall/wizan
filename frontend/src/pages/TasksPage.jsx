@@ -18,6 +18,9 @@ const [editName, setEditName] = useState("");
 const [editPriority, setEditPriority] = useState("medium");
 const [editDeadline, setEditDeadline] = useState("");
 
+const [agentResponse, setAgentResponse] = useState("");
+
+const [plan, setPlan] = useState(null);
 
 
 
@@ -143,6 +146,7 @@ console.log("OVERRIDE CLICKED", taskId);
     try {
       const token = localStorage.getItem("access_token");
 
+
 const res = await axios.post(
   "http://localhost:8000/api/tasks/regulate/",
   {
@@ -155,7 +159,8 @@ const res = await axios.post(
           },
         }
       );
-
+setAgentResponse(res.data.response);
+      setPlan(res.data.plan);
       console.log(res.data);
       if (res.data.session_id) {
   setSessionId(res.data.session_id);
@@ -302,17 +307,17 @@ const deleteTask = async (taskId) => {
                 {task.priority}
               </span>
 
-<button
-  className="btn-edit"
-  onClick={() => {
-    setEditingTask(task.id);
-    setEditName(task.name);
-    setEditPriority(task.priority);
-    setEditDeadline(task.deadline || "");
-  }}
->
-  Edit
-</button>
+                <button
+                  className="btn-edit"
+                  onClick={() => {
+                    setEditingTask(task.id);
+                    setEditName(task.name);
+                    setEditPriority(task.priority);
+                    setEditDeadline(task.deadline || "");
+                  }}
+                >
+                  Edit
+                </button>
 
 
               <button
@@ -324,10 +329,10 @@ const deleteTask = async (taskId) => {
             </div>
             
                 {task.deadline && (
-      <div className="task-deadline">
-        📅 {task.deadline}
-      </div>
-    )}
+                  <div className="task-deadline">
+                    📅 {task.deadline}
+                  </div>
+                )}
 
 
 
@@ -383,6 +388,31 @@ const deleteTask = async (taskId) => {
     </div>
   </div>
 )}
+
+{agentResponse && (
+  <div className="agent-response">
+    {agentResponse}
+  </div>
+)}
+{plan && (
+  <div className={`plan-card ${plan.tone}`}>
+    <h3>Today's Plan</h3>
+
+    <p>
+      ⏱ Estimated Time:
+      {plan.estimated_time} min
+    </p>
+
+    {plan.steps.map((step, index) => (
+      <label key={index} className="check-item">
+        <input type="checkbox" />
+        {step}
+      </label>
+    ))}
+  </div>
+)}
+
+
         {postponed.length > 0 && (
           <>
             <div className="task-section-divider mt-6 mb-3">
@@ -426,6 +456,7 @@ const deleteTask = async (taskId) => {
           </>
         )}
       </div>
+      
     </div>
   );
 }
