@@ -10,6 +10,8 @@ import RegisterPage  from "./pages/RegisterPage"
 import QuizPage from "./pages/QuizPage";
 import DashboardPage from "./pages/DashboardPage";
 import TasksPage from "./pages/TasksPage";
+import RegulationPage from "./pages/RegulationPage";
+
 import ChatPage from "./pages/ChatPage";
 import QuizResultPage from './pages/QuizResultPage';
 
@@ -38,6 +40,7 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/tasks"     element={<TasksPage />} />
           <Route path="/chat"      element={<ChatPage />} />
+          <Route path="/regulation" element={<RegulationPage />} />
         </Route>
 
         <Route path="/" element={<Navigate to="/login" />} />

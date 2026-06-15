@@ -42,17 +42,3 @@ def calculate_history_score(user) -> dict:
     }
 
 
-#test
-# at the bottom of history_score.py
-if __name__ == "__main__":
-    # test with fake data — no DB needed
-    print("Testing with 3 days of history...")
-    
-    # simulate what the function returns for a new user
-    result = {
-        "history_score": None,
-        "days_available": 0,
-        "is_first_time": True,
-    }
-    print("First time user:", result)
-    print("✅ history_score.py works")
