@@ -18,13 +18,15 @@ def get_zone(score):
 def get_tasks(user_id):
     try:
         from tasks.models import Task
-        tasks = Task.objects.filter(user_id=user_id, status="pending")
+        tasks = Task.objects.filter(
+            user_id=user_id,
+            status__in=["pending", "allowed"]  # 👈 fix this
+        )
         return [
             {
                 "id": str(t.id),
                 "name": t.name,
                 "priority": t.priority,
-                "cognitive_cost": t.cognitive_cost,
                 "deadline": str(t.deadline) if t.deadline else None,
             }
             for t in tasks
