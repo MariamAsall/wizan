@@ -10,64 +10,7 @@ from tasks.models import AgentMemory
 MAX_MESSAGES = 10  # how many messages to load on agent startup
 
 
-
-from tasks.models import AgentMemory
-
-
-def save_session_summary(user_id, session_id, session_memory):
-    """
-    Store a compact summary of the session.
-    """
-
-    summary_parts = []
-
-    for msg in session_memory[-10:]:
-        role = msg.get("role")
-
-        for part in msg.get("parts", []):
-            if isinstance(part, dict) and "text" in part:
-                summary_parts.append(
-                    f"{role}: {part['text']}"
-                )
-
-    summary_text = "\n".join(summary_parts)
-
-    memory, _ = AgentMemory.objects.get_or_create(
-        user_id=user_id,
-        session_id=session_id,
-        defaults={
-            "memory_data": {}
-        }
-    )
-
-    memory.memory_data["summary"] = summary_text
-    memory.save(update_fields=["memory_data", "updated_at"])
-
-
-def load_past_summaries(user_id, count=3):
-    """
-    Load summaries from recent sessions.
-    """
-
-    records = (
-        AgentMemory.objects
-        .filter(user_id=user_id)
-        .order_by("-updated_at")[:count]
-    )
-
-    summaries = []
-
-    for record in records:
-        summary = record.memory_data.get("summary")
-
-        if summary:
-            summaries.append(summary)
-
-    return summaries
-
-
 # ── read ──────────────────────────────────────────────────────────────────────
-
 
 def get_session(session_id: str, user=None) -> list[dict]:
     """
