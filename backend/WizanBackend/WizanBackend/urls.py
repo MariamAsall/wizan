@@ -9,6 +9,7 @@ urlpatterns = [
     path('api/quiz/', include('quiz.urls')),
 
     path('api/',include('cognitive_logs.urls')),
+    path('api/voice/', include('voice.urls')),
 
     path('api/', include('tasks.urls')),
 
