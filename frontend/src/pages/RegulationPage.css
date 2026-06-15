@@ -19,3 +19,89 @@
   background: #fff3cd;
   color: #856404;
 }
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 1000;
+}
+
+.override-modal {
+  width: 450px;
+  max-width: 90%;
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  text-align: center;
+
+  box-shadow:
+    0 20px 40px rgba(0,0,0,0.2);
+
+  animation: popIn 0.25s ease;
+}
+
+.warning-icon {
+  font-size: 50px;
+  margin-bottom: 15px;
+}
+
+.override-modal h2 {
+  margin-bottom: 20px;
+}
+
+.override-modal p {
+  color: #555;
+  line-height: 1.6;
+}
+
+.warning-text {
+  margin-top: 12px;
+  font-weight: 600;
+  color: #d97706;
+}
+
+.modal-buttons {
+  margin-top: 30px;
+
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.btn-cancel {
+  padding: 10px 22px;
+  border: none;
+  border-radius: 10px;
+  background: #e5e7eb;
+  cursor: pointer;
+}
+
+.btn-confirm {
+  padding: 10px 22px;
+  border: none;
+  border-radius: 10px;
+  background: #f59e0b;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn-confirm:hover {
+  background: #d97706;
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

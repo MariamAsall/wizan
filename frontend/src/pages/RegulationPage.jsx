@@ -2,12 +2,22 @@ import { useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "./RegulationPage.css";
+import { useNavigate } from "react-router-dom";
 
 export default function RegulationPage() {
   const { state } = useLocation();
 
+const navigate = useNavigate();
+
   const [allowed, setAllowed] = useState([]);
   const [postponed, setPostponed] = useState([]);
+
+  const [showOverrideModal, setShowOverrideModal] =
+  useState(false);
+
+const [selectedTaskId, setSelectedTaskId] =
+  useState(null);
+
 
   useEffect(() => {
     fetchTasks();
@@ -42,14 +52,23 @@ export default function RegulationPage() {
     );
   };
 
-const overrideTask = async (taskId) => {
+
+
+const handleOverrideClick = (taskId) => {
+  setSelectedTaskId(taskId);
+  setShowOverrideModal(true);
+};
+const confirmOverride = async () => {
+  if (!selectedTaskId) return;
+
   try {
-    const token = localStorage.getItem("access_token");
+    const token =
+      localStorage.getItem("access_token");
 
     await axios.post(
       "http://localhost:8000/api/tasks/override/",
       {
-        task_id: taskId,
+        task_id: selectedTaskId,
         reason: "User decided to proceed",
       },
       {
@@ -59,29 +78,22 @@ const overrideTask = async (taskId) => {
       }
     );
 
+    setShowOverrideModal(false);
+    setSelectedTaskId(null);
+
     fetchTasks();
   } catch (error) {
-    console.error(
-      error.response?.data || error
-    );
+  console.error(error.response?.data || error);
 
-    alert(
-      error.response?.data?.error ||
-      "Override failed"
-    );
-  }
-};
+  setShowOverrideModal(false);
+  setSelectedTaskId(null);
 
-const handleOverride = (taskId) => {
-  const confirmed = window.confirm(
-    "⚠️ This task was postponed because your cognitive load may be too high.\n\nIt might be too much for you today and could affect your productivity.\n\nAre you sure you want to continue?"
+  alert(
+    error.response?.data?.error ||
+    "Override failed"
   );
-
-  if (!confirmed) return;
-
-  overrideTask(taskId);
+}
 };
-
 
 
   return (
@@ -140,15 +152,73 @@ const handleOverride = (taskId) => {
         Postponed
       </span>
 
-        <button
-        className="btn-override"
-        onClick={() => handleOverride(task.id)}
-        >
-        Override
-        </button>
+<button
+  className="btn-override"
+  onClick={() =>
+    handleOverrideClick(task.id)
+  }
+>
+  Override
+</button>
     </div>
+    
   </div>
 ))}
+{showOverrideModal && (
+  <div  className="modal-overlay"
+  onClick={() => {
+    setShowOverrideModal(false);
+    setSelectedTaskId(null);
+  }}>
+   <div
+  className="override-modal"
+  onClick={(e) => e.stopPropagation()}
+>
+
+      <div className="warning-icon">
+        ⚠️
+      </div>
+
+      <h2>Override Recommendation?</h2>
+
+      <p>
+        This task was postponed because your
+        cognitive load may be high.
+      </p>
+
+     <p className="warning-text">
+  Your cognitive load is already high today.
+  Completing this task may be more difficult than usual.
+  Are you sure you want to continue?
+</p>
+      <div className="modal-buttons">
+        <button
+          className="btn-cancel"
+          onClick={() => {
+            setShowOverrideModal(false);
+            setSelectedTaskId(null);
+          }}
+        >
+          Cancel
+        </button>
+
+        <button
+          className="btn-confirm"
+          onClick={confirmOverride}
+        >
+          Override Anyway
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+<button
+  className="btn-back"
+  onClick={() => navigate("/tasks")}
+>
+  ← Back to Tasks
+</button>
     </div>
   );
 }
