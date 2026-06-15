@@ -33,12 +33,12 @@ def _get_gemini():
     )
 
 def _get_groq():
+    # Why Groq? Free, fast, generous quota — perfect backup
+    # Get key at: console.groq.com (2 minutes, free)
     from langchain_groq import ChatGroq
     groq_key = os.getenv("GROQ_API_KEY")
-
     if not groq_key:
         raise EnvironmentError("GROQ_API_KEY not found in .env")
-
     return ChatGroq(
         # REPLACE with:
         model="llama-3.3-70b-versatile",

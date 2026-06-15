@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import "./Tasks.css";
 
+import { useNavigate } from "react-router-dom";
+
+
 export default function TasksPage() {
   const [input, setInput] = useState("");
   const [priority, setPriority] = useState("medium");
@@ -22,6 +25,7 @@ const [agentResponse, setAgentResponse] = useState("");
 
 const [plan, setPlan] = useState(null);
 
+const navigate = useNavigate();
 
 
   useEffect(() => {
@@ -141,48 +145,54 @@ console.log("OVERRIDE CLICKED", taskId);
     );
   }
 };
+const regulateTasks = async () => {
+  try {
+    const token = localStorage.getItem("access_token");
 
-  const regulateTasks = async () => {
-    try {
-      const token = localStorage.getItem("access_token");
+    const res = await axios.post(
+      "http://localhost:8000/api/tasks/regulate/",
+      {
+        message: "Show me what I can do today",
+        session_id: sessionId,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
-
-const res = await axios.post(
-  "http://localhost:8000/api/tasks/regulate/",
-  {
-    message: "Show me what I can do today",
-    session_id: sessionId,
-  },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-setAgentResponse(res.data.response);
-      setPlan(res.data.plan);
-      console.log(res.data);
-      if (res.data.session_id) {
-  setSessionId(res.data.session_id);
-
-  localStorage.setItem(
-    "task_session_id",
-    res.data.session_id
-  );
-}
-
-      fetchTasks();
-    } catch (error) {
-      console.error(
-        "Regulate Error:",
-        error.response?.data || error
+    if (res.data.session_id) {
+      localStorage.setItem(
+        "task_session_id",
+        res.data.session_id
       );
     }
-  };
+
+    navigate("/regulation", {
+      state: {
+        message: res.data.response,
+        plan: res.data.plan,
+      },
+    });
+
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+
 
 const updateTask = async () => {
   try {
     const token = localStorage.getItem("access_token");
+    const today = new Date().toISOString().split("T")[0];
+
+    if (deadline && deadline < today) {
+    alert("Deadline cannot be in the past");
+    return;
+    }
+
 
     await axios.patch(
       `http://localhost:8000/api/tasks/${editingTask}/`,
@@ -233,6 +243,15 @@ const deleteTask = async (taskId) => {
   } catch (error) {
     console.error(error.response?.data || error);
   }
+};
+const handleOverride = (taskId) => {
+  const confirmed = window.confirm(
+    "⚠️ This task was postponed because your cognitive load may be too high.\n\nIt might be too much for you today and could affect your productivity.\n\nAre you sure you want to continue?"
+  );
+
+  if (!confirmed) return;
+
+  overrideTask(taskId);
 };
 
 
@@ -442,14 +461,12 @@ const deleteTask = async (taskId) => {
                   
                   
 
-                  <button
-                    className="btn-override"
-                    onClick={() =>
-                      overrideTask(task.id)
-                    }
-                  >
-                    Override
-                  </button>
+                 <button
+        className="btn-override"
+        onClick={() => handleOverride(task.id)}
+        >
+        Override
+        </button>
                 </div>
               </div>
             ))}
