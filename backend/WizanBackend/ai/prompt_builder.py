@@ -72,17 +72,7 @@ If the user has been struggling for multiple sessions, be extra gentle.
     return base_prompt + memory_section + injection
 
 
-if __name__ == "__main__":
-    fake_score_data = {
-        "final_score":   25,
-        "zone":          "high_load",
-        "tone":          "gentle",
-        "allowed_tasks": 1,
-        "label":         "High Cognitive Load",
-        "is_first_time": False,
-    }
-    base = "You are the Wizan Planning Agent. Help break tasks into steps."
-    print(build_system_prompt(base, fake_score_data))
+
 
 
     #test

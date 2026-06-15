@@ -1,69 +1,139 @@
+# from ai.models import AgentMemory
+
+# def save_session_summary(user_id, session_id, conversation_history):
+#     """
+#     Called at the END of every session.
+#     Sends the conversation to Gemini, gets a summary, saves to DB.
+#     """
+#     import google.generativeai as genai
+
+#     # Build a readable transcript from the history list
+#     transcript = ""
+#     for turn in conversation_history:
+#         role = turn["role"]
+#         for part in turn["parts"]:
+#             if isinstance(part, dict) and "text" in part:
+#                 transcript += f"{role}: {part['text']}\n"
+
+#     if not transcript.strip():
+#         return  # nothing to summarize
+
+#     model = genai.GenerativeModel("gemini-2.0-flash")
+#     prompt = f"""
+# Summarize this conversation in 2-3 lines maximum.
+# Focus on: what tasks were allowed, what was postponed, and how the user felt.
+# Be factual and brief.
+
+# Conversation:
+# {transcript}
+# """
+#     response = model.generate_content(prompt)
+#     summary_text = response.text.strip()
+
+#     AgentMemory.objects.create(
+#         user_id=user_id,
+#         session_id=session_id,
+#         summary=summary_text
+#     )
+
+
+# def load_past_summaries(user_id, count=3):
+#     """
+#     Called at the START of every session.
+#     Returns the last N session summaries as a single string.
+#     """
+#     records = AgentMemory.objects.filter(
+#         user_id=user_id
+#     ).order_by('-created_at')[:count]
+
+#     if not records:
+#         return ""
+
+#     lines = []
+#     for i, record in enumerate(reversed(records), 1):
+#         lines.append(f"Session {i} ({record.created_at.date()}): {record.summary}")
+
+#     return "\n".join(lines)
+
+# ai/memory_manager.py
+
+from ai.models import AgentMemory
+from ai.llm import safe_llm_call    # ← the only new import
+
+# ai/memory_manager.py
+
+_sessions = {}
+
+MAX_MESSAGES = 10
+
+
+def get_session(session_id, user=None):
+    return _sessions.get(session_id, [])
+
+
+def save_session(session_id, messages, user=None):
+    _sessions[session_id] = messages[-MAX_MESSAGES:]
+
+
+def clear_session(session_id, user=None):
+    _sessions.pop(session_id, None)
+
+def save_session_summary(user_id, session_id, conversation_history):
+    """
+    Called at the END of every session.
+    Why? So the next session the agent remembers what happened before.
+    """
+
+    # Step 1 — build a readable transcript from the conversation history
+    # Why? Because Gemini needs plain text, not a Python list of dicts
+    transcript = ""
+    for turn in conversation_history:
+        role = turn["role"]
+        for part in turn["parts"]:
+            if isinstance(part, dict) and "text" in part:
+                transcript += f"{role}: {part['text']}\n"
+
+    # Step 2 — if the session had no text at all, skip silently
+    if not transcript.strip():
+        return
+
+    # Step 3 — ask the LLM to summarize
+    # Why safe_llm_call instead of genai directly?
+    # Because safe_llm_call tries Gemini first, and if quota is hit
+    # it automatically switches to Groq — no crash, no lost summary
+    prompt = f"""
+Summarize this conversation in 2-3 lines maximum.
+Focus on: what tasks were allowed, what was postponed, and how the user felt.
+Be factual and brief.
+
+Conversation:
+{transcript}
 """
-memory_manager.py  –  DB-backed session memory using AgentMemory model.
-Replaces the in-memory dict so sessions survive server restarts.
-Stored format inside memory_data:
-    { "messages": [ {"role": "user"|"model", "content": "..."}, ... ] }
-"""
+    summary_text = safe_llm_call(prompt)    # ← was: model.generate_content(prompt)
 
-from tasks.models import AgentMemory
+    # Step 4 — save to DB
+    AgentMemory.objects.create(
+        user_id=user_id,
+        session_id=session_id,
+        summary=summary_text.strip()
+    )
 
-MAX_MESSAGES = 10  # how many messages to load on agent startup
 
-
-# ── read ──────────────────────────────────────────────────────────────────────
-
-def get_session(session_id: str, user=None) -> list[dict]:
+def load_past_summaries(user_id, count=3):
     """
-    Return the last MAX_MESSAGES messages for this session.
-    If user is provided it is used to scope the lookup (recommended).
-    Returns an empty list when no history exists.
+    Called at the START of every session.
+    Returns the last N summaries as one string injected into the system prompt.
+    Why 3? Enough history for the agent to notice patterns without overloading the prompt.
     """
-    qs = AgentMemory.objects.filter(session_id=session_id)
-    if user is not None:
-        qs = qs.filter(user=user)
+    records = AgentMemory.objects.filter(
+        user_id=user_id
+    ).order_by('-created_at')[:count]
 
-    record = qs.first()
-    if record is None:
-        return []
+    if not records:
+        return ""
 
-    messages = record.memory_data.get("messages", [])
-    return messages[-MAX_MESSAGES:]          # load only the last N messages
+    lines = []
+    for i, record in enumerate(reversed(records), 1):
+        lines.append(f"Session {i} ({record.created_at.date()}): {record.summary}")
 
-
-# ── write ─────────────────────────────────────────────────────────────────────
-
-def save_session(session_id: str, messages: list[dict], user=None) -> None:
-    """
-    Persist the full message list for this session.
-    Creates a new record or updates the existing one (upsert).
-    user is required to create a new record; ignored on update when not provided.
-    """
-    qs = AgentMemory.objects.filter(session_id=session_id)
-    if user is not None:
-        qs = qs.filter(user=user)
-
-    record = qs.first()
-
-    if record is not None:
-        record.memory_data = {"messages": messages}
-        record.save(update_fields=["memory_data", "updated_at"])
-    else:
-        if user is None:
-            raise ValueError(
-                "user is required when creating a new AgentMemory record"
-            )
-        AgentMemory.objects.create(
-            session_id=session_id,
-            user=user,
-            memory_data={"messages": messages},
-        )
-
-
-# ── delete ────────────────────────────────────────────────────────────────────
-
-def clear_session(session_id: str, user=None) -> None:
-    """Delete the session record entirely."""
-    qs = AgentMemory.objects.filter(session_id=session_id)
-    if user is not None:
-        qs = qs.filter(user=user)
-    qs.delete()
+    return "\n".join(lines)
