@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'cognitive_logs',
     'ai',
     'tasks',
+    'voice_logs',
 
     #SIMPLE_JWT
     'rest_framework',
