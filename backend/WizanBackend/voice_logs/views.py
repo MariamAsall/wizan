@@ -1,22 +1,24 @@
 import uuid
-
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
 
+# استيراد النماذج والـ Serializers
 from cognitive_logs.models import CognitiveLog
 from ai.agents.planning_agent import run_planning_agent
 from .models import VoiceLog
 from .serializers import VoiceInputSerializer, VoiceLogSerializer
+
+# حل مشكلة التضارب: استيراد خدمة التفريغ الصوتي باسم مستعار واضح
+from .services import transcribe_audio as transcribe_audio_service
 
 
 def _get_score_data_for_user(user):
     """
     Fetch the latest cognitive score for this user and shape it into the
     score_data dict that run_planning_agent expects.
-
-    Falls back to safe defaults if the user hasn't taken a quiz yet today.
     """
     latest_log = (
         CognitiveLog.objects
@@ -26,7 +28,6 @@ def _get_score_data_for_user(user):
     )
 
     if not latest_log or not latest_log.final_score:
-        # No score yet — use neutral defaults so the agent still responds.
         return {
             "final_score":   50,
             "score":         50,
@@ -58,20 +59,67 @@ def _get_score_data_for_user(user):
     }
 
 
+@api_view(["POST"])
+@permission_classes([IsAuthenticated]) # تأمين الـ STT أيضاً لربطه بالمستخدم مستقبلاً إن لزم الأمر
+def transcribe_audio_api(request): # تغيير اسم الدالة لمنع التعارض تماماً
+    """
+    POST /api/voice/transcribe/
+    المرحلة الأولى: استقبال ملف الصوت وتفريغه إلى نص فقط دون معالجة العميل الذكي.
+    """
+    try:
+        audio_file = request.FILES.get("audio")
+        if not audio_file:
+            return Response(
+                {"success": False, "error": "Audio file is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        if audio_file.size == 0:
+            return Response(
+                {"success": False, "error": "Audio file is empty."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        allowed_types = [
+            "audio/webm", "audio/wav", "audio/mpeg",
+            "audio/mp3", "audio/x-wav", "audio/mp4"
+        ]
+        if audio_file.content_type not in allowed_types:
+            return Response(
+                {"success": False, "error": f"Unsupported format: {audio_file.content_type}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # استدعاء الخدمة المستوردة باسمها الجديد لمنع الـ Loop اللانهائي
+        transcript = transcribe_audio_service(audio_file)
+        
+        if not transcript:
+            return Response(
+                {"success": False, "error": "No speech detected."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+            
+        return Response({
+            "success": True,
+            "transcript": transcript
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        print("Transcription Error:", str(e))
+        return Response(
+            {"success": False, "error": str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+
 class VoicePlanView(APIView):
     """
     POST /api/voice/plan/
-
-    Step 1 — receive the transcribed text from  STT function.
-    Step 2 — route the text directly to the Planning Agent 
-    Step 3 — return the agent's daily plan text to frontend pipeline.
-
-    No audio is ever read, stored, or passed anywhere in this view.
+    المرحلة الثانية: استقبال النص الجاهز، تمريره للـ Agent، وحفظ السجل.
     """
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        # ── Validate input ────────────────────────────────────────────────────
         serializer = VoiceInputSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -80,13 +128,8 @@ class VoicePlanView(APIView):
         session_id       = serializer.validated_data.get("session_id") or \
                            f"voice_{request.user.id}_{uuid.uuid4().hex[:8]}"
 
-        # ── Get the user's current cognitive score ────────────────────────────
         score_data = _get_score_data_for_user(request.user)
 
-        # ── Step 2: Route text straight to the Planning Agent ─────────────────
-        # This is the Arabic requirement:
-        #   text  directly to the Planning Agent
-        # run_planning_agent accepts (user_message, score_data, user, session_id)
         try:
             agent_reply = run_planning_agent(
                 user_message=transcribed_text,
@@ -101,7 +144,6 @@ class VoicePlanView(APIView):
             log_status  = "partial"
             error_msg   = str(exc)
 
-        # ── Log the interaction (metadata only, no audio) ─────────────────────
         voice_log = VoiceLog.objects.create(
             user             = request.user,
             transcribed_text = transcribed_text,
@@ -122,14 +164,11 @@ class VoicePlanView(APIView):
                 status=status.HTTP_502_BAD_GATEWAY,
             )
 
-        # ── Step 3: Return the plan to frontend pipeline ────────────
-        # Payload shape is deliberately simple so Mohamed can consume it
-        # without any transformation: just read `plan` and render it.
         return Response(
             {
-                "plan":         agent_reply,       # ← the daily plan text
-                "session_id":   session_id,        # ← send back so frontend can continue the conversation
-                "voice_log_id": voice_log.id,      # ← for debugging / audit trail
+                "plan":         agent_reply,
+                "session_id":   session_id,
+                "voice_log_id": voice_log.id,
                 "score_context": {
                     "final_score":   score_data["final_score"],
                     "zone":          score_data["zone"],
@@ -143,9 +182,6 @@ class VoicePlanView(APIView):
 class VoiceLogListView(APIView):
     """
     GET /api/voice/logs/
-
-    Returns the last 20 voice interactions for the current user.
-    Read-only — for the frontend history panel or debugging.
     """
     permission_classes = [IsAuthenticated]
 
