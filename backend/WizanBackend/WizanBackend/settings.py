@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'ai',
     'tasks',
     'voice',
+    'voice_logs',
 
     #SIMPLE_JWT
     'rest_framework',

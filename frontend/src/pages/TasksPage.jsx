@@ -12,18 +12,16 @@ export default function TasksPage() {
 
   const [allowed, setAllowed] = useState([]);
   const [postponed, setPostponed] = useState([]);
-
-  const [sessionId, setSessionId] = useState(
-  localStorage.getItem("task_session_id"));
+  const [sessionId] = useState(
+    localStorage.getItem("task_session_id")
+  );
 
   const [editingTask, setEditingTask] = useState(null);
 const [editName, setEditName] = useState("");
 const [editPriority, setEditPriority] = useState("medium");
 const [editDeadline, setEditDeadline] = useState("");
 
-const [agentResponse, setAgentResponse] = useState("");
 
-const [plan, setPlan] = useState(null);
 
 const navigate = useNavigate();
 
@@ -352,9 +350,6 @@ const handleOverride = (taskId) => {
                     📅 {task.deadline}
                   </div>
                 )}
-
-
-
           </div>
 
           
@@ -408,28 +403,7 @@ const handleOverride = (taskId) => {
   </div>
 )}
 
-{agentResponse && (
-  <div className="agent-response">
-    {agentResponse}
-  </div>
-)}
-{plan && (
-  <div className={`plan-card ${plan.tone}`}>
-    <h3>Today's Plan</h3>
 
-    <p>
-      ⏱ Estimated Time:
-      {plan.estimated_time} min
-    </p>
-
-    {plan.steps.map((step, index) => (
-      <label key={index} className="check-item">
-        <input type="checkbox" />
-        {step}
-      </label>
-    ))}
-  </div>
-)}
 
 
         {postponed.length > 0 && (
