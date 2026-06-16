@@ -11,5 +11,7 @@ urlpatterns = [
     path('api/',include('cognitive_logs.urls')),
 
     path('api/', include('tasks.urls')),
+    
+    path('api/voice/', include('voice_logs.urls')),
 
 ]

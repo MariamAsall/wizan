@@ -20,8 +20,7 @@ class Task(models.Model):
     name = models.CharField(max_length=255)
     priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='medium')
     deadline = models.DateField(null=True, blank=True)
-    cognitive_cost = models.IntegerField(default=50)
-    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='allowed')
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='pending')
     source = models.CharField(max_length=20,default='user_added')
     postponed_to = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -47,9 +46,15 @@ class AgentMemory(models.Model):
     memory_data = models.JSONField(default=dict)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    summary     = models.TextField()    
+
+    class Meta:
+        ordering = ['created_at']     
 
     def __str__(self):
-        return f"Memory for user {self.user.id} - session {self.session_id}"
+        return f"Memory for user {self.user.id} - session {self.session_id}   {self.created_at.date()}"
+
+       # newest first
 
 
 class TaskStep(models.Model):

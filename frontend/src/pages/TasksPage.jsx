@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import "./Tasks.css";
 
+import { useNavigate } from "react-router-dom";
+
+
 export default function TasksPage() {
   const [input, setInput] = useState("");
   const [priority, setPriority] = useState("medium");
@@ -9,6 +12,19 @@ export default function TasksPage() {
 
   const [allowed, setAllowed] = useState([]);
   const [postponed, setPostponed] = useState([]);
+  const [sessionId] = useState(
+    localStorage.getItem("task_session_id")
+  );
+
+  const [editingTask, setEditingTask] = useState(null);
+const [editName, setEditName] = useState("");
+const [editPriority, setEditPriority] = useState("medium");
+const [editDeadline, setEditDeadline] = useState("");
+
+
+
+const navigate = useNavigate();
+
 
   useEffect(() => {
     fetchTasks();
@@ -28,6 +44,7 @@ export default function TasksPage() {
       );
 
       const tasks = res.data;
+     
 
       setAllowed(
         tasks.filter(
@@ -46,8 +63,20 @@ export default function TasksPage() {
     }
   };
 
+    const today = new Date().toISOString().split("T")[0];
+
+
   const addTask = async () => {
     if (!input.trim()) return;
+
+
+    const today = new Date().toISOString().split("T")[0];
+
+    if (deadline && deadline < today) {
+    alert("Deadline cannot be in the past");
+    return;
+    }
+
 
     try {
       const token = localStorage.getItem("access_token");
@@ -79,65 +108,122 @@ export default function TasksPage() {
     }
   };
 
-  const overrideTask = async (taskId) => {
-    try {
-      const token = localStorage.getItem("access_token");
 
-      await axios.post(
-        "http://localhost:8000/api/tasks/",
-        {
-          task_id: taskId,
-          reason: "User decided to proceed",
+
+
+const overrideTask = async (taskId) => {
+  try {
+    const token = localStorage.getItem("access_token");
+console.log("OVERRIDE CLICKED", taskId);
+    const res = await axios.post(
+      "http://localhost:8000/api/tasks/override/",
+      {
+        task_id: taskId,
+        reason: "User decided to proceed",
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      }
+    );
 
-      fetchTasks();
-    } catch (error) {
-      console.error(
-        "Override Error:",
-        error.response?.data || error
-      );
+    console.log(res.data);
 
-      alert(
-        error.response?.data?.error ||
-          "Override failed"
+    fetchTasks();
+  } catch (error) {
+    console.error(
+      "Override Error:",
+      error.response?.data || error
+    );
+
+    alert(
+      error.response?.data?.error ||
+      "Override failed"
+    );
+  }
+};
+const regulateTasks = async () => {
+  try {
+    const token = localStorage.getItem("access_token");
+
+    const res = await axios.post(
+      "http://localhost:8000/api/tasks/regulate/",
+      {
+        message: "Show me what I can do today",
+        session_id: sessionId,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (res.data.session_id) {
+      localStorage.setItem(
+        "task_session_id",
+        res.data.session_id
       );
     }
-  };
 
-  const regulateTasks = async () => {
-    try {
-      const token = localStorage.getItem("access_token");
+    navigate("/regulation", {
+      state: {
+        message: res.data.response,
+        plan: res.data.plan,
+      },
+    });
 
-      const res = await axios.post(
-        "http://localhost:8000/api/tasks/",
-        {
-          message: "Show me what I can do today",
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+  } catch (error) {
+    console.error(error);
+  }
+};
 
-      console.log(res.data);
 
-      fetchTasks();
-    } catch (error) {
-      console.error(
-        "Regulate Error:",
-        error.response?.data || error
-      );
+
+const updateTask = async () => {
+  try {
+    const token = localStorage.getItem("access_token");
+    const today = new Date().toISOString().split("T")[0];
+
+    if (deadline && deadline < today) {
+    alert("Deadline cannot be in the past");
+    return;
     }
-  };
 
-  const deleteTask = async (taskId) => {
+
+    await axios.patch(
+      `http://localhost:8000/api/tasks/${editingTask}/`,
+      {
+        name: editName,
+        priority: editPriority,
+        deadline: editDeadline || null,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    setEditingTask(null);
+    fetchTasks();
+  } catch (error) {
+    console.error(error.response?.data || error);
+  }
+};
+
+
+  
+
+const deleteTask = async (taskId) => {
+
+  const confirmed = window.confirm(
+    "Are you sure you want to delete this task?"
+  );
+
+  if (!confirmed) return;
+
   try {
     const token = localStorage.getItem("access_token");
 
@@ -150,11 +236,22 @@ export default function TasksPage() {
       }
     );
 
-    fetchTasks(); // refresh UI
+    fetchTasks();
+
   } catch (error) {
     console.error(error.response?.data || error);
   }
 };
+const handleOverride = (taskId) => {
+  const confirmed = window.confirm(
+    "⚠️ This task was postponed because your cognitive load may be too high.\n\nIt might be too much for you today and could affect your productivity.\n\nAre you sure you want to continue?"
+  );
+
+  if (!confirmed) return;
+
+  overrideTask(taskId);
+};
+
 
   return (
     <div className="tasks-root">
@@ -187,11 +284,8 @@ export default function TasksPage() {
             <option value="high">High</option>
           </select>
 
-          <input
-            type="date"
-            value={deadline}
-            onChange={(e) => setDeadline(e.target.value)}
-          />
+             <input type="date" value={deadline} min={today}
+            onChange={(e) => setDeadline(e.target.value)}/>
 
           <button
             className="btn-add-task"
@@ -200,7 +294,10 @@ export default function TasksPage() {
             + Add Task
           </button>
 
-          <button onClick={regulateTasks}>
+          <button
+            className="btn-regulate"
+            onClick={regulateTasks}
+          >
             Regulate Tasks
           </button>
         </div>
@@ -215,30 +312,99 @@ export default function TasksPage() {
               <span className="task-card-title">
                 {task.name}
               </span>
+                {task.status === "overridden" && (
+    <span className="override-badge">
+      Override
+    </span>
+  )}
 
               <span
-                className={`cost-${task.priority}`}
+                className={`cost-${task.priority} `}
               >
                 {task.priority}
               </span>
 
+                <button
+                  className="btn-edit"
+                  onClick={() => {
+                    setEditingTask(task.id);
+                    setEditName(task.name);
+                    setEditPriority(task.priority);
+                    setEditDeadline(task.deadline || "");
+                  }}
+                >
+                  Edit
+                </button>
+
 
               <button
-  className="btn-delete"
-  onClick={() => deleteTask(task.id)}
->
-  Delete
-</button>
+                  className="btn-delete"
+                  onClick={() => deleteTask(task.id)}
+                >
+                  Delete
+                </button>
             </div>
             
                 {task.deadline && (
-      <div className="task-deadline">
-        📅 {task.deadline}
-      </div>
-    )}
-
+                  <div className="task-deadline">
+                    📅 {task.deadline}
+                  </div>
+                )}
           </div>
+
+          
         ))}
+{editingTask && (
+  <div className="modal-overlay">
+    <div className="edit-modal">
+
+      <h2>Edit Task</h2>
+
+      <input
+        type="text"
+        value={editName}
+        onChange={(e) => setEditName(e.target.value)}
+        placeholder="Task name"
+      />
+
+      <select
+        value={editPriority}
+        onChange={(e) => setEditPriority(e.target.value)}
+      >
+        <option value="low">Low Priority</option>
+        <option value="medium">Medium Priority</option>
+        <option value="high">High Priority</option>
+      </select>
+
+      <input
+        type="date"
+        value={editDeadline}
+        min={today}
+        onChange={(e) => setEditDeadline(e.target.value)}
+      />
+
+      <div className="modal-actions">
+        <button
+          className="btn-save"
+          onClick={updateTask}
+        >
+          Save Changes
+        </button>
+
+        <button
+          className="btn-cancel"
+          onClick={() => setEditingTask(null)}
+        >
+          Cancel
+        </button>
+      </div>
+
+    </div>
+  </div>
+)}
+
+
+
 
         {postponed.length > 0 && (
           <>
@@ -259,6 +425,7 @@ export default function TasksPage() {
                   <span className="task-card-title">
                     {task.name}
                   </span>
+                  
 
                   <span
                     className={`cost-${task.priority}`}
@@ -268,20 +435,19 @@ export default function TasksPage() {
                   
                   
 
-                  <button
-                    className="btn-override"
-                    onClick={() =>
-                      overrideTask(task.id)
-                    }
-                  >
-                    Override
-                  </button>
+                 <button
+        className="btn-override"
+        onClick={() => handleOverride(task.id)}
+        >
+        Override
+        </button>
                 </div>
               </div>
             ))}
           </>
         )}
       </div>
+      
     </div>
   );
 }

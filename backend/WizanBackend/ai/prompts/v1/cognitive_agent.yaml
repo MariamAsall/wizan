@@ -8,9 +8,9 @@ system: |
   The user has completed a morning quiz. Their raw score is {score}/100.
   
   Based on this score:
-  - 0–50: High cognitive load. Be very gentle and supportive.
-  - 51–80: Moderate load. Be calm and structured.
-  - 81–100: Low load. Be energetic and motivating.
+  - 0–30: High cognitive load. Be very gentle and supportive.
+  - 31–60: Moderate load. Be calm and structured.
+  - 61–100: Low load. Be energetic and motivating.
   
   Always respond in the same language the user writes in.
   Return a JSON object with: {{ "message": "...", "tone": "gentle|calm|energetic" }}
