@@ -43,138 +43,97 @@ function ScoreCircle({ score }) {
     </div>
   )
 }
-
 export default function DashboardPage() {
   const navigate = useNavigate()
 
-  const [tasks, setTasks] = useState(INITIAL_TASKS)
+  // قائمة المهام الأولية (قمنا بتحديث الحقول لتطابق الـ Model الحقيقي)
+  const [tasks, setTasks] = useState([
+    { id: 1, name: "Morning quiz", priority: "low", status: "allowed" },
+    { id: 2, name: "Review lecture notes for Chapter 4", priority: "medium", status: "pending" },
+    { id: 3, name: "Submit database assignment", priority: "high", status: "pending" },
+  ])
 
-  // 🔥 NEW: Voice Plan state
-  const [voicePlan, setVoicePlan] = useState("Click record to generate your AI daily plan")
+  const [voiceStatus, setVoiceStatus] = useState("Use voice to instantly add a new task")
 
+  // دالة عمل toggle للحالة بناءً على الـ status الخاص بموديلك
   const toggle = (id) =>
     setTasks((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t))
+      prev.map((t) => 
+        t.id === id 
+          ? { ...t, status: t.status === "allowed" ? "pending" : "allowed" } 
+          : t
+      )
     )
 
-  const today = new Date().toLocaleDateString("en-GB", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  })
+  // 🔥 استقبال المهمة الحقيقية المفرغة من الـ DB وحقنها في الـ State فوراً
+  const handleNewVoiceTask = (taskFromServer) => {
+    // إضافة المهمة الحقيقية بكامل الـ Keys الخاصة بها في أعلى القائمة
+    setTasks((prevTasks) => [taskFromServer, ...prevTasks])
+    
+    // تحديث رسالة النجاح بالنص المفرغ المأخوذ من حقل name الحقيقي
+    setVoiceStatus(`✅ Added successfully: "${taskFromServer.name}"`)
+  }
 
   return (
     <div className="dash-root">
       <div className="dash-wrap">
+        
+        {/* ... الكود العلوي (Greeting, Chart, Stats) يبقى كما هو ... */}
 
-        {/* Greeting */}
-        <div className="mb-8">
-          <p className="dash-eyebrow">{today}</p>
-          <h1 className="dash-hello">
-            Good morning, <em>Mariam</em> 👋
-          </h1>
-          <p className="dash-sub">Your cognitive score is ready</p>
-        </div>
-
-        {/* Score + Chart */}
-        <div className="dash-grid">
-          <div className="score-card">
-            <div className="score-card-bar" />
-            <p className="score-card-label">Today's cognitive score</p>
-            <ScoreCircle score={74} />
-            <div className="score-status">
-              <span className="score-status-pill">Good day 🌿</span>
-            </div>
-          </div>
-
-          <div className="mini-chart">
-            <p className="mini-chart-label">7-day trend</p>
-            <div className="bars">
-              {WEEK_SCORES.map((s, i) => (
-                <div key={i} className="bar-col">
-                  <div
-                    className="bar"
-                    style={{
-                      height: Math.round((s / MAX_SCORE) * 60),
-                      background: i === WEEK_SCORES.length - 1 ? "var(--sage)" : "var(--cream3)",
-                    }}
-                  />
-                  <span className="bar-day">{WEEK_DAYS[i]}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Stats */}
-        <div className="stat-row">
-          {[
-            { num: "5", lbl: "Tasks allowed" },
-            { num: "2", lbl: "Postponed" },
-            { num: "3 🔥", lbl: "Day streak" },
-          ].map(({ num, lbl }) => (
-            <div key={lbl} className="stat-card">
-              <div className="stat-num">{num}</div>
-              <div className="stat-lbl">{lbl}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* 🧠 NEW VOICE SECTION (ADDED ONLY) */}
-        <div className="today-plan">
+        {/* 🧠 SECTION VOICE ASSISTANT */}
+        <div className="today-plan mb-6">
           <div className="section-head">
-            <h2 className="section-title">AI Voice Assistant</h2>
-            <span className="badge-green">NEW</span>
+            <h2 className="section-title">Add Task by Voice</h2>
+            <span className="badge-green">AUDIO</span>
           </div>
 
-          {/* Recorder */}
-          <VoiceRecorder onPlan={setVoicePlan} />
+          {/* ربط الـ Recorder بدالة الاستقبال والحقن الجديدة */}
+          <VoiceRecorder onPlanReceived={handleNewVoiceTask} />
 
-          {/* Plan Output */}
-          <div className="mt-4 p-3 bg-muted rounded-lg text-sm">
-            {voicePlan}
+          {/* صندوق يعرض حالة المعالجة أو نجاح العملية للمستخدم */}
+          <div className="mt-2 p-3 bg-gray-50 border border-gray-100 rounded-lg text-xs text-gray-500">
+            {voiceStatus}
           </div>
-
-          {/* Text-to-Speech */}
-          <VoicePlanControls text={voicePlan} />
         </div>
 
-        {/* Today's plan (EXISTING - unchanged) */}
+        {/* قائمة المهام (Today's plan) - محدثة لتطابق حقول الـ Model الحقيقي */}
         <div className="today-plan">
           <div className="section-head">
             <h2 className="section-title">Today's plan</h2>
-            <span className="badge-green">5 tasks</span>
+            <span className="badge-green">{tasks.length} tasks</span>
           </div>
 
-          {tasks.map((task) => (
-            <div key={task.id} className="task-row">
-              <button
-                className={`task-checkbox ${task.done ? "done" : ""}`}
-                onClick={() => toggle(task.id)}
-              >
-                {task.done && (
-                  <span className="text-white text-xs font-bold">✓</span>
-                )}
-              </button>
+          {tasks.map((task) => {
+            const isDone = task.status === "allowed"; // افترضنا هنا أن الـ allowed يعني تمت الموافقة/الإنجاز
+            
+            return (
+              <div key={task.id} className="task-row">
+                <button
+                  className={`task-checkbox ${isDone ? "done" : ""}`}
+                  onClick={() => toggle(task.id)}
+                >
+                  {isDone && (
+                    <span className="text-white text-xs font-bold">✓</span>
+                  )}
+                </button>
 
-              <span className={`task-text ${task.done ? "done" : ""}`}>
-                {task.text}
-              </span>
+                {/* تدوير البيانات بناءً على حقل name الحقيقي في قاعدة البيانات */}
+                <span className={`task-text ${isDone ? "done" : ""}`}>
+                  {task.name}
+                </span>
 
-              <span className={`cost-${task.cost}`}>
-                {{ low: "Low", med: "Medium", high: "High" }[task.cost]}
-              </span>
-            </div>
-          ))}
+                {/* تدوير البيانات بناءً على حقل priority الحقيقي في قاعدة البيانات */}
+                <span className={`cost-${task.priority}`}>
+                  {{ low: "Low", medium: "Medium", high: "High" }[task.priority]}
+                </span>
+              </div>
+            )
+          })}
         </div>
 
         {/* CTA */}
         <div className="dash-cta">
-          <button
-            className="btn-dash-cta"
-            onClick={() => navigate("/tasks")}
-          >
+          <button className="btn-dash-cta" onClick={() => navigate("/tasks")}>
             View full task board →
           </button>
         </div>

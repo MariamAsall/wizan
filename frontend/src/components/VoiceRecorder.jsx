@@ -1,64 +1,108 @@
 import { useState, useRef } from "react"
 import api from "../api/axios"
-import { getVoicePlan } from "../api/voice"
 
-export default function VoiceRecorder({ onPlanReceived }) {
+export default function VoiceRecorder({ onPlanReceived, currentPriority, currentDeadline }) {
   const [recording, setRecording] = useState(false)
+  const [loading, setLoading] = useState(false) 
+  
   const mediaRecorderRef = useRef(null)
+  const streamRef = useRef(null)
   const chunksRef = useRef([])
 
   const startRecording = async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    // 🔍 🔥 التحقق من التاريخ: منع المواعيد القديمة
+    if (currentDeadline) {
+      const selectedDate = new Date(currentDeadline);
+      const today = new Date();
+      
+      // تصغير التاريخين لمقارنة الأيام فقط دون الساعات والدقائق
+      selectedDate.setHours(0, 0, 0, 0);
+      today.setHours(0, 0, 0, 0);
 
-    const mediaRecorder = new MediaRecorder(stream)
-    mediaRecorderRef.current = mediaRecorder
-    chunksRef.current = []
-
-    mediaRecorder.ondataavailable = (e) => {
-      chunksRef.current.push(e.data)
+      if (selectedDate < today) {
+        alert("❌ لا يمكن اختيار تاريخ قديم للمهمة! يرجى تحديد تاريخ اليوم أو تاريخ مستقبلي.");
+        return; // إيقاف الدالة وعدم فتح المايكروفون
+      }
     }
 
-    mediaRecorder.onstop = async () => {
-      const audioBlob = new Blob(chunksRef.current, { type: "audio/webm" })
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      streamRef.current = stream
 
-      const formData = new FormData()
-      formData.append("audio", audioBlob, "voice.webm")
+      const mediaRecorder = new MediaRecorder(stream)
+      mediaRecorderRef.current = mediaRecorder
+      chunksRef.current = []
 
-      // 1️⃣ STT API
-      const sttRes = await api.post("/voice/transcribe/", formData)
-      const text = sttRes.data.transcript
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          chunksRef.current.push(e.data)
+        }
+      }
 
-      // 2️⃣ Voice Plan API
-      const planRes = await getVoicePlan(text)
+      mediaRecorder.onstop = async () => {
+        setLoading(true)
+        try {
+          const audioBlob = new Blob(chunksRef.current, { type: "audio/webm" })
+          const formData = new FormData()
+          
+          formData.append("audio", audioBlob, "voice.webm")
 
-      // 3️⃣ رجّع الداتا للـ Dashboard
-      onPlanReceived(planRes.plan)
+          if (currentPriority) {
+            formData.append("priority", currentPriority)
+          }
+          if (currentDeadline) {
+            formData.append("deadline", currentDeadline)
+          }
+
+          const res = await api.post("/add-task-by-voice/", formData)
+          
+          if (res.data && res.data.success) {
+            onPlanReceived(res.data.task) 
+          }
+        } catch (error) {
+          console.error("Voice Task Error:", error)
+          alert("حدث خطأ أثناء إضافة المهمة بالصوت.")
+        } finally {
+          setLoading(false)
+        }
+      }
+
+      mediaRecorder.start()
+      setRecording(true)
+    } catch (err) {
+      console.error("Failed to start recording:", err)
+      alert("يرجى السماح بالوصول إلى المايكروفون.")
     }
-
-    mediaRecorder.start()
-    setRecording(true)
   }
 
   const stopRecording = () => {
-    mediaRecorderRef.current.stop()
-    setRecording(false)
+    if (mediaRecorderRef.current && recording) {
+      mediaRecorderRef.current.stop()
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop())
+      }
+      setRecording(false)
+    }
   }
 
   return (
-    <div className="flex gap-2 mb-4">
+    <div className="flex gap-2 mb-4 items-center">
       {!recording ? (
         <button
           onClick={startRecording}
-          className="px-4 py-2 bg-green-600 text-white rounded-lg"
+          disabled={loading}
+          className={`px-4 py-2 text-white rounded-lg transition ${
+            loading ? "bg-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"
+          }`}
         >
-          🎤 Start Recording
+          {loading ? "⏳ Processing..." : "🎤 Start Recording"}
         </button>
       ) : (
         <button
           onClick={stopRecording}
-          className="px-4 py-2 bg-red-600 text-white rounded-lg"
+          className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg animate-pulse"
         >
-          ⏹ Stop
+          ⏹ Stop Recording
         </button>
       )}
     </div>
