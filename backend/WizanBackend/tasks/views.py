@@ -155,3 +155,114 @@ class TaskViewSet(viewsets.ModelViewSet):
             "estimated_time": result.get("estimated_time"),
             "steps": result.get("steps", [])
         })
+    
+
+
+# --------------------  task voice  -------------------- 
+
+
+import json
+import datetime
+
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+
+from .models import Task  
+from .serializers import TaskSerializer  
+from voice_logs.services import transcribe_audio as transcribe_audio_service
+
+# استيراد جينيريتور الـ AI (Gemini) لاستخراج البيانات منظمّة
+from google import genai
+from django.conf import settings
+
+gemini_client = genai.Client(api_key=settings.GEMINI_API_KEY)
+class VoiceAddTaskView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            # 1. [جديد 🔥] التحقق من التاريخ القادم من الـ Frontend يدوياً قبل أي شيء لمنع التواريخ القديمة
+            deadline_str = request.data.get("deadline")
+            if deadline_str:
+                try:
+                    # تحويل النص القادم إلى كائن تاريخ للمقارنة
+                    selected_date = datetime.datetime.strptime(deadline_str, "%Y-%m-%d").date()
+                    if selected_date < datetime.date.today():
+                        return Response(
+                            {"success": False, "error": "The deadline cannot be in the past."}, 
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+                except ValueError:
+                    return Response(
+                        {"success": False, "error": "Invalid date format. Expected YYYY-MM-DD."}, 
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+            # 2. استقبال ملف الصوت وتفريغه لنص
+            audio_file = request.FILES.get("audio")
+            if not audio_file or audio_file.size == 0:
+                return Response({"success": False, "error": "Invalid audio file."}, status=status.HTTP_400_BAD_REQUEST)
+
+            transcript = transcribe_audio_service(audio_file)
+            if not transcript:
+                return Response({"success": False, "error": "No speech detected."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # 3. قراءة البيانات اليدوية الأخرى إن وجدت (مثل الـ priority اليدوي)
+            # إذا أرسلها الفرونت يدوياً سنعتمد عليها، وإلا سنطلب من Gemini استخراجها
+            frontend_priority = request.data.get("priority")
+
+            # 4. إرسال النص لـ Gemini ليفهمه ويستخرج الحقول الذكية إذا لم تكن مرسلة يدوياً
+            today_date = datetime.date.today().strftime("%Y-%m-%d")
+            
+            prompt = f"""
+            You are a task management assistant. Analyze the user's spoken task in Arabic and extract:
+            1. 'name': The clean core task title in Arabic (remove urgency words like 'ضروري' or 'بسرعة').
+            2. 'priority': Must be one of ['high', 'medium', 'low'] based on the urgency or words used. Default is 'medium'.
+            3. 'deadline': The date in YYYY-MM-DD format. Today's date is {today_date}. If they say 'بكرة' calculate tomorrow's date. If no date mentioned, return null.
+
+            Return ONLY a valid JSON object with keys: "name", "priority", "deadline". No markdown wrappers, no backticks.
+            User Text: "{transcript}"
+            """
+
+            ai_response = gemini_client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt
+            )
+            
+            # 5. تنظيف وفك الـ JSON الراجع من الـ AI
+            raw_json = ai_response.text.strip().replace("```json", "").replace("```", "")
+            extracted_data = json.loads(raw_json)
+
+            # 6. دمج البيانات (إذا قادم ميعاد أو أولوية من الفرونت يدوياً نفضلها، وإلا نأخذ ما استخرجه الـ AI)
+            final_name = extracted_data.get("name", transcript)
+            final_priority = frontend_priority or extracted_data.get("priority", "medium")
+            final_deadline = deadline_str or extracted_data.get("deadline")
+
+            # [إضافي] تحقق أمان للتاريخ المستخرج من الـ AI نفسه لضمان عدم خطأه في الحساب
+            if final_deadline and not deadline_str:
+                ai_date = datetime.datetime.strptime(final_deadline, "%Y-%m-%d").date()
+                if ai_date < datetime.date.today():
+                    final_deadline = None # تجاهل تاريخ الـ AI لو كان قديماً بالخطأ
+
+            # 7. حفظ المهمة بالبيانات الذكية واليدوية المدمجة في جدول الـ Task الحقيقي
+            new_task = Task.objects.create(
+                user=request.user,
+                name=final_name,
+                priority=final_priority,
+                deadline=final_deadline if final_deadline != "" else None,
+                status='pending',
+                source='user_added'
+            )
+
+            serializer = TaskSerializer(new_task)
+            return Response({
+                "success": True,
+                "message": "Task processed and added!",
+                "task": serializer.data
+            }, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            print("Voice Task Structuring Error:", str(e))
+            return Response({"success": False, "error": "Failed to understand task details."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
