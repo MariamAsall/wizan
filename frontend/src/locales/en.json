@@ -65,6 +65,13 @@
     "basic_task": "Basic tasks"
   }
 },
+"chat": {
+  "title": "Study Chat",
+  "subtitle": "Ask anything about your course material.",
+  "welcomeMessage": "Ask me something from your materials.",
+  "placeholder": "Ask about your course material",
+  "send": "Send"
+},
   "common": {
     "loading": "Loading...",
     "error": "Something went wrong"
