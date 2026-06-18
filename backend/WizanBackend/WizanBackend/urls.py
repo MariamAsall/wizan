@@ -13,5 +13,7 @@ urlpatterns = [
     path('api/', include('tasks.urls')),
     
     path('api/voice/', include('voice_logs.urls')),
+    path('api/', include('documents.urls')),
+
 
 ]
