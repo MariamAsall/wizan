@@ -68,3 +68,15 @@ class SuggestTasksView(APIView):
 
         tasks = suggest_tasks_from_document(str(doc.id))
         return Response({"tasks": tasks})
+    
+class StudyChatView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        query = request.data.get('query')
+        if not query:
+            return Response({"error": "query is required"}, status=400)
+
+        from .services.rag import study_chat
+        result = study_chat(query, request.user.id)
+        return Response(result)    
