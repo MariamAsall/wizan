@@ -54,6 +54,8 @@ INSTALLED_APPS = [
     'ai',
     'tasks',
     'voice_logs',
+    "pgvector.django",
+    'documents',
 
     #SIMPLE_JWT
     'rest_framework',
@@ -110,6 +112,7 @@ DATABASES = {
 }
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
@@ -201,5 +204,8 @@ CORS_ALLOWED_ORIGINS = [
 
 ]
 CORS_ALLOW_CREDENTIALS = True
+
+CELERY_BROKER_URL = "redis://redis:6379/0"
+CELERY_RESULT_BACKEND = "redis://redis:6379/0"
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1','0.0.0.0']
