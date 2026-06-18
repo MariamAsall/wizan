@@ -21,9 +21,10 @@ def run_pipeline(document_id: str) -> None:
                 content=chunks[i]['text'],
                 embedding=vectors[i],
                 metadata={
-                    'token_start': chunks[i]['token_start'],
-                    'token_end':   chunks[i]['token_end'],
-                    'model':       'text-embedding-3-small',
+                    'source':      doc.filename,
+                    'page':        (chunks[i]['token_start'] // 400) + 1,  # rough page estimate
+                    'chunk_index': i,
+                    'model':       'gemini-embedding-001',
                 }
             )
             for i in range(len(chunks))
