@@ -74,3 +74,4 @@ openai
 celery 
 tiktoken
 redis
+rank-bm25

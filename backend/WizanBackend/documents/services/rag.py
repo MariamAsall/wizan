@@ -58,7 +58,7 @@ from groq import Groq
 from django.conf import settings
 from pgvector.django import CosineDistance
 from ..models import Embedding
-from rank_bm25 import BM25Okapi
+# from rank_bm25 import BM25Okapi
 
 
 genai.configure(api_key=settings.GEMINI_API_KEY)
@@ -125,13 +125,13 @@ def _get_all_user_chunks(user_id: int):
         .order_by('chunk_index')
     )
 
-def _bm25_search(query: str, all_chunks: list, top_k: int = 10) -> list:
-    """Keyword search using BM25."""
-    tokenized_corpus = [c.content.lower().split() for c in all_chunks]
-    bm25 = BM25Okapi(tokenized_corpus)
-    scores = bm25.get_scores(query.lower().split())
-    top_indices = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:top_k]
-    return [all_chunks[i] for i in top_indices]
+# def _bm25_search(query: str, all_chunks: list, top_k: int = 10) -> list:
+#     """Keyword search using BM25."""
+#     tokenized_corpus = [c.content.lower().split() for c in all_chunks]
+#     bm25 = BM25Okapi(tokenized_corpus)
+#     scores = bm25.get_scores(query.lower().split())
+#     top_indices = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:top_k]
+#     return [all_chunks[i] for i in top_indices]
 
 def _dense_search(query_vector, user_id: int, top_k: int = 10) -> list:
     """Vector similarity search."""
