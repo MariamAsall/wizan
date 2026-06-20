@@ -1,132 +1,145 @@
-import { useState, useRef, useEffect } from "react"
-import "./Chat.css"
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import ReactMarkdown from "react-markdown";
+import { Send, Sparkles } from "lucide-react";
+import api from "../api/axios";
 
-function Citation({ page }) {
-  return <span className="citation">📄 {page}</span>
+
+async function getReply(question) {
+  const { data } = await api.post("/chat/study/", { query: question });
+  return { answer: data.answer, sources: data.sources };
 }
 
-const INITIAL_MESSAGES = [
-  {
-    id: 1,
-    role: "user",
-    text: "What is the difference between HNSW and IVF index in pgvector?",
-  },
-  {
-    id: 2,
-    role: "ai",
-    content: (
-      <>
-        <strong>HNSW (Hierarchical Navigable Small World)</strong> builds a multi-layer graph
-        structure where each node connects to its nearest neighbours at different scales. It offers
-        very fast approximate nearest-neighbour search with high recall, but consumes more memory
-        during index build. <Citation page="p. 12" />
-        <br /><br />
-        <strong>IVF (Inverted File Index)</strong> clusters vectors into Voronoi cells during
-        training and searches only the closest clusters at query time. It is more memory-efficient
-        and faster to build, but requires a separate training step and recall depends on the number
-        of probes. <Citation page="p. 15" />
-        <br /><br />
-        For your Wizan project, HNSW is the better choice since you need low-latency live search
-        and your dataset fits in memory.
-      </>
-    ),
-    sources: [
-      "Database Systems — Ch. 5, p. 12",
-      "Vector Search Guide — p. 15",
-    ],
-  },
-  {
-    id: 3,
-    role: "user",
-    text: "Can you give me a simple analogy for HNSW?",
-  },
-  {
-    id: 4,
-    role: "ai",
-    content: (
-      <>
-        Think of it like a city with highways, main roads, and side streets. The top layer of HNSW
-        is the highway — it lets you jump large distances quickly. Each lower layer adds more detail
-        until you reach the exact neighbourhood you want. <Citation page="p. 13" />
-      </>
-    ),
-    sources: ["Database Systems — Ch. 5, p. 13"],
-  },
-]
+function Avatar({ role }) {
+  if (role === "user") {
+    return (
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-medium text-background">
+        {JSON.parse(localStorage.getItem("user"))?.first_name?.charAt(0).toUpperCase() || "U"}
+      </div>
+    );
+  }
+  return (
+    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-primary/50 to-primary text-background">
+      <Sparkles size={14} />
+    </div>
+  );
+}
+
+function TypingDots() {
+  return (
+    <div className="flex items-center gap-1 p-1">
+      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary/50 [animation-delay:-0.3s]" />
+      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary/50 [animation-delay:-0.15s]" />
+      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary/50" />
+    </div>
+  );
+}
 
 export default function ChatPage() {
-  const [messages, setMessages] = useState(INITIAL_MESSAGES)
-  const [draft, setDraft]       = useState("")
-  const bottomRef               = useRef(null)
+  const { t, i18n } = useTranslation();
+  const dir = i18n.dir();
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages])
+  const [messages, setMessages] = useState([
+    { role: "assistant", text: t("chat.welcomeMessage"), sources: [] },
+  ]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const send = () => {
-    if (!draft.trim()) return
-    setMessages((p) => [
-      ...p,
-      { id: Date.now(), role: "user", text: draft.trim() },
-    ])
-    setDraft("")
-  }
+  const handleSend = async (e) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+
+    setMessages((prev) => [...prev, { role: "user", text: input }]);
+    setInput("");
+    setLoading(true);
+
+    const reply = await getReply(input);
+    setMessages((prev) => [...prev, { role: "assistant", text: reply.answer, sources: reply.sources }]);
+    setLoading(false);
+  };
+
 
   return (
-    <div className="chat-root">
-      <div className="chat-wrap">
-
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="chat-title">Study assistant</h1>
-          <p className="chat-sub">
-            Ask anything from your course materials — answers come with sources.
-          </p>
+    <div dir={dir} className="flex h-full flex-col">
+      <header className="flex items-center gap-3 border-b border-border px-6 py-4">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-primary/50 to-primary text-background">
+          <Sparkles size={16} />
         </div>
+        <div>
+          <h1 className="text-lg font-semibold text-foreground">{t("chat.title")}</h1>
+          <p className="text-xs text-foreground/60">{t("chat.subtitle")}</p>
+        </div>
+      </header>
 
-        {/* Messages */}
-        <div className="chat-messages">
-          {messages.map((msg) =>
-            msg.role === "user" ? (
-              <p key={msg.id} className="msg-user">{msg.text}</p>
-            ) : (
-              <div key={msg.id} className="msg-ai-wrap">
-                <div className="msg-ai">
-                  <p className="msg-ai-name">Wizan · Study assistant</p>
-                  {msg.content}
-                </div>
-                {msg.sources?.length > 0 && (
-                  <div className="source-chips">
-                    {msg.sources.map((s) => (
-                      <button key={s} className="source-chip">
-                        <span className="source-icon">PDF</span>
-                        {s}
-                      </button>
+      <div className="flex-1 space-y-4 overflow-y-auto p-6">
+        {messages.map((msg, i) => {
+          const isUser = msg.role === "user";
+          const avatar = <Avatar role={msg.role} />;
+          const bubble = (
+            <div
+              className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-[15px] leading-relaxed shadow-sm ${isUser ? "bg-linear-to-br from-primary to-destructive text-background" : "border border-border bg-card text-card-foreground"
+                }`}
+            >
+              <div className="[&_p]:mb-2 [&_p:last-child]:mb-0 [&_strong]:font-semibold [&_ul]:my-2 [&_ul]:ms-4 [&_ul]:list-disc [&_li]:mb-1">
+                <ReactMarkdown>{msg.text}</ReactMarkdown>
+                {!isUser && <div>{msg.sources?.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {msg.sources.map((s, i) => (
+                      <span key={i} className="rounded-full border border-border bg-background px-2 py-0.5 text-xs text-foreground/60">
+                        {s.source} • p.{s.page}
+                      </span>
                     ))}
                   </div>
-                )}
+                )}</div>}
               </div>
-            )
-          )}
-          <div ref={bottomRef} />
-        </div>
+            </div>
+          );
+          return (
+            <div key={i} className={`flex items-end gap-2 ${isUser ? "justify-end" : "justify-start"}`}>
+              {isUser ? (
+                <>
+                  {bubble}
+                  {avatar}
+                </>
+              ) : (
+                <>
+                  {avatar}
+                  {bubble}
+                  
+                </>
+              )}
+            </div>
+          );
+        })}
 
-        {/* Input */}
-        <div className="chat-input-bar">
-          <textarea
-            className="chat-textarea"
-            rows={1}
-            placeholder="Ask a study question…"
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send() }
-            }}
-          />
-          <button className="btn-send" onClick={send}>Send</button>
-        </div>
-
+        {loading && (
+          <div className="flex items-end gap-2 justify-start">
+            <Avatar role="assistant" />
+            <div className="rounded-2xl border border-border bg-card text-card-foreground px-3 shadow-sm">
+              <TypingDots />
+            </div>
+          </div>
+        )}
       </div>
+
+      <form onSubmit={handleSend} className="border-t border-border px-6 py-4">
+        <div className="flex items-center gap-2 rounded-full border border-border bg-card text-card-foreground px-3 py-1.5 transition focus-within:border-primary focus-within:bg-card">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder={t("chat.placeholder")}
+            className="flex-1 bg-transparent px-2 py-1.5 text-[15px] text-foreground placeholder:text-foreground/50 focus:outline-none"
+          />
+          <button
+            type="submit"
+            disabled={!input.trim() || loading}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full cursor-pointer bg-primary text-background transition hover:bg-primary/80 disabled:bg-secondary/70 disabled:text-foreground/50 disabled:cursor-not-allowed"
+          >
+            <Send size={16} />
+          </button>
+        </div>
+      </form>
     </div>
-  )
+  );
 }
