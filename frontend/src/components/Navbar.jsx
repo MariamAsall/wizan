@@ -8,7 +8,7 @@ import { t } from "i18next"
 const navLinkClass = ({ isActive }) =>
     `px-4 py-1 rounded-xl text-sm transition-all duration-300 ${isActive
         ? "bg-foreground text-background font-medium"
-        : "text-muted-foreground hover:text-background hover:bg-foreground"
+        : "text-foreground hover:text-background hover:bg-foreground"
     }`
 
 export function Navbar() {
@@ -19,6 +19,7 @@ export function Navbar() {
     { to: "/tasks", label: t("nav.tasks") },
     { to: "/dashboard", label: t("nav.dashboard") },
     { to: "/chat", label: t("nav.chat") },
+    { to: "/documents", label: t("nav.documents") },
 ]
 
     return (

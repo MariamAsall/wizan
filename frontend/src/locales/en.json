@@ -5,7 +5,8 @@
     "result": "Score Result",
     "dashboard": "Dashboard",
     "tasks": "Tasks",
-    "chat": "Chat"
+    "chat": "Chat",
+    "documents": "Documents"
   },
   "quiz": {
     "title": "Morning Check-in",
@@ -72,6 +73,13 @@
   "placeholder": "Ask about your course material",
   "send": "Send"
 },
+  "documents": {
+    "title": "Documents",
+    "subtitle": "Upload files so you can ask questions about them in the chat",
+    "dropzone": "Drag and drop a file here or click to browse",
+    "allFiles": "All files allowed",
+    "empty": "No documents yet"
+  },
   "common": {
     "loading": "Loading...",
     "error": "Something went wrong"
