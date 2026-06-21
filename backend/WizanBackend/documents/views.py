@@ -13,6 +13,8 @@ from .tasks import process_document_async
 
 from django.shortcuts import get_object_or_404
 
+import bleach
+
 
 class DocumentUploadView(APIView):
     permission_classes = [IsAuthenticated]
