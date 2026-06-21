@@ -93,10 +93,26 @@ class StudyChatView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        query = request.data.get('query')
+
+        query = request.data.get("query")
+
         if not query:
-            return Response({"error": "query is required"}, status=400)
+            return Response(
+                {"error": "query is required"},
+                status=400
+            )
+
+        query = bleach.clean(
+            query,
+            tags=[],
+            strip=True
+        )
 
         from .services.rag import study_chat
-        result = study_chat(query, request.user.id)
-        return Response(result)    
+
+        result = study_chat(
+            query,
+            request.user.id
+        )
+
+        return Response(result)
