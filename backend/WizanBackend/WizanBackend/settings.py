@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'voice_logs',
     "pgvector.django",
     'documents',
+    "drf_spectacular",
 
     #SIMPLE_JWT
     'rest_framework',
@@ -69,6 +70,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
