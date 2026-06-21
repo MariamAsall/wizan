@@ -48,12 +48,49 @@ export default function DashboardPage() {
   const [score, setScore] = useState(0)
   const [logs, setLogs] = useState([])
   const [briefing, setBriefing] = useState("")
-  const [cognitiveLoad, setCognitiveLoad] = useState("")
   const [loadMessage, setLoadMessage] = useState("")
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
 
   const user = JSON.parse(localStorage.getItem("user") || "{}")
+
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        const [tasksRes] = await Promise.all([
+          api.get("/tasks/")
+        ])
+
+        setTasks(tasksRes.data || [])
+
+        // بيانات مؤقتة لحد ما تربط APIs الخاصة بالـ cognitive score
+        setScore(78)
+        setLogs([
+          { score: 72 },
+          { score: 80 },
+          { score: 76 },
+          { score: 84 },
+          { score: 69 },
+          { score: 90 },
+          { score: 78 },
+        ])
+
+        setBriefing(
+          "Your productivity is improving this week. Focus on high-priority tasks during peak concentration hours."
+        )
+
+        setLoadMessage(
+          "You are performing well today. Keep your focus on important tasks."
+        )
+      } catch (err) {
+        console.error("Dashboard Error:", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchDashboard()
+  }, [])
 
   const weekScores = logs
     .slice(0, 7)
@@ -64,53 +101,26 @@ export default function DashboardPage() {
 
   const WEEK_DAYS = ["M", "T", "W", "T", "F", "S", "S"]
 
-  useEffect(() => {
-    const fetchDashboard = async () => {
-      try {
-        const [scoreRes, logsRes, allowedRes, briefingRes, tasksRes] =
-          await Promise.allSettled([
-            
-            api.get("/cognitive-score/"),
-            api.get("/cognitive-log/"),
-            api.get("/allowed-tasks/"),
-            api.get("/briefing/"),
-            api.get("/tasks/"),
-          ])
+  const avgScore =
+    logs.length > 0
+      ? Math.round(
+          logs.reduce(
+            (sum, log) => sum + (log.final_score || log.score || 0),
+            0
+          ) / logs.length
+        )
+      : 0
 
-        if (scoreRes.status === "fulfilled") {
-          setScore(scoreRes.value.data.score)
-        }
+  const streak = logs.length
 
-        if (logsRes.status === "fulfilled") {
-          setLogs(logsRes.value.data)
-        }
-
-        if (allowedRes.status === "fulfilled") {
-          setCognitiveLoad(allowedRes.value.data.cognitive_load)
-          setLoadMessage(allowedRes.value.data.message)
-        }
-
-        if (briefingRes.status === "fulfilled") {
-          const data = briefingRes.value.data
-          setBriefing(
-            typeof data === "string"
-              ? data
-              : data.briefing || data.message || JSON.stringify(data)
-          )
-        }
-
-        if (tasksRes.status === "fulfilled") {
-          setTasks(tasksRes.value.data)
-        }
-      } catch (err) {
-        console.error(err)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchDashboard()
-  }, [])
+  const scoreLabel =
+    score >= 80
+      ? "Excellent Focus"
+      : score >= 60
+      ? "Good Focus"
+      : score >= 30
+      ? "Moderate Focus"
+      : "Low Focus"
 
   const toggle = (id) =>
     setTasks((prev) =>
@@ -118,7 +128,10 @@ export default function DashboardPage() {
         t.id === id
           ? {
               ...t,
-              status: t.status === "allowed" ? "pending" : "allowed",
+              status:
+                t.status === "allowed"
+                  ? "pending"
+                  : "allowed",
             }
           : t
       )
@@ -142,21 +155,23 @@ export default function DashboardPage() {
             Welcome back,{" "}
             {user?.first_name || user?.username || "User"} 👋
           </h1>
+
           <p className="hero-sub">
-            Here's your cognitive overview today.
+            Your current cognitive score is {score}.
+            Focus on the most important tasks first.
           </p>
         </div>
 
-        {/* STATS */}
+        {/* QUICK STATS */}
         <div className="wellness-grid">
           <div className="wellness-card">
-            <div className="wellness-label">Cognitive Score</div>
+            <div className="wellness-label">Score</div>
             <div className="wellness-value">{score}</div>
           </div>
 
           <div className="wellness-card">
-            <div className="wellness-label">Cognitive Load</div>
-            <div className="wellness-value">{cognitiveLoad}</div>
+            <div className="wellness-label">Streak 🔥</div>
+            <div className="wellness-value">{streak}</div>
           </div>
 
           <div className="wellness-card">
@@ -165,19 +180,39 @@ export default function DashboardPage() {
           </div>
 
           <div className="wellness-card">
-            <div className="wellness-label">Logs</div>
-            <div className="wellness-value">{logs.length}</div>
+            <div className="wellness-label">Average</div>
+            <div className="wellness-value">{avgScore}</div>
           </div>
         </div>
 
         {/* SCORE */}
         <div className="score-card">
-          <ScoreCircle score={score} />
+          <div>
+            <ScoreCircle score={score} />
+
+            <div className="score-status">
+              <span className="score-status-pill">
+                {scoreLabel}
+              </span>
+            </div>
+
+            <p
+              style={{
+                textAlign: "center",
+                marginTop: "12px",
+              }}
+              className="dash-sub"
+            >
+              {loadMessage}
+            </p>
+          </div>
         </div>
 
         {/* WEEKLY TREND */}
         <div className="mini-chart">
-          <div className="mini-chart-label">Weekly Trend</div>
+          <div className="mini-chart-label">
+            Weekly Trend
+          </div>
 
           <div className="bars">
             {weekScores.map((s, i) => (
@@ -188,7 +223,10 @@ export default function DashboardPage() {
                     height: `${(s / maxScore) * 70}px`,
                   }}
                 />
-                <span className="bar-day">{WEEK_DAYS[i]}</span>
+
+                <span className="bar-day">
+                  {WEEK_DAYS[i]}
+                </span>
               </div>
             ))}
           </div>
@@ -196,29 +234,28 @@ export default function DashboardPage() {
 
         {/* AI INSIGHT */}
         <div className="ai-summary-card">
-          <h2 className="ai-summary-title">🧠 AI Daily Insight</h2>
+          <h2 className="ai-summary-title">
+            🧠 AI Insight
+          </h2>
+
           <p className="ai-summary-text">
             {briefing || "No cognitive briefing available."}
           </p>
         </div>
 
-        {/* COGNITIVE STATUS */}
+        {/* TODAY TASKS */}
         <div className="today-plan">
           <div className="section-head">
-            <h2 className="section-title">Cognitive Status</h2>
-            <span className="badge-green">{cognitiveLoad}</span>
-          </div>
-          <p className="dash-sub">{loadMessage}</p>
-        </div>
+            <h2 className="section-title">
+              Today's Tasks
+            </h2>
 
-        {/* TASKS */}
-        <div className="today-plan">
-          <div className="section-head">
-            <h2 className="section-title">Today's Tasks</h2>
-            <span className="badge-green">{tasks.length}</span>
+            <span className="badge-green">
+              {tasks.length}
+            </span>
           </div>
 
-          {tasks.map((task) => {
+          {tasks.slice(0, 5).map((task) => {
             const isDone = task.status === "allowed"
 
             return (
@@ -232,7 +269,11 @@ export default function DashboardPage() {
                   {isDone && "✓"}
                 </button>
 
-                <span className={`task-text ${isDone ? "done" : ""}`}>
+                <span
+                  className={`task-text ${
+                    isDone ? "done" : ""
+                  }`}
+                >
                   {task.name}
                 </span>
 
@@ -254,27 +295,13 @@ export default function DashboardPage() {
           })}
         </div>
 
-        {/* LAST QUIZ */}
-        <div className="today-plan">
-          <div className="section-head">
-            <h2 className="section-title">Last Quiz Answers</h2>
-          </div>
-
-          {logs[0]?.quiz_answers?.slice(0, 5)?.map((a, i) => (
-            <div key={i} className="task-row">
-              <span className="task-text">{a.question_en}</span>
-              <span className="badge-green">{a.answer}</span>
-            </div>
-          ))}
-        </div>
-
         {/* CTA */}
         <div className="dash-cta">
           <button
             className="btn-dash-cta"
             onClick={() => navigate("/tasks")}
           >
-            View full task board →
+            View Full Task Board →
           </button>
         </div>
 
