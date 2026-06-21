@@ -18,7 +18,7 @@ urlpatterns = [
     
     path('api/voice/', include('voice_logs.urls')),
     path('api/', include('documents.urls')),
-    
+
     path("api/schema/", SpectacularAPIView.as_view()),
     path(
         "api/docs/",
@@ -26,6 +26,11 @@ urlpatterns = [
             url_name="schema"
         ),
     ),
+    
+    path(
+    "api/",
+    include("feedback.urls")
+),
 
 
 ]
