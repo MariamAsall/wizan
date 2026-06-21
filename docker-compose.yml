@@ -34,6 +34,9 @@ services:
     command: python manage.py runserver 0.0.0.0:8000
     depends_on:
       - redis
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
 
   redis:
     image: redis:7-alpine
@@ -50,3 +53,6 @@ services:
     command: celery -A WizanBackend worker -l info --loglevel=info
     depends_on:
       - redis
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4

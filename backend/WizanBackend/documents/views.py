@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from .models import Document
+from .services.pdf_extractor import extract_text_from_pdf
 from .services.rag import ask_document, suggest_tasks_from_document
 from .tasks import process_document_async
 
@@ -17,12 +18,29 @@ class DocumentUploadView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        filename = request.data.get('filename')
-        raw_text = request.data.get('raw_text')  # أو parse من file
+        # filename = request.data.get('filename')
+        # raw_text = request.data.get('raw_text')  
+        # # أو parse من file
+
+        # doc = Document.objects.create(
+        #     user=request.user,
+        #     filename=filename,
+        #     raw_text=raw_text,
+        # )
+
+        uploaded_file = request.FILES.get("file")
+
+        if not uploaded_file:
+            return Response(
+                {"error": "PDF file is required"},
+                status=400
+            )
+
+        raw_text = extract_text_from_pdf(uploaded_file)
 
         doc = Document.objects.create(
             user=request.user,
-            filename=filename,
+            filename=uploaded_file.name,
             raw_text=raw_text,
         )
         process_document_async.delay(str(doc.id))  # async
