@@ -8,7 +8,7 @@
 .add-task-bar { @apply flex gap-2.5 mb-7; }
 .add-task-input { @apply flex-1 px-4 py-3 text-sm rounded-[10px] outline-none transition-all border-[1.5px] border-border bg-background text-foreground font-sans focus:border-primary focus:bg-card; }
 .btn-add-task { @apply px-5 py-3 rounded-[10px] text-sm font-bold whitespace-nowrap transition-all cursor-pointer border-0 bg-primary text-primary-foreground hover:bg-primary/90; }
-.btn-regulate { @apply px-5 py-3 rounded-[10px] text-sm font-bold whitespace-nowrap transition-all cursor-pointer border-0 bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed; }
+.btn-regulate { @apply px-10 py-5 rounded-[10px] text-sm font-bold whitespace-nowrap transition-all cursor-pointer border-0 bg-foreground text-background hover:bg-foreground/90 disabled:opacity-60 disabled:cursor-not-allowed; }
 
 .task-section-divider { @apply flex items-center gap-2 mb-3; }
 .task-section-divider span { @apply text-[11px] font-bold uppercase tracking-[.08em] whitespace-nowrap text-muted-foreground; }

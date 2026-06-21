@@ -14,6 +14,7 @@ import {
   from "../components/ui/alert-dialog"
 import "./Tasks.css"
 import { AlertCircleIcon, Edit, Trash2 } from "lucide-react"
+import VoiceRecorder from "../components/VoiceRecorder"
 
 const STATUS_STYLES = {
   allowed: "bg-emerald-100 text-emerald-700",
@@ -175,8 +176,8 @@ if (loading) return (
           />
 
           <Select value={priority} onValueChange={setPriority}>
-            <SelectTrigger className="w-[120px] rounded-[10px] border-[1.5px] text-sm">
-              <SelectValue placeholder="Choose priority"/>
+            <SelectTrigger className="w-[140px] rounded-[10px] border-[1.5px] text-sm">
+              <SelectValue placeholder={t("tasks.priority.select")}/>
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
@@ -189,20 +190,28 @@ if (loading) return (
 
           <Input
             type="date"
-            className="w-[150px] rounded-[10px] border-[1.5px] text-sm"
+            className="w-[130px] rounded-[10px] border-[1.5px] text-sm"
             value={deadline}
             min={today}
             onChange={(e) => setDeadline(e.target.value)}
+          />
+
+           <VoiceRecorder
+            priority={priority}
+            deadline={deadline}
+            onTaskAdded={(task, err) => {
+              if (err) { setError(err); return }
+              setTasks((prev) => [task, ...prev])
+              setDeadline("")
+            }}
           />
 
           <Button className="btn-add-task" onClick={addTask}>
             {t("tasks.add_button")}
           </Button>
 
-          <Button variant="secondary" className="btn-regulate" onClick={regulate} disabled={regulating}>
-            {regulating ? t("common.loading") : t("tasks.plan_day")}
-          </Button>
         </div>
+          
 
         {/* flat task list */}
         <div className="task-section-divider mb-3">
@@ -258,6 +267,12 @@ if (loading) return (
             )}
           </div>
         ))}
+
+        <div className="w-full flex justify-center items-center mt-6">
+          <Button className="btn-regulate" onClick={regulate} disabled={regulating}>
+            {regulating ? t("common.loading") : t("tasks.plan_day")}
+        </Button>
+        </div>
 
       </div>
 

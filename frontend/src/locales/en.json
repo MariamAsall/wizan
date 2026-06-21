@@ -70,7 +70,7 @@
   "title": "Task Board",
   "add_placeholder": "Add a new task…",
   "add_button": "+ Add Task",
-  "plan_day": "Plan My Day",
+  "plan_day": "Plan My Day →",
   "allowed": "Allowed Today",
   "postponed": "Postponed",
   "no_tasks": "No tasks yet.",
@@ -86,6 +86,8 @@
   "error_load": "Failed to load tasks.",
   "error_empty": "Task name cannot be empty.",
   "all_tasks": "All Tasks",
+  "mic": "Record a task",
+"mic_error": "Please allow microphone access.",
 "status": {
   "allowed":   "Allowed",
   "pending":   "Pending",
@@ -93,6 +95,7 @@
   "overridden":"Overridden"
 },
   "priority": {
+    "select": "Choose priority",
     "low": "Low",
     "medium": "Medium",
     "high": "High"
