@@ -58,7 +58,7 @@ from groq import Groq
 from django.conf import settings
 from pgvector.django import CosineDistance
 from ..models import Embedding
-from rank_bm25 import BM25Okapi
+# from rank_bm25 import BM25Okapi
 
 
 genai.configure(api_key=settings.GEMINI_API_KEY)
@@ -177,38 +177,22 @@ def _multi_query(query: str) -> list[str]:
 
 def study_chat(query: str, user_id: int) -> dict:
     from .embedder import embed_query
-    from .reranker import rerank
-
-    # 1. Get all user chunks for BM25
-    all_chunks = _get_all_user_chunks(user_id)
-    if not all_chunks:
-        return {
-            "answer": "No study materials found. Please upload a document first.",
-            "sources": []
-        }
-
-    # 2. MultiQuery — expand the query into multiple versions
-    queries = _multi_query(query)
-
-    # 3. Dense search for each query version, merge results
-    dense_results = []
-    for q in queries:
-        qvec = embed_query(q)
-        dense_results += _dense_search(qvec, user_id, top_k=5)
-
-    # 4. BM25 search on original query only
-    bm25_results = _bm25_search(query, all_chunks, top_k=10)
-
-    # 5. RRF fusion — combine and deduplicate
-    fused = _rrf_fusion(dense_results, bm25_results)
-
-    # 6. Rerank top 10 fused results, keep top 5
-    top_chunks = rerank(query, fused[:10])[:5]
-
-    # 7. Build context and generate answer
-    context = "\n\n".join([c.content for c in top_chunks])
-
     from .resource_agent import run_resource_agent
+
+    query_vector = embed_query(query)
+
+    chunks = (
+        Embedding.objects
+        .filter(document__user_id=user_id, document__status='ready')
+        .annotate(distance=CosineDistance('embedding', query_vector))
+        .order_by('distance')[:5]
+    )
+
+    if not chunks:
+        return {"answer": "No study materials found. Please upload a document first.", "sources": []}
+
+    context = "\n\n".join([c.content for c in chunks])
+
     answer = run_resource_agent(query, context)
 
     return {
@@ -219,6 +203,6 @@ def study_chat(query: str, user_id: int) -> dict:
                 "page":   c.metadata.get("page", "?"),
                 "excerpt": c.content[:200],
             }
-            for c in top_chunks
+            for c in chunks
         ],
     }
