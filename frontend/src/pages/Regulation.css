@@ -5,7 +5,18 @@
 
 .reg-title { @apply text-[28px] font-extrabold mb-1 text-foreground; }
 
-.reg-reply { @apply rounded-2xl border border-border bg-card p-5 my-5 text-[15px] leading-relaxed text-foreground; }
+.reg-reply {
+  @apply rounded-2xl p-5 my-5 text-[15px] leading-relaxed text-foreground overflow-hidden;
+  background: linear-gradient(135deg, var(--primary) / 5%, transparent 80%);
+  border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
+  border-left: 3px solid var(--primary);
+  animation: replyIn 0.4s ease both;
+}
+
+@keyframes replyIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 
 .reg-divider { @apply flex items-center gap-2 mb-3; }
 .reg-divider span { @apply text-[11px] font-bold uppercase tracking-[.08em] whitespace-nowrap text-muted-foreground; }
