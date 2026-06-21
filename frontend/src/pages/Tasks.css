@@ -1,183 +1,28 @@
 @reference "../index.css";
-/* ── Tasks page ─────────────────────────────────────────────────── */
+
 .tasks-root { @apply min-h-[calc(100vh-56px)] bg-background; }
 .tasks-wrap { @apply max-w-[720px] mx-auto px-5 py-8; }
 
-/* header */
 .tasks-title { @apply text-[28px] font-extrabold mb-1 text-foreground; }
-.tasks-sub   { @apply text-sm text-muted-foreground; }
-.score-pill  { @apply inline-flex items-center gap-1.5 font-bold px-3 py-0.5 rounded-full text-[13px] bg-primary/15 text-primary; }
 
-/* add-task bar */
 .add-task-bar { @apply flex gap-2.5 mb-7; }
 .add-task-input { @apply flex-1 px-4 py-3 text-sm rounded-[10px] outline-none transition-all border-[1.5px] border-border bg-background text-foreground font-sans focus:border-primary focus:bg-card; }
-.btn-mic { @apply px-3.5 py-3 text-lg rounded-[10px] border-[1.5px] transition-all cursor-pointer bg-card border-border hover:border-destructive hover:bg-destructive/10 text-foreground hover:text-destructive; }
-.btn-add-task { @apply px-5 py-3 rounded-[10px] text-sm font-bold whitespace-nowrap transition-all cursor-pointer border-0 bg-primary text-primary-foreground font-sans hover:bg-primary/90; }
+.btn-add-task { @apply px-5 py-3 rounded-[10px] text-sm font-bold whitespace-nowrap transition-all cursor-pointer border-0 bg-primary text-primary-foreground hover:bg-primary/90; }
+.btn-regulate { @apply px-5 py-3 rounded-[10px] text-sm font-bold whitespace-nowrap transition-all cursor-pointer border-0 bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed; }
 
-/* section divider */
 .task-section-divider { @apply flex items-center gap-2 mb-3; }
 .task-section-divider span { @apply text-[11px] font-bold uppercase tracking-[.08em] whitespace-nowrap text-muted-foreground; }
 .task-section-divider::after { @apply content-[''] block h-px w-full bg-border; }
 
-/* task cards */
-.task-card { @apply rounded-2xl border p-4 mb-2.5 transition-all cursor-pointer bg-card border-border hover:border-primary hover:translate-x-[3px]; }
+.task-card { @apply rounded-2xl border p-4 mb-2.5 transition-all bg-card border-border hover:border-primary hover:translate-x-[3px]; }
 .task-card.postponed { @apply bg-muted opacity-60 hover:border-border hover:translate-x-0; }
-
-.task-card-top { @apply flex items-center gap-2.5 mb-2; }
+.task-card-top { @apply flex items-center gap-2 mb-2; }
 .task-card-title { @apply flex-1 text-[15px] font-bold text-foreground; }
+.task-deadline { @apply text-xs text-muted-foreground mt-1; }
 
-/* steps */
-.task-steps { @apply pl-4 border-l-2 border-muted; }
-.task-step  { @apply flex items-center gap-2 text-[13px] py-0.5 text-muted-foreground; }
-.step-dot   { @apply w-1.5 h-1.5 rounded-full flex-shrink-0 bg-border; }
-.step-dot.done { @apply bg-primary; }
+.tasks-loading { @apply min-h-[calc(100vh-56px)] flex flex-col items-center justify-center gap-3 text-muted-foreground; }
+.tasks-spinner { width:28px; height:28px; border:2px solid var(--primary); border-top-color:transparent; border-radius:50%; animation:spin 0.7s linear infinite; }
 
-/* postponed reason */
-.postpone-reason { @apply text-xs mt-1 text-muted-foreground; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-.override-badge {
-  background: #f59e0b;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 12px;
-  margin-left: 8px;
-}
-/* override btn */
-.btn-override { @apply text-xs font-bold px-2.5 py-1 rounded-full cursor-pointer border-0 transition-all bg-destructive/15 text-destructive hover:bg-destructive/25 hover:text-destructive; }
-
-
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  z-index: 9999;
-}
-
-.edit-modal {
-  background: white;
-  width: 420px;
-  max-width: 90vw;
-
-  border-radius: 18px;
-  padding: 24px;
-
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-
-  box-shadow:
-    0 20px 40px rgba(0,0,0,0.18);
-
-  animation: popup 0.25s ease;
-}
-
-.edit-modal h2 {
-  margin: 0 0 8px;
-  text-align: center;
-}
-
-.edit-modal input,
-.edit-modal select {
-  width: 100%;
-  padding: 12px;
-
-  border: 1px solid #ddd;
-  border-radius: 10px;
-
-  font-size: 15px;
-}
-
-.modal-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 8px;
-}
-
-.btn-save {
-  flex: 1;
-  background: #2563eb;
-  color: white;
-  border: none;
-  padding: 12px;
-  border-radius: 10px;
-  cursor: pointer;
-}
-
-.btn-save:hover {
-  opacity: 0.9;
-}
-
-.btn-cancel {
-  flex: 1;
-  background: #e5e7eb;
-  border: none;
-  padding: 12px;
-  border-radius: 10px;
-  cursor: pointer;
-}
-
-.btn-edit {
-  background: #6aae55;
-  color: white;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.btn-edit:hover {
-  opacity: 0.9;
-}
-
-@keyframes popup {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.btn-delete {
-  background: #dc2626;
-  color: white;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.btn-delete:hover {
-  opacity: 0.9;
-}
-
-.btn-regulate {
-  @apply px-5 py-3 rounded-[10px] text-sm font-bold
-  transition-all cursor-pointer border-0
-  bg-emerald-600 text-white
-  hover:bg-emerald-700;
-}
-
-.plan-card.calm {
-  background: #eef7ee;
-  border: 1px solid #b7d8b7;
-}
-
-.plan-card.focused {
-  background: #eef3ff;
-  border: 1px solid #8ea7ff;
-}
-
-.plan-card.urgent {
-  background: #fff0f0;
-  border: 1px solid #ff9b9b;
-}
+button {@apply cursor-pointer}

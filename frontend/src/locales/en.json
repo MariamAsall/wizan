@@ -66,6 +66,51 @@
     "basic_task": "Basic tasks"
   }
 },
+"tasks": {
+  "title": "Task Board",
+  "add_placeholder": "Add a new task…",
+  "add_button": "+ Add Task",
+  "plan_day": "Plan My Day",
+  "allowed": "Allowed Today",
+  "postponed": "Postponed",
+  "no_tasks": "No tasks yet.",
+  "edit": "Edit",
+  "delete": "Delete",
+  "edit_title": "Edit Task",
+  "save": "Save Changes",
+  "cancel": "Cancel",
+  "delete_confirm": "Are you sure you want to delete this task?",
+  "deadline_past": "Deadline cannot be in the past.",
+  "loading": "Loading tasks...",
+  "error_add": "Failed to add task.",
+  "error_load": "Failed to load tasks.",
+  "error_empty": "Task name cannot be empty.",
+  "all_tasks": "All Tasks",
+"status": {
+  "allowed":   "Allowed",
+  "pending":   "Pending",
+  "postponed": "Postponed",
+  "overridden":"Overridden"
+},
+  "priority": {
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High"
+  }
+},
+ 
+"regulation": {
+  "title": "Today's Plan",
+  "allowed": "You Can Do Today",
+  "postponed": "Postponed",
+  "steps_btn": "Break it down",
+  "steps_hide": "Hide steps",
+  "override": "Override",
+  "override_confirm_title": "Are you sure?",
+  "override_confirm_desc": "This task was postponed because your cognitive load may be too high. Proceeding might affect your productivity.",
+  "decompose_error": "Failed to load steps.",
+  "no_postponed": "All tasks are cleared for today! 🎉"
+},
 "chat": {
   "title": "Study Chat",
   "subtitle": "Ask anything about your course material.",
