@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'documents',
     "feedback",
     "drf_spectacular",
+    "audit_logs",
 
     #SIMPLE_JWT
     'rest_framework',
@@ -217,4 +218,3 @@ CELERY_RESULT_BACKEND = "redis://redis:6379/0"
 ALLOWED_HOSTS = ['localhost', '127.0.0.1','0.0.0.0']
 
 
-#================SENTRY ERROE===============

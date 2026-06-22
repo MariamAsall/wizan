@@ -14,6 +14,8 @@ from .tasks import process_document_async
 from django.shortcuts import get_object_or_404
 
 import bleach
+from audit_logs.utils import log_action
+
 
 
 class DocumentUploadView(APIView):
@@ -44,6 +46,11 @@ class DocumentUploadView(APIView):
             user=request.user,
             filename=uploaded_file.name,
             raw_text=raw_text,
+        )
+
+        log_action(
+            request.user,
+            f"UPLOAD_DOCUMENT: {uploaded_file.name}"
         )
         process_document_async.delay(str(doc.id))  # async
 
@@ -113,6 +120,10 @@ class StudyChatView(APIView):
         result = study_chat(
             query,
             request.user.id
+        )
+        log_action(
+            request.user,
+            "CHAT_QUERY"
         )
 
         return Response(result)

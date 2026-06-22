@@ -26,10 +26,14 @@ urlpatterns = [
             url_name="schema"
         ),
     ),
-    
+
     path(
     "api/",
     include("feedback.urls")
+),
+path(
+    "api/users/",
+    include("accounts.urls")
 ),
 
 
