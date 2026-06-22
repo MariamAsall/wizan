@@ -56,6 +56,8 @@ INSTALLED_APPS = [
     'voice_logs',
     "pgvector.django",
     'documents',
+    "feedback",
+    "drf_spectacular",
 
     #SIMPLE_JWT
     'rest_framework',
@@ -163,6 +165,10 @@ REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": (
         "rest_framework.renderers.JSONRenderer",
     ),
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 
@@ -209,3 +215,4 @@ CELERY_BROKER_URL = "redis://redis:6379/0"
 CELERY_RESULT_BACKEND = "redis://redis:6379/0"
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1','0.0.0.0']
+

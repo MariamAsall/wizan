@@ -1,21 +1,7 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import "./Dashboard.css"
-
-import VoiceRecorder from "../components/VoiceRecorder"
-import VoicePlanControls from "../components/VoicePlanControls"
-
-const WEEK_SCORES = [58, 72, 65, 80, 70, 74, 74]
-const WEEK_DAYS   = ["M", "T", "W", "T", "F", "S", "S"]
-const MAX_SCORE   = Math.max(...WEEK_SCORES)
-
-const INITIAL_TASKS = [
-  { id: 1, text: "Morning quiz ✓", cost: "low", done: true },
-  { id: 2, text: "Review lecture notes for Chapter 4", cost: "med", done: false },
-  { id: 3, text: "Submit database assignment", cost: "high", done: false },
-  { id: 4, text: "Reply to team messages", cost: "low", done: false },
-  { id: 5, text: "Plan weekend study session", cost: "low", done: false },
-]
+import api from "../api/axios"
 
 function ScoreCircle({ score }) {
   const r = 35
@@ -24,8 +10,20 @@ function ScoreCircle({ score }) {
 
   return (
     <div className="relative mx-auto mb-3" style={{ width: 90, height: 90 }}>
-      <svg viewBox="0 0 90 90" width="90" height="90" style={{ transform: "rotate(-90deg)" }}>
-        <circle cx="45" cy="45" r={r} fill="none" stroke="var(--cream3)" strokeWidth="8" />
+      <svg
+        viewBox="0 0 90 90"
+        width="90"
+        height="90"
+        style={{ transform: "rotate(-90deg)" }}
+      >
+        <circle
+          cx="45"
+          cy="45"
+          r={r}
+          fill="none"
+          stroke="var(--cream3)"
+          strokeWidth="8"
+        />
         <circle
           cx="45"
           cy="45"
@@ -43,88 +41,254 @@ function ScoreCircle({ score }) {
     </div>
   )
 }
+
 export default function DashboardPage() {
   const navigate = useNavigate()
 
-  // قائمة المهام الأولية (قمنا بتحديث الحقول لتطابق الـ Model الحقيقي)
-  const [tasks, setTasks] = useState([
-    { id: 1, name: "Morning quiz", priority: "low", status: "allowed" },
-    { id: 2, name: "Review lecture notes for Chapter 4", priority: "medium", status: "pending" },
-    { id: 3, name: "Submit database assignment", priority: "high", status: "pending" },
-  ])
+  const [score, setScore] = useState(0)
+  const [logs, setLogs] = useState([])
+  const [briefing, setBriefing] = useState("")
+  const [loadMessage, setLoadMessage] = useState("")
+  const [tasks, setTasks] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  const [voiceStatus, setVoiceStatus] = useState("Use voice to instantly add a new task")
+  const user = JSON.parse(localStorage.getItem("user") || "{}")
 
-  // دالة عمل toggle للحالة بناءً على الـ status الخاص بموديلك
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        const [tasksRes] = await Promise.all([
+          api.get("/tasks/")
+        ])
+
+        setTasks(tasksRes.data || [])
+
+        // بيانات مؤقتة لحد ما تربط APIs الخاصة بالـ cognitive score
+        setScore(78)
+        setLogs([
+          { score: 72 },
+          { score: 80 },
+          { score: 76 },
+          { score: 84 },
+          { score: 69 },
+          { score: 90 },
+          { score: 78 },
+        ])
+
+        setBriefing(
+          "Your productivity is improving this week. Focus on high-priority tasks during peak concentration hours."
+        )
+
+        setLoadMessage(
+          "You are performing well today. Keep your focus on important tasks."
+        )
+      } catch (err) {
+        console.error("Dashboard Error:", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchDashboard()
+  }, [])
+
+  const weekScores = logs
+    .slice(0, 7)
+    .reverse()
+    .map((log) => log.final_score || log.score || 0)
+
+  const maxScore = Math.max(...weekScores, 100)
+
+  const WEEK_DAYS = ["M", "T", "W", "T", "F", "S", "S"]
+
+  const avgScore =
+    logs.length > 0
+      ? Math.round(
+          logs.reduce(
+            (sum, log) => sum + (log.final_score || log.score || 0),
+            0
+          ) / logs.length
+        )
+      : 0
+
+  const streak = logs.length
+
+  const scoreLabel =
+    score >= 80
+      ? "Excellent Focus"
+      : score >= 60
+      ? "Good Focus"
+      : score >= 30
+      ? "Moderate Focus"
+      : "Low Focus"
+
   const toggle = (id) =>
     setTasks((prev) =>
-      prev.map((t) => 
-        t.id === id 
-          ? { ...t, status: t.status === "allowed" ? "pending" : "allowed" } 
+      prev.map((t) =>
+        t.id === id
+          ? {
+              ...t,
+              status:
+                t.status === "allowed"
+                  ? "pending"
+                  : "allowed",
+            }
           : t
       )
     )
 
-  // 🔥 استقبال المهمة الحقيقية المفرغة من الـ DB وحقنها في الـ State فوراً
-  const handleNewVoiceTask = (taskFromServer) => {
-    // إضافة المهمة الحقيقية بكامل الـ Keys الخاصة بها في أعلى القائمة
-    setTasks((prevTasks) => [taskFromServer, ...prevTasks])
-    
-    // تحديث رسالة النجاح بالنص المفرغ المأخوذ من حقل name الحقيقي
-    setVoiceStatus(`✅ Added successfully: "${taskFromServer.name}"`)
+  if (loading) {
+    return (
+      <div className="dash-root">
+        <div className="dash-wrap">Loading...</div>
+      </div>
+    )
   }
 
   return (
     <div className="dash-root">
       <div className="dash-wrap">
-        
-        {/* ... الكود العلوي (Greeting, Chart, Stats) يبقى كما هو ... */}
 
-        {/* 🧠 SECTION VOICE ASSISTANT */}
-        <div className="today-plan mb-6">
-          <div className="section-head">
-            <h2 className="section-title">Add Task by Voice</h2>
-            <span className="badge-green">AUDIO</span>
+        {/* HERO */}
+        <div className="hero-card">
+          <h1 className="hero-title">
+            Welcome back,{" "}
+            {user?.first_name || user?.username || "User"} 👋
+          </h1>
+
+          <p className="hero-sub">
+            Your current cognitive score is {score}.
+            Focus on the most important tasks first.
+          </p>
+        </div>
+
+        {/* QUICK STATS */}
+        <div className="wellness-grid">
+          <div className="wellness-card">
+            <div className="wellness-label">Score</div>
+            <div className="wellness-value">{score}</div>
           </div>
 
-          {/* ربط الـ Recorder بدالة الاستقبال والحقن الجديدة */}
-          <VoiceRecorder onPlanReceived={handleNewVoiceTask} />
+          <div className="wellness-card">
+            <div className="wellness-label">Streak 🔥</div>
+            <div className="wellness-value">{streak}</div>
+          </div>
 
-          {/* صندوق يعرض حالة المعالجة أو نجاح العملية للمستخدم */}
-          <div className="mt-2 p-3 bg-gray-50 border border-gray-100 rounded-lg text-xs text-gray-500">
-            {voiceStatus}
+          <div className="wellness-card">
+            <div className="wellness-label">Tasks</div>
+            <div className="wellness-value">{tasks.length}</div>
+          </div>
+
+          <div className="wellness-card">
+            <div className="wellness-label">Average</div>
+            <div className="wellness-value">{avgScore}</div>
           </div>
         </div>
 
-        {/* قائمة المهام (Today's plan) - محدثة لتطابق حقول الـ Model الحقيقي */}
-        <div className="today-plan">
-          <div className="section-head">
-            <h2 className="section-title">Today's plan</h2>
-            <span className="badge-green">{tasks.length} tasks</span>
+        {/* SCORE */}
+        <div className="score-card">
+          <div>
+            <ScoreCircle score={score} />
+
+            <div className="score-status">
+              <span className="score-status-pill">
+                {scoreLabel}
+              </span>
+            </div>
+
+            <p
+              style={{
+                textAlign: "center",
+                marginTop: "12px",
+              }}
+              className="dash-sub"
+            >
+              {loadMessage}
+            </p>
+          </div>
+        </div>
+
+        {/* WEEKLY TREND */}
+        <div className="mini-chart">
+          <div className="mini-chart-label">
+            Weekly Trend
           </div>
 
-          {tasks.map((task) => {
-            const isDone = task.status === "allowed"; // افترضنا هنا أن الـ allowed يعني تمت الموافقة/الإنجاز
-            
+          <div className="bars">
+            {weekScores.map((s, i) => (
+              <div key={i} className="bar-col">
+                <div
+                  className="bar"
+                  style={{
+                    height: `${(s / maxScore) * 70}px`,
+                  }}
+                />
+
+                <span className="bar-day">
+                  {WEEK_DAYS[i]}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* AI INSIGHT */}
+        <div className="ai-summary-card">
+          <h2 className="ai-summary-title">
+            🧠 AI Insight
+          </h2>
+
+          <p className="ai-summary-text">
+            {briefing || "No cognitive briefing available."}
+          </p>
+        </div>
+
+        {/* TODAY TASKS */}
+        <div className="today-plan">
+          <div className="section-head">
+            <h2 className="section-title">
+              Today's Tasks
+            </h2>
+
+            <span className="badge-green">
+              {tasks.length}
+            </span>
+          </div>
+
+          {tasks.slice(0, 5).map((task) => {
+            const isDone = task.status === "allowed"
+
             return (
               <div key={task.id} className="task-row">
                 <button
-                  className={`task-checkbox ${isDone ? "done" : ""}`}
+                  className={`task-checkbox ${
+                    isDone ? "done" : ""
+                  }`}
                   onClick={() => toggle(task.id)}
                 >
-                  {isDone && (
-                    <span className="text-white text-xs font-bold">✓</span>
-                  )}
+                  {isDone && "✓"}
                 </button>
 
-                {/* تدوير البيانات بناءً على حقل name الحقيقي في قاعدة البيانات */}
-                <span className={`task-text ${isDone ? "done" : ""}`}>
+                <span
+                  className={`task-text ${
+                    isDone ? "done" : ""
+                  }`}
+                >
                   {task.name}
                 </span>
 
-                {/* تدوير البيانات بناءً على حقل priority الحقيقي في قاعدة البيانات */}
-                <span className={`cost-${task.priority}`}>
-                  {{ low: "Low", medium: "Medium", high: "High" }[task.priority]}
+                <span
+                  className={
+                    task.priority === "medium"
+                      ? "cost-med"
+                      : `cost-${task.priority}`
+                  }
+                >
+                  {{
+                    low: "Low",
+                    medium: "Medium",
+                    high: "High",
+                  }[task.priority]}
                 </span>
               </div>
             )
@@ -133,8 +297,11 @@ export default function DashboardPage() {
 
         {/* CTA */}
         <div className="dash-cta">
-          <button className="btn-dash-cta" onClick={() => navigate("/tasks")}>
-            View full task board →
+          <button
+            className="btn-dash-cta"
+            onClick={() => navigate("/tasks")}
+          >
+            View Full Task Board →
           </button>
         </div>
 

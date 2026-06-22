@@ -59,3 +59,140 @@
 /* CTA */
 .dash-cta { @apply text-center; }
 .btn-dash-cta { @apply px-6 py-3 rounded-full text-sm font-bold transition-all cursor-pointer border bg-card border-border text-foreground hover:border-primary hover:text-primary; }
+
+/* HERO */
+.hero-card {
+  @apply rounded-[24px] border p-6 mb-6 bg-card border-border;
+}
+
+.hero-title {
+  @apply text-2xl md:text-3xl font-extrabold text-foreground;
+}
+
+.hero-sub {
+  @apply mt-2 text-sm text-muted-foreground;
+}
+
+/* WELLNESS GRID */
+.wellness-grid {
+  @apply grid grid-cols-2 md:grid-cols-4 gap-4 mb-6;
+}
+
+.wellness-card {
+  @apply rounded-2xl border p-4 bg-card border-border text-center;
+}
+
+.wellness-label {
+  @apply text-xs text-muted-foreground;
+}
+
+.wellness-value {
+  @apply text-2xl font-extrabold mt-2 text-foreground;
+}
+
+/* SCORE CARD */
+.score-card {
+  @apply rounded-[20px] border p-6 mb-6 bg-card border-border flex justify-center items-center;
+}
+
+/* WEEKLY CHART */
+.mini-chart {
+  @apply rounded-[20px] border p-6 mb-6 bg-card border-border;
+}
+
+.mini-chart-label {
+  @apply text-xs font-bold uppercase tracking-widest mb-4 text-muted-foreground;
+}
+
+.bars {
+  @apply flex items-end gap-2 h-[90px];
+}
+
+.bar-col {
+  @apply flex flex-col items-center flex-1 gap-1;
+}
+
+.bar {
+  @apply w-full bg-primary/30 rounded-t;
+}
+
+.bar-day {
+  @apply text-[10px] text-muted-foreground font-bold;
+}
+
+/* AI */
+.ai-summary-card {
+  @apply rounded-[20px] border p-6 mb-6 bg-card border-border;
+}
+
+.ai-summary-title {
+  @apply text-lg font-bold mb-2 text-foreground;
+}
+
+.ai-summary-text {
+  @apply text-sm text-muted-foreground leading-6;
+}
+
+/* COGNITIVE */
+.today-plan {
+  @apply rounded-[20px] border p-6 mb-6 bg-card border-border;
+}
+
+.section-head {
+  @apply flex items-center justify-between mb-4;
+}
+
+.section-title {
+  @apply text-base font-bold text-foreground;
+}
+
+.badge-green {
+  @apply text-xs font-bold px-3 py-1 rounded-full bg-primary/15 text-primary;
+}
+
+/* TASKS */
+.task-row {
+  @apply flex items-center gap-3 py-3;
+}
+
+.task-row + .task-row {
+  @apply border-t border-border;
+}
+
+.task-checkbox {
+  @apply w-5 h-5 rounded-full border-2 border-border flex items-center justify-center cursor-pointer;
+}
+
+.task-checkbox.done {
+  @apply bg-primary border-primary;
+}
+
+.task-text {
+  @apply flex-1 text-sm text-foreground;
+}
+
+.task-text.done {
+  @apply line-through text-muted-foreground;
+}
+
+/* PRIORITY */
+.cost-low {
+  @apply text-xs px-2 py-1 rounded-full bg-primary/15 text-primary font-bold;
+}
+
+.cost-med {
+  @apply text-xs px-2 py-1 rounded-full bg-yellow-500/15 text-yellow-500 font-bold;
+}
+
+.cost-high {
+  @apply text-xs px-2 py-1 rounded-full bg-red-500/15 text-red-500 font-bold;
+}
+
+/* CTA */
+.dash-cta {
+  @apply text-center mt-6;
+}
+
+.btn-dash-cta {
+  @apply px-6 py-3 rounded-full border border-border bg-card text-foreground font-bold hover:border-primary hover:text-primary transition;
+}
