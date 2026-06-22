@@ -218,9 +218,3 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1','0.0.0.0']
 
 
 #================SENTRY ERROE===============
-import sentry_sdk
-
-sentry_sdk.init(
-    dsn="YOUR_SENTRY_DSN",
-    traces_sample_rate=1.0,
-)
