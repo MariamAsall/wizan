@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     "feedback",
     "drf_spectacular",
     "audit_logs",
+    "django_extensions",
 
     #SIMPLE_JWT
     'rest_framework',
