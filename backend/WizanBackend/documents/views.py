@@ -2,6 +2,9 @@ from django.shortcuts import render
 
 # Create your views here.
 
+from django.utils.decorators import method_decorator
+from django_ratelimit.decorators import ratelimit
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -21,6 +24,7 @@ from audit_logs.utils import log_action
 class DocumentUploadView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @method_decorator(ratelimit(key='user_or_ip', rate='5/m', block=True))
     def post(self, request):
         # filename = request.data.get('filename')
         # raw_text = request.data.get('raw_text')  
@@ -68,6 +72,7 @@ class DocumentStatusView(APIView):
 class AskDocumentView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @method_decorator(ratelimit(key='user_or_ip', rate='10/m', block=True))
     def post(self, request, doc_id):
         doc = get_object_or_404(Document, id=doc_id, user=request.user)
 
@@ -87,6 +92,7 @@ class AskDocumentView(APIView):
 class SuggestTasksView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @method_decorator(ratelimit(key='user_or_ip', rate='10/m', block=True))
     def post(self, request, doc_id):
         doc = get_object_or_404(Document, id=doc_id, user=request.user)
 
@@ -99,6 +105,7 @@ class SuggestTasksView(APIView):
 class StudyChatView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @method_decorator(ratelimit(key='user_or_ip', rate='15/m', block=True))
     def post(self, request):
 
         query = request.data.get("query")
