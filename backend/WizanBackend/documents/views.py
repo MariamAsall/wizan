@@ -19,6 +19,13 @@ import bleach
 class DocumentUploadView(APIView):
     permission_classes = [IsAuthenticated]
 
+    def get(self, request):
+        docs = Document.objects.filter(user=request.user).order_by('uploaded_at')
+        return Response([
+            {"id": str(d.id), "filename": d.filename, "status": d.status}
+            for d in docs
+        ])
+
     def post(self, request):
         # filename = request.data.get('filename')
         # raw_text = request.data.get('raw_text')  
@@ -56,6 +63,11 @@ class DocumentStatusView(APIView):
     def get(self, request, doc_id):
         doc = get_object_or_404(Document, id=doc_id, user=request.user)
         return Response({"id": doc.id, "status": doc.status})
+    
+    def delete(self, request, doc_id):
+        doc = get_object_or_404(Document, id=doc_id, user=request.user)
+        doc.delete()
+        return Response(status=204)
 
 
 class AskDocumentView(APIView):

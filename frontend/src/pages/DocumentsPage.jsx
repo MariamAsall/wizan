@@ -1,7 +1,11 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { UploadCloud, FileText, Trash2, Loader2, CheckCircle, XCircle } from "lucide-react";
+import { UploadCloud, FileText, Trash2, Loader2, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import api from "../api/axios";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {AlertDialog,AlertDialogAction,AlertDialogCancel,AlertDialogContent,AlertDialogDescription,AlertDialogFooter,AlertDialogHeader,AlertDialogTitle,AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 async function uploadFile(file) {
   const form = new FormData();
@@ -21,42 +25,55 @@ async function deleteFile(id) {
 
 function StatusBadge({ status }) {
   if (status === "processing") return <span className="flex items-center gap-1 rounded-full border border-yellow-200 bg-yellow-50 px-2 py-0.5 text-xs font-medium text-yellow-700"><Loader2 size={11} className="animate-spin" /> Processing</span>;
-  if (status === "ready") return <span className="flex items-center gap-1 rounded-full border border-green-200  bg-green-50  px-2 py-0.5 text-xs font-medium text-green-700" ><CheckCircle size={11} /> Ready</span>;
-  if (status === "failed") return <span className="flex items-center gap-1 rounded-full border border-red-200    bg-red-50    px-2 py-0.5 text-xs font-medium text-red-700"  ><XCircle size={11} /> Failed</span>;
+  if (status === "ready") return <span className="flex items-center gap-1 rounded-full border border-green-200  bg-green-50  px-2 py-0.5 text-xs font-medium text-green-700"><CheckCircle size={11} /> Ready</span>;
+  if (status === "failed") return <span className="flex items-center gap-1 rounded-full border border-red-200    bg-red-50    px-2 py-0.5 text-xs font-medium text-red-700"><XCircle size={11} /> Failed</span>;
 }
 
 export default function DocumentsPage() {
   const { t, i18n } = useTranslation();
   const dir = i18n.dir();
   const inputRef = useRef(null);
+
   const [docs, setDocs] = useState([]);
   const [dragging, setDragging] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    api.get("/documents/").then(({ data }) => setDocs(data));
+  }, []);
 
   const updateDoc = (id, changes) =>
     setDocs((prev) => prev.map((d) => (d.id === id ? { ...d, ...changes } : d)));
 
   const handleUpload = async (files) => {
-    const allFiles = Array.from(files);
-    if (!allFiles.length) return;
+    const pdfs = Array.from(files).filter((f) => f.type === "application/pdf");
+    if (!pdfs.length) return;
+    setError(null);
 
-    for (const file of allFiles) {
-      // show the file immediately as processing
+    for (const file of pdfs) {
       const tempId = crypto.randomUUID();
       setDocs((prev) => [...prev, { id: tempId, filename: file.name, status: "processing" }]);
 
-      // upload → get real id back
-      const uploaded = await uploadFile(file);
-      updateDoc(tempId, { id: uploaded.id });
+      try {
+        const uploaded = await uploadFile(file);
+        updateDoc(tempId, { id: uploaded.id });
 
-      // poll until done
-      const status = await pollStatus(uploaded.id);
-      updateDoc(uploaded.id, { status });
+        const status = await pollStatus(uploaded.id);
+        updateDoc(uploaded.id, { status });
+      } catch (err) {
+        setDocs((prev) => prev.filter((d) => d.id !== tempId));
+        setError(t("documents.uploadError"));
+      }
     }
   };
 
   const handleDelete = async (id) => {
-    await deleteFile(id);
-    setDocs((prev) => prev.filter((d) => d.id !== id));
+    try {
+      await deleteFile(id);
+      setDocs((prev) => prev.filter((d) => d.id !== id));
+    } catch (err) {
+      setError(t("documents.deleteError"));
+    }
   };
 
   return (
@@ -69,6 +86,14 @@ export default function DocumentsPage() {
 
       <div className="flex-1 space-y-4 overflow-y-auto p-6">
 
+        {/* error alert */}
+        {error && (
+          <Alert variant="destructive">
+            <AlertCircle size={16} />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
         {/* drop zone */}
         <div
           onClick={() => inputRef.current.click()}
@@ -79,8 +104,8 @@ export default function DocumentsPage() {
         >
           <UploadCloud size={32} className="text-foreground/30" />
           <p className="text-sm font-medium text-foreground">{t("documents.dropzone")}</p>
-          <p className="text-xs text-foreground/50">{t("documents.allFiles")}</p>
-          <input ref={inputRef} type="file" multiple className="hidden" onChange={(e) => handleUpload(e.target.files)} />
+          <p className="text-xs text-foreground/50">{t("documents.pdfs")}</p>
+          <input ref={inputRef} type="file" accept=".pdf" multiple className="hidden" onChange={(e) => handleUpload(e.target.files)} />
         </div>
 
         {/* file list */}
@@ -89,13 +114,29 @@ export default function DocumentsPage() {
             <FileText size={18} className="shrink-0 text-foreground/40" />
             <span className="flex-1 truncate text-sm text-foreground">{doc.filename}</span>
             <StatusBadge status={doc.status} />
-            <button
-              onClick={() => handleDelete(doc.id)}
-              disabled={doc.status === "processing"}
-              className="ms-2 rounded-lg p-1.5 text-foreground/30 transition hover:bg-destructive hover:text-destructive-foreground disabled:cursor-not-allowed disabled:opacity-30"
-            >
-              <Trash2 size={15} />
-            </button>
+
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" disabled={doc.status === "processing"}>
+                  <Trash2 size={15} />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{t("documents.deleteTitle")}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {t("documents.deleteMessage", { filename: doc.filename })}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>{t("documents.cancel")}</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => handleDelete(doc.id)}>
+                    {t("documents.confirm")}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
           </div>
         ))}
 
