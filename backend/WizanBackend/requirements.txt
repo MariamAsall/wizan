@@ -21,6 +21,7 @@ cryptography==48.0.0
 distro==1.9.0
 Django==6.0.6
 django-cors-headers==4.9.0
+django-ratelimit==4.1.0
 djangorestframework==3.17.1
 djangorestframework_simplejwt==5.5.1
 dotenv==0.9.9
@@ -131,4 +132,3 @@ xxhash==3.7.0
 zope.event==6.2
 zope.interface==8.5
 zstandard==0.25.0
-django-ratelimit==4.1.0

@@ -8,6 +8,8 @@ from rest_framework import status
 User = get_user_model()
 
 
+from django.utils import timezone
+
 class DeleteMyAccountView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -15,9 +17,12 @@ class DeleteMyAccountView(APIView):
 
         user = request.user
 
-        user.delete()
+        user.is_deleted = True
+        user.is_active = False
+        user.deleted_at = timezone.now()
+        user.save()
 
         return Response(
-            {"message": "Account deleted successfully"},
-            status=status.HTTP_204_NO_CONTENT
+            {"message": "Account deactivated successfully"},
+            status=status.HTTP_200_OK
         )
