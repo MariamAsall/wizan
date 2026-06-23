@@ -15,6 +15,7 @@ import RegulationPage from "./pages/RegulationPage";
 import ChatPage from "./pages/ChatPage";
 import QuizResultPage from './pages/QuizResultPage';
 import DocumentsPage from './pages/DocumentsPage';
+import Profile from './pages/profile';
 
 function App() {
   const { i18n } = useTranslation()
@@ -43,6 +44,7 @@ function App() {
           <Route path="/chat"      element={<ChatPage />} />
           <Route path="/documents"      element={<DocumentsPage />} />
           <Route path="/regulation" element={<RegulationPage />} />
+          <Route path="/profile" element={<Profile />} />
         </Route>
 
         <Route path="/" element={<Navigate to="/login" />} />
