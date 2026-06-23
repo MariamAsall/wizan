@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import ReactMarkdown from "react-markdown";
 import { Send, Sparkles } from "lucide-react";
@@ -39,9 +39,10 @@ export default function ChatPage() {
   const { t, i18n } = useTranslation();
   const dir = i18n.dir();
 
-  const [messages, setMessages] = useState([
-    { role: "assistant", text: t("chat.welcomeMessage"), sources: [] },
-  ]);
+  const [messages, setMessages] = useState(() => {
+  const saved = sessionStorage.getItem("chat_messages");
+  return saved ? JSON.parse(saved) : [{ role: "assistant", text: t("chat.welcomeMessage"), sources: [] }];
+});
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -57,6 +58,10 @@ export default function ChatPage() {
     setMessages((prev) => [...prev, { role: "assistant", text: reply.answer, sources: reply.sources }]);
     setLoading(false);
   };
+
+  useEffect(() => {
+  sessionStorage.setItem("chat_messages", JSON.stringify(messages));
+}, [messages]);
 
 
   return (
