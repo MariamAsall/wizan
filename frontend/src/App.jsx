@@ -17,6 +17,8 @@ import QuizResultPage from './pages/QuizResultPage';
 import DocumentsPage from './pages/DocumentsPage';
 import Profile from './pages/profile';
 
+import { Toaster } from "react-hot-toast"
+
 function App() {
   const { i18n } = useTranslation()
 
@@ -29,6 +31,23 @@ function App() {
   }, [])
 
   return (
+    <>
+   
+      <Toaster
+        position="button-right"
+        reverseOrder={false}
+        toastOptions={{
+          duration: 4000,
+
+          style: {
+            background: "var(--card)",
+            color: "var(--foreground)",
+            border: "1px solid var(--border)",
+            borderRadius: "12px",
+          },
+        }}
+      />
+
     <BrowserRouter>
       <Routes>
         {/* Public — no navbar */}
@@ -49,7 +68,9 @@ function App() {
 
         <Route path="/" element={<Navigate to="/login" />} />
       </Routes>
+   
     </BrowserRouter>
+    </>
   )
 }
 

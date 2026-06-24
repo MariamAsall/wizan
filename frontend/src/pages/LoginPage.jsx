@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom"
 import api from "../api/axios"
 import "./Login.css"
 
+import toast from "react-hot-toast"
+
 function validate({ email, password }) {
   const errors = {}
 
@@ -41,6 +43,8 @@ export default function LoginPage() {
       localStorage.setItem("access_token",  data.tokens.access)
       localStorage.setItem("refresh_token", data.tokens.refresh)
       localStorage.setItem("user",          JSON.stringify(data.user))
+      
+      toast.success("Welcome back ")
       navigate("/quiz")
     } catch (err) {
       const msg =
