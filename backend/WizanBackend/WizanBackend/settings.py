@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'documents',
     "feedback",
     "drf_spectacular",
+    "emails",
 
     #SIMPLE_JWT
     'rest_framework',
@@ -114,6 +115,8 @@ DATABASES = {
 }
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+RESEND_API_KEY = os.getenv("RESEND_API_KEY")
+DEFAULT_FROM_EMAIL = "onboarding@resend.dev"
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
