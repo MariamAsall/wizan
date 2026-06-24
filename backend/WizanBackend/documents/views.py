@@ -11,6 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from .models import Document
 from .services.pdf_extractor import extract_text_from_pdf
+from .services.content_guard import guard_document_text, DocumentRejected
 from .services.rag import ask_document, suggest_tasks_from_document
 from .tasks import process_document_async
 
@@ -41,6 +42,22 @@ class DocumentUploadView(APIView):
             )
 
         raw_text = extract_text_from_pdf(uploaded_file)
+
+        # Reject the whole upload if the extracted text trips the
+        # injection guard. Checked here, before Document.objects.create(),
+        # so no DB row and no Celery task are ever created for a
+        # rejected file. See content_guard.py for why "reject whole
+        # document" was chosen over chunk-level quarantine.
+        try:
+            guard_document_text(raw_text)
+        except DocumentRejected as e:
+            return Response(
+                {
+                    "error": "This document could not be processed.",
+                    "detail": "Content flagged by security filter.",
+                },
+                status=400,
+            )
 
         doc = Document.objects.create(
             user=request.user,
