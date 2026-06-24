@@ -15,6 +15,8 @@ import RegulationPage from "./pages/RegulationPage";
 import ChatPage from "./pages/ChatPage";
 import QuizResultPage from './pages/QuizResultPage';
 import DocumentsPage from './pages/DocumentsPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 function App() {
   const { i18n } = useTranslation()
@@ -33,6 +35,8 @@ function App() {
         {/* Public — no navbar */}
         <Route path="/login"    element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
 
         {/* Protected — with navbar via MainLayout */}
         <Route element={<MainLayout />}>

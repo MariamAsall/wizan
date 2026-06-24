@@ -8,6 +8,28 @@
     "chat": "Chat",
     "documents": "Documents"
   },
+  "forgotPassword": {
+  "title": "Forgot your password?",
+  "sub": "Enter your email and we'll send you a reset link.",
+  "email": "Email",
+  "submit": "Send reset link",
+  "submitting": "Sending...",
+  "success": "If this email exists, a reset link has been sent.",
+  "error": "Something went wrong. Please try again.",
+  "backToLogin": "← Back to login"
+},
+"resetPassword": {
+  "title": "Reset your password",
+  "sub": "Enter your new password below.",
+  "password": "New password",
+  "confirm": "Confirm password",
+  "submit": "Reset password",
+  "submitting": "Resetting...",
+  "success": "Password reset successful. You can now log in.",
+  "error": "Invalid or expired link. Please request a new one.",
+  "mismatch": "Passwords do not match.",
+  "backToLogin": "← Back to login"
+},
   "quiz": {
     "title": "Morning Check-in",
     "start": "Start Quiz",
