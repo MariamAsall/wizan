@@ -82,6 +82,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'ai.middleware.prompt_injection.PromptInjectionMiddleware',
 ]
 
 ROOT_URLCONF = 'WizanBackend.urls'
