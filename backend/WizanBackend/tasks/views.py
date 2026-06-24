@@ -12,7 +12,7 @@ from ai.task_regulator_tools import get_tasks
 from ai.task_regulator_limits import apply_limits
 from ai.agents.planning_agent import run_planning_agent
 
-
+from notifications.services import create_notification
 
 
 class TaskViewSet(viewsets.ModelViewSet):
@@ -23,8 +23,15 @@ class TaskViewSet(viewsets.ModelViewSet):
         return Task.objects.filter(user=self.request.user).order_by('-created_at')
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        task = serializer.save(user=self.request.user)
 
+        create_notification(
+        user=self.request.user,
+        title="New Task Created ✅",
+        message=f"Task '{task.name}' was created successfully",
+        notification_type="success"
+    )
+        
     @action(detail=False, methods=['post'], url_path='override')
     def override(self, request):
         serializer = TaskOverrideSerializer(data=request.data)
@@ -73,6 +80,13 @@ class TaskViewSet(viewsets.ModelViewSet):
         task.status = 'overridden'
         task.save()
 
+        create_notification(
+        user=request.user,
+        title="Task Overridden ⚠️",
+        message=f"{task.name} status changed to overridden",
+        notification_type="warning"
+)
+
         return Response({
             "message": "Task overridden successfully.",
             "task_id": task_id,
@@ -113,6 +127,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         )
         # update allowed tasks in DB 
         for task in plan["allowed_tasks"]:
+            
             Task.objects.filter(id=task["id"], user=user).update(status="allowed")
             TaskLog.objects.create(
                 task_id=task["id"],
@@ -121,6 +136,12 @@ class TaskViewSet(viewsets.ModelViewSet):
                 reason="Approved by Task Regulator Agent"
             )
 
+        create_notification(
+            user=user,
+            title="Tasks Updated by AI 🧠",
+            message="Your task schedule was optimized based on your cognitive score",
+            notification_type="ai"
+)
         # Step 5: return full plan to frontend 
         return Response({
             "reply": plan["reply"],
@@ -249,6 +270,12 @@ class VoiceAddTaskView(APIView):
                 status='pending',
                 source='user_added'
             )
+            create_notification(
+                user=request.user,
+                title="New Voice Task 🎤",
+                message=f"{final_name} was added successfully",
+                notification_type="success"
+)
 
             serializer = TaskSerializer(new_task)
             return Response({

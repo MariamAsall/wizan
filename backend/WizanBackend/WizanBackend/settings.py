@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'documents',
     "feedback",
     "drf_spectacular",
+    "notifications",
 
     #SIMPLE_JWT
     'rest_framework',

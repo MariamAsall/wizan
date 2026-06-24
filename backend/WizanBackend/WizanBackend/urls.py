@@ -20,17 +20,11 @@ urlpatterns = [
     path('api/', include('documents.urls')),
 
     path("api/schema/", SpectacularAPIView.as_view()),
-    path(
-        "api/docs/",
-        SpectacularSwaggerView.as_view(
-            url_name="schema"
-        ),
-    ),
-    
-    path(
-    "api/",
-    include("feedback.urls")
-),
+    path( "api/docs/",SpectacularSwaggerView.as_view(  url_name="schema" ),),
+
+    path("api/",include("feedback.urls")),
+
+    path( "api/notifications/", include("notifications.urls")),
 
 
 ]
