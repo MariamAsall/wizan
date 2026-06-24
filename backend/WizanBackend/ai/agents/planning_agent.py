@@ -9,6 +9,7 @@ from ai.task_regulator_tools import postpone_task  # to update DB status
 
 from ai.llm import safe_llm_call  # Changed import
 
+from ai.filters.pii_filter import filter_pii
 
 AGENT_NAME = "planning_agent"
 
@@ -179,6 +180,8 @@ def run_planning_agent(
 
     # ── Step 7: One LLM call ─────────────────────────────────────────────
     reply = safe_llm_call(conversation)
+
+    reply = filter_pii(reply)
 
     # ── Step 8: Save history ─────────────────────────────────────────────
     history.append({"role": "assistant", "content": reply})

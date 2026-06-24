@@ -7,7 +7,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 from typing import Literal
 import json
-
+from ai.filters.pii_filter import filter_pii
 
 class CognitiveResponse(BaseModel):
     message:        str                              = Field(description="Supportive message about user's state today")
@@ -100,5 +100,8 @@ Return exactly this structure:
     # Step 5 — attach score metadata
     result["final_score"] = final_score
     result["zone"]        = score_data["zone"]
+
+    result["message"] = filter_pii(result.get("message", ""))
+    result["recommendation"] = filter_pii(result.get("recommendation", ""))
 
     return result
