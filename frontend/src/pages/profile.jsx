@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react"
 import api from "../api/axios"
 import "./profile.css"
+import { notify } from "../components/notifications"
+
 
 export default function Profile() {
   const [user, setUser] = useState(null)
@@ -105,6 +107,8 @@ export default function Profile() {
         confirm_password: passwordForm.confirm_password,
       })
 
+      notify.success("password_change")
+
       setShowPasswordModal(false)
 
       setPasswordForm({
@@ -113,7 +117,7 @@ export default function Profile() {
         confirm_password: "",
       })
     } catch (err) {
-      console.error(err)
+      notify.error("password_change")
     } finally {
       setChangingPassword(false)
     }

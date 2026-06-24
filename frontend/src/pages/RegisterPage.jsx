@@ -3,7 +3,8 @@ import { Link, useNavigate } from "react-router-dom"
 import api from "../api/axios"
 import "./Register.css"
 import "./Login.css"
-import { toast } from "react-hot-toast"
+import { notify } from "../components/notifications"
+
 
 function getPasswordStrength(password) {
   if (!password) return null
@@ -82,9 +83,10 @@ export default function RegisterPage() {
     setLoading(true)
     try {
       await api.post("/auth/register/", form)
-      toast.success("Account created successfully 🎉")
+      notify.success("register")
       navigate("/login")
     } catch (err) {
+      notify.error("register", err)
       const data = err.response?.data
       if (data && typeof data === "object") {
         const firstKey = Object.keys(data)[0]

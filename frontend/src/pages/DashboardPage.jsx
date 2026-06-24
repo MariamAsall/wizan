@@ -11,18 +11,17 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
 
   const user = JSON.parse(localStorage.getItem("user") || "{}")
+useEffect(() => {
+  const fetchDashboard = async () => {
+    try {
+      // 1. tasks (لازم تشتغل حتى لو briefing فشل)
+      const tasksRes = await api.get("/tasks/")
+      setTasks(tasksRes.data || [])
 
-  useEffect(() => {
-    const fetchDashboard = async () => {
+      // 2. briefing (لو فشل ما يكسرش الصفحة)
       try {
-        const [tasksRes, briefingRes] = await Promise.all([
-          api.get("/tasks/"),
-          api.get("/briefing/")
-        ])
+        const briefingRes = await api.get("/briefing/")
 
-        setTasks(tasksRes.data || [])
-
-        // support multiple possible API shapes
         setBriefing(
           briefingRes.data?.briefing ||
           briefingRes.data?.message ||
@@ -30,15 +29,23 @@ export default function DashboardPage() {
         )
 
       } catch (err) {
-        console.error("Dashboard Error:", err)
-        setBriefing("Unable to load AI briefing at the moment.")
-      } finally {
-        setLoading(false)
+        if (err.response?.status === 404) {
+          setBriefing("Please take the quiz first 🧠")
+        } else {
+          setBriefing("Unable to load AI briefing at the moment.")
+        }
       }
-    }
 
-    fetchDashboard()
-  }, [])
+    } catch (err) {
+      console.error("Dashboard Error:", err)
+      setBriefing("Unable to load dashboard data.")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  fetchDashboard()
+}, [])
 
   const completedTasks = tasks.filter(
     (task) => task.status === "allowed"
