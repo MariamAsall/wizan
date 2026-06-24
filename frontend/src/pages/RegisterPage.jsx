@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom"
 import api from "../api/axios"
 import "./Register.css"
 import "./Login.css"
+import { toast } from "react-hot-toast"
 
 function getPasswordStrength(password) {
   if (!password) return null
