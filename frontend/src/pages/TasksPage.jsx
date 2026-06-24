@@ -16,6 +16,9 @@ import "./Tasks.css"
 import { AlertCircleIcon, Edit, Trash2 } from "lucide-react"
 import VoiceRecorder from "../components/VoiceRecorder"
 
+import { notify } from "../components/notifications"
+
+
 const STATUS_STYLES = {
   allowed: "bg-emerald-100 text-emerald-700",
   pending: "bg-yellow-100 text-yellow-700",
@@ -80,12 +83,15 @@ export default function TasksPage() {
         priority: priority || "medium",
         deadline: deadline || null,
       })
+      notify.success("task_create", {task: input.trim()})
+
       setTasks((prev) => [...prev, res.data])
       setInput("")
       setPriority("")
       setDeadline("")
       setError(null)
     } catch {
+
       setError(t("tasks.error_add"))
     }
   }
@@ -96,6 +102,7 @@ export default function TasksPage() {
       setTasks((prev) => prev.filter((t) => t.id !== deletingId))
       setDeletingId(null)
     } catch {
+      notify.error("task_create")
       setError(t("common.error"))
     }
   }
@@ -111,10 +118,12 @@ export default function TasksPage() {
         priority: editPriority || "medium",
         deadline: editDeadline || null,
       })
+      notify.success("task_update")
       setEditingTask(null)
       setError(null)
       fetchTasks()
     } catch {
+      notify.error("task_update")
       setError(t("common.error"))
     }
   }

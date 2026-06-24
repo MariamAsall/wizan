@@ -5,6 +5,9 @@ import { Brain, Menu, X } from "lucide-react"
 import LanguageToggle from "./LanguageToggle"
 import { t } from "i18next"
 
+import NotificationBell from "./NotificationBell"
+
+
 const navLinkClass = ({ isActive }) =>
     `px-4 py-1 rounded-xl text-sm transition-all duration-300 ${isActive
         ? "bg-foreground text-background font-medium"
@@ -15,6 +18,8 @@ export function Navbar() {
   const [open, setOpen] = useState(false)
   const navigate = useNavigate()
 
+
+  
   const links = [
     { to: "/quiz", label: t("nav.quiz") },
     { to: "/result", label: t("nav.result") },
@@ -65,18 +70,23 @@ export function Navbar() {
         </div>
 
         {/* Right side */}
-        <div className="flex items-center gap-2">
-          <LanguageToggle />
-          <ThemeToggle />
+       <div className="flex items-center gap-2">
 
-          {/* Hamburger */}
-          <button
-            className="md:hidden p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-            onClick={() => setOpen(!open)}
-          >
-            {open ? <X size={20} /> : <Menu size={20} />}
-          </button>
-        </div>
+  <NotificationBell />
+
+  <LanguageToggle />
+
+  <ThemeToggle />
+
+  {/* Hamburger */}
+  <button
+    className="md:hidden p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+    onClick={() => setOpen(!open)}
+  >
+    {open ? <X size={20} /> : <Menu size={20} />}
+  </button>
+
+</div>
       </div>
 
       {/* Mobile menu */}

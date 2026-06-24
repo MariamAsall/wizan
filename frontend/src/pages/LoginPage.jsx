@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom"
 import api from "../api/axios"
 import "./Login.css"
 
+import { notify } from "../components/notifications"
+
 function validate({ email, password }) {
   const errors = {}
 
@@ -40,9 +42,14 @@ export default function LoginPage() {
       const { data } = await api.post("/auth/login/", { email, password })
       localStorage.setItem("access_token", data.tokens.access)
       localStorage.setItem("refresh_token", data.tokens.refresh)
+      localStorage.setItem("user",          JSON.stringify(data.user))
+      
+      notify.success("login", {name: data.user.first_name || data.user.username,})
+
       localStorage.setItem("user", JSON.stringify(data.user))
       navigate("/quiz")
     } catch (err) {
+      notify.error("login", err)
       const msg =
         err.response?.data?.non_field_errors?.[0] ||
         err.response?.data?.detail ||
