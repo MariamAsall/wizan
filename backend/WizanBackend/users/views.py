@@ -10,7 +10,7 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics
 from django.contrib.auth.models import update_last_login
-
+    
 
 
 def get_tokens_for_user(user):
