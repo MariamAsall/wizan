@@ -134,3 +134,5 @@ xxhash==3.7.0
 zope.event==6.2
 zope.interface==8.5
 zstandard==0.25.0
+drf-spectacular
+bleach

@@ -180,6 +180,7 @@ from voice_logs.services import transcribe_audio as transcribe_audio_service
 # استيراد جينيريتور الـ AI (Gemini) لاستخراج البيانات منظمّة
 from google import genai
 from django.conf import settings
+from voice_logs.services import structure_with_ai
 
 gemini_client = genai.Client(api_key=settings.GEMINI_API_KEY)
 class VoiceAddTaskView(APIView):
@@ -231,14 +232,7 @@ class VoiceAddTaskView(APIView):
             User Text: "{transcript}"
             """
 
-            ai_response = gemini_client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=prompt
-            )
-            
-            # 5. تنظيف وفك الـ JSON الراجع من الـ AI
-            raw_json = ai_response.text.strip().replace("```json", "").replace("```", "")
-            extracted_data = json.loads(raw_json)
+            extracted_data = structure_with_ai(prompt)
 
             # 6. دمج البيانات (إذا قادم ميعاد أو أولوية من الفرونت يدوياً نفضلها، وإلا نأخذ ما استخرجه الـ AI)
             final_name = extracted_data.get("name", transcript)
