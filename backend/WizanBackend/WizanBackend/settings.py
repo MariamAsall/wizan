@@ -58,6 +58,8 @@ INSTALLED_APPS = [
     'documents',
     "feedback",
     "drf_spectacular",
+    "audit_logs",
+    "django_extensions",
     "emails",
 
     #SIMPLE_JWT
@@ -168,10 +170,7 @@ REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": (
         "rest_framework.renderers.JSONRenderer",
     ),
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ),
-    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "EXCEPTION_HANDLER": "WizanBackend.exception_handlers.custom_exception_handler",
 }
 
 
@@ -218,4 +217,5 @@ CELERY_BROKER_URL = "redis://redis:6379/0"
 CELERY_RESULT_BACKEND = "redis://redis:6379/0"
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1','0.0.0.0']
+
 

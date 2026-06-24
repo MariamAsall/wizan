@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import ReactMarkdown from "react-markdown";
-import { Send, Sparkles } from "lucide-react";
+import { Send, Sparkles, ThumbsUp, ThumbsDown } from "lucide-react";
 import api from "../api/axios";
 
 
@@ -59,6 +59,18 @@ export default function ChatPage() {
     setLoading(false);
   };
 
+  const sendFeedback = async (message, rating) => {
+  try {
+    await api.post("/chat/feedback/", {
+      question: messages[messages.length - 2]?.text || "",
+      answer: message.text,
+      rating,
+    });
+  } catch (err) {
+    console.error(err);
+  }
+};
+
   useEffect(() => {
   sessionStorage.setItem("chat_messages", JSON.stringify(messages));
 }, [messages]);
@@ -87,15 +99,38 @@ export default function ChatPage() {
             >
               <div className="[&_p]:mb-2 [&_p:last-child]:mb-0 [&_strong]:font-semibold [&_ul]:my-2 [&_ul]:ms-4 [&_ul]:list-disc [&_li]:mb-1">
                 <ReactMarkdown>{msg.text}</ReactMarkdown>
-                {!isUser && <div>{msg.sources?.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {msg.sources.map((s, i) => (
-                      <span key={i} className="rounded-full border border-border bg-background px-2 py-0.5 text-xs text-foreground/60">
-                        {s.source} • p.{s.page}
-                      </span>
-                    ))}
-                  </div>
-                )}</div>}
+                {!isUser && (
+  <>
+    {msg.sources?.length > 0 && (
+      <div className="mt-2 flex flex-wrap gap-1.5">
+        {msg.sources.map((s, i) => (
+          <span
+            key={i}
+            className="rounded-full border border-border bg-background px-2 py-0.5 text-xs text-foreground/60"
+          >
+            {s.source} • p.{s.page}
+          </span>
+        ))}
+      </div>
+    )}
+
+    <div className="mt-3 flex items-center gap-2">
+      <button
+        onClick={() => sendFeedback(msg, 1)}
+        className="rounded-full p-2 hover:bg-green-100 transition"
+      >
+        <ThumbsUp size={16} />
+      </button>
+
+      <button
+        onClick={() => sendFeedback(msg, -1)}
+        className="rounded-full p-2 hover:bg-red-100 transition"
+      >
+        <ThumbsDown size={16} />
+      </button>
+    </div>
+  </>
+)}
               </div>
             </div>
           );

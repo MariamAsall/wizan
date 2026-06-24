@@ -4,6 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
+from django.utils.decorators import method_decorator
+from django_ratelimit.decorators import ratelimit
 
 # استيراد النماذج والـ Serializers
 from cognitive_logs.models import CognitiveLog
@@ -13,6 +15,7 @@ from .serializers import VoiceInputSerializer, VoiceLogSerializer
 
 # حل مشكلة التضارب: استيراد خدمة التفريغ الصوتي باسم مستعار واضح
 from .services import transcribe_audio as transcribe_audio_service
+from audit_logs.utils import log_action
 
 
 def _get_score_data_for_user(user):
@@ -61,6 +64,7 @@ def _get_score_data_for_user(user):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated]) # تأمين الـ STT أيضاً لربطه بالمستخدم مستقبلاً إن لزم الأمر
+@ratelimit(key='user_or_ip', rate='10/m', block=True)
 def transcribe_audio_api(request): # تغيير اسم الدالة لمنع التعارض تماماً
     """
     POST /api/voice/transcribe/
@@ -119,6 +123,7 @@ class VoicePlanView(APIView):
     """
     permission_classes = [IsAuthenticated]
 
+    @method_decorator(ratelimit(key='user_or_ip', rate='10/m', block=True))
     def post(self, request):
         serializer = VoiceInputSerializer(data=request.data)
         if not serializer.is_valid():
@@ -137,6 +142,10 @@ class VoicePlanView(APIView):
                 user=request.user,
                 session_id=session_id,
             )
+            log_action(
+                request.user,
+                "VOICE_PLAN"
+                )
             log_status = "success"
             error_msg  = ""
         except Exception as exc:

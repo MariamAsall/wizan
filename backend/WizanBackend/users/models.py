@@ -41,6 +41,13 @@ class User(AbstractUser):
     )
     date_of_birth = models.DateField(null=True, blank=True)
 
+    is_deleted = models.BooleanField(default=False)
+
+    deleted_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username", "first_name", "last_name"]
