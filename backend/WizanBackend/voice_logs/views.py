@@ -15,6 +15,7 @@ from .serializers import VoiceInputSerializer, VoiceLogSerializer
 
 # حل مشكلة التضارب: استيراد خدمة التفريغ الصوتي باسم مستعار واضح
 from .services import transcribe_audio as transcribe_audio_service
+from audit_logs.utils import log_action
 
 
 def _get_score_data_for_user(user):
@@ -141,6 +142,10 @@ class VoicePlanView(APIView):
                 user=request.user,
                 session_id=session_id,
             )
+            log_action(
+                request.user,
+                "VOICE_PLAN"
+                )
             log_status = "success"
             error_msg  = ""
         except Exception as exc:

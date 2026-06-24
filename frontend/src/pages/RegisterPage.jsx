@@ -81,6 +81,7 @@ export default function RegisterPage() {
     setLoading(true)
     try {
       await api.post("/auth/register/", form)
+      toast.success("Account created successfully 🎉")
       navigate("/login")
     } catch (err) {
       const data = err.response?.data

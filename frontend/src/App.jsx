@@ -14,6 +14,10 @@ import RegulationPage from "./pages/RegulationPage";
 
 import ChatPage from "./pages/ChatPage";
 import QuizResultPage from './pages/QuizResultPage';
+import DocumentsPage from './pages/DocumentsPage';
+import Profile from './pages/profile';
+
+import { Toaster } from "react-hot-toast"
 
 function App() {
   const { i18n } = useTranslation()
@@ -27,6 +31,23 @@ function App() {
   }, [])
 
   return (
+    <>
+   
+      <Toaster
+        position="button-right"
+        reverseOrder={false}
+        toastOptions={{
+          duration: 4000,
+
+          style: {
+            background: "var(--card)",
+            color: "var(--foreground)",
+            border: "1px solid var(--border)",
+            borderRadius: "12px",
+          },
+        }}
+      />
+
     <BrowserRouter>
       <Routes>
         {/* Public — no navbar */}
@@ -40,12 +61,16 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/tasks"     element={<TasksPage />} />
           <Route path="/chat"      element={<ChatPage />} />
+          <Route path="/documents"      element={<DocumentsPage />} />
           <Route path="/regulation" element={<RegulationPage />} />
+          <Route path="/profile" element={<Profile />} />
         </Route>
 
         <Route path="/" element={<Navigate to="/login" />} />
       </Routes>
+   
     </BrowserRouter>
+    </>
   )
 }
 

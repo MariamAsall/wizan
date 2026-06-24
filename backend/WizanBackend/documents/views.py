@@ -17,6 +17,10 @@ from .tasks import process_document_async
 
 from django.shortcuts import get_object_or_404
 
+import bleach
+from audit_logs.utils import log_action
+
+
 
 class DocumentUploadView(APIView):
     permission_classes = [IsAuthenticated]
@@ -63,6 +67,11 @@ class DocumentUploadView(APIView):
             user=request.user,
             filename=uploaded_file.name,
             raw_text=raw_text,
+        )
+
+        log_action(
+            request.user,
+            f"UPLOAD_DOCUMENT: {uploaded_file.name}"
         )
         process_document_async.delay(str(doc.id))  # async
 
@@ -115,10 +124,30 @@ class StudyChatView(APIView):
 
     @method_decorator(ratelimit(key='user_or_ip', rate='15/m', block=True))
     def post(self, request):
-        query = request.data.get('query')
+
+        query = request.data.get("query")
+
         if not query:
-            return Response({"error": "query is required"}, status=400)
+            return Response(
+                {"error": "query is required"},
+                status=400
+            )
+
+        query = bleach.clean(
+            query,
+            tags=[],
+            strip=True
+        )
 
         from .services.rag import study_chat
-        result = study_chat(query, request.user.id)
-        return Response(result)    
+
+        result = study_chat(
+            query,
+            request.user.id
+        )
+        log_action(
+            request.user,
+            "CHAT_QUERY"
+        )
+
+        return Response(result)

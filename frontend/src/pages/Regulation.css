@@ -1,0 +1,37 @@
+@reference "../index.css";
+
+.reg-root { @apply min-h-[calc(100vh-56px)] bg-background; }
+.reg-wrap { @apply max-w-[720px] mx-auto px-5 py-8; }
+
+.reg-title { @apply text-[28px] font-extrabold mb-1 text-foreground; }
+
+.reg-reply {
+  @apply rounded-2xl p-5 my-5 text-[15px] leading-relaxed text-foreground overflow-hidden;
+  background: linear-gradient(135deg, var(--primary) / 5%, transparent 80%);
+  border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
+  border-left: 3px solid var(--primary);
+  animation: replyIn 0.4s ease both;
+}
+
+@keyframes replyIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.reg-divider { @apply flex items-center gap-2 mb-3; }
+.reg-divider span { @apply text-[11px] font-bold uppercase tracking-[.08em] whitespace-nowrap text-muted-foreground; }
+.reg-divider::after { @apply content-[''] block h-px w-full bg-border; }
+
+.reg-card { @apply rounded-2xl border p-4 mb-2.5 transition-all bg-card border-border hover:border-primary hover:translate-x-[3px]; }
+.reg-card.postponed { @apply bg-muted opacity-60 hover:border-border hover:translate-x-0; }
+.reg-card-top { @apply flex items-center gap-2 mb-2; }
+.reg-card-title { @apply flex-1 text-[15px] font-bold text-foreground; }
+.reg-deadline { @apply text-xs text-muted-foreground mt-1; }
+.reg-reason { @apply text-xs mt-1 text-muted-foreground; }
+
+.reg-steps { @apply pl-4 border-l-2 border-muted mt-3; }
+.reg-step  { @apply flex items-center gap-2 text-[13px] py-0.5 text-muted-foreground; }
+.reg-dot      { @apply w-1.5 h-1.5 rounded-full flex-shrink-0 bg-border; }
+.reg-dot.done { @apply bg-primary; }
+
+.btn-override { @apply text-xs font-bold px-2.5 py-1 rounded-full cursor-pointer border-0 transition-all bg-destructive/15 text-destructive hover:bg-destructive/25; }
