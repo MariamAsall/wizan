@@ -30,3 +30,33 @@ def send_reset_email(user, token, uid):
         recipient_list=[user.email],
         html_message=html,
     )
+
+
+def send_score_email(user, score):
+    if score >= 60:
+        zone = "LOW"
+        zone_label = "Great cognitive day 🟢"
+        tip = "You're energized today. Wizan has unlocked all your tasks."
+    elif score >= 30:
+        zone = "MEDIUM"
+        zone_label = "Good cognitive day 🟡"
+        tip = "You're in solid shape. Wizan arranged your tasks efficiently."
+    else:
+        zone = "HIGH"
+        zone_label = "High cognitive load 🔴"
+        tip = "Take it easy today. Wizan reduced your tasks to protect your energy."
+
+    html = render_to_string("emails/score_summary.html", {
+        "name": user.first_name or user.username,
+        "score": score,
+        "zone_label": zone_label,
+        "tip": tip,
+    })
+
+    send_mail(
+        subject=f"Your Wizan score today: {score}/100",
+        message=f"Your cognitive score today is {score}/100. {tip}",
+        from_email=f"Wizan <{settings.DEFAULT_FROM_EMAIL}>",
+        recipient_list=[user.email],
+        html_message=html,
+    )
