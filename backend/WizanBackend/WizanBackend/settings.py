@@ -14,7 +14,8 @@ import os
 from dotenv import load_dotenv
 
 from pathlib import Path
-
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -215,3 +216,12 @@ CELERY_RESULT_BACKEND = "redis://redis:6379/0"
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1','0.0.0.0']
 
+#==========================Sentry====================
+sentry_sdk.init(
+    dsn="https://5b1b552a9f496d697491488df49e7107@o4511619057582080.ingest.us.sentry.io/4511619063742464",
+    integrations=[
+        DjangoIntegration(),
+    ],
+    traces_sample_rate=1.0,
+    send_default_pii=True,
+)

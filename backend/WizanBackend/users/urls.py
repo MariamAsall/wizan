@@ -13,6 +13,6 @@ urlpatterns = [
     path("refresh/", RefreshTokenView.as_view()),
     path("logout/", LogoutView.as_view()),
     path("profile/", ProfileView.as_view(), name="profile"),
-    path("change-password/", ChangePasswordView.as_view(), name="change-password")
+    path("change-password/", ChangePasswordView.as_view(), name="change-password"),
 
 ]
