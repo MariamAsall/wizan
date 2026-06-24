@@ -2,6 +2,8 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from django.utils.decorators import method_decorator
+from django_ratelimit.decorators import ratelimit
 from .models import Task, TaskLog, TaskStep
 from .serializers import TaskSerializer, TaskOverrideSerializer
 from ai.task_regulator_agent import run_task_regulator
@@ -96,6 +98,7 @@ class TaskViewSet(viewsets.ModelViewSet):
 
 
     @action(detail=False, methods=['post'], url_path='regulate')
+    @method_decorator(ratelimit(key='user_or_ip', rate='10/m', block=True))
     def regulate(self, request):
         user = request.user
         message = request.data.get("message", "Show me what I can do today")
@@ -151,6 +154,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         })
 
     @action(detail=True, methods=['post'], url_path='decompose')
+    @method_decorator(ratelimit(key='user_or_ip', rate='10/m', block=True))
     def decompose(self, request, pk=None):
         task = self.get_object()
         # get cognitive score 
@@ -203,6 +207,7 @@ gemini_client = genai.Client(api_key=settings.GEMINI_API_KEY)
 class VoiceAddTaskView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @method_decorator(ratelimit(key='user_or_ip', rate='10/m', block=True))
     def post(self, request):
         try:
             # 1. [جديد 🔥] التحقق من التاريخ القادم من الـ Frontend يدوياً قبل أي شيء لمنع التواريخ القديمة

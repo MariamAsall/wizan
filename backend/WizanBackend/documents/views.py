@@ -2,6 +2,9 @@ from django.shortcuts import render
 
 # Create your views here.
 
+from django.utils.decorators import method_decorator
+from django_ratelimit.decorators import ratelimit
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -14,11 +17,14 @@ from .tasks import process_document_async
 from django.shortcuts import get_object_or_404
 
 import bleach
+from audit_logs.utils import log_action
+
 
 
 class DocumentUploadView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @method_decorator(ratelimit(key='user_or_ip', rate='5/m', block=True))
     def post(self, request):
         # filename = request.data.get('filename')
         # raw_text = request.data.get('raw_text')  
@@ -45,6 +51,11 @@ class DocumentUploadView(APIView):
             filename=uploaded_file.name,
             raw_text=raw_text,
         )
+
+        log_action(
+            request.user,
+            f"UPLOAD_DOCUMENT: {uploaded_file.name}"
+        )
         process_document_async.delay(str(doc.id))  # async
 
         return Response({"id": doc.id, "status": doc.status}, status=201)
@@ -61,6 +72,7 @@ class DocumentStatusView(APIView):
 class AskDocumentView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @method_decorator(ratelimit(key='user_or_ip', rate='10/m', block=True))
     def post(self, request, doc_id):
         doc = get_object_or_404(Document, id=doc_id, user=request.user)
 
@@ -80,6 +92,7 @@ class AskDocumentView(APIView):
 class SuggestTasksView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @method_decorator(ratelimit(key='user_or_ip', rate='10/m', block=True))
     def post(self, request, doc_id):
         doc = get_object_or_404(Document, id=doc_id, user=request.user)
 
@@ -92,6 +105,7 @@ class SuggestTasksView(APIView):
 class StudyChatView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @method_decorator(ratelimit(key='user_or_ip', rate='15/m', block=True))
     def post(self, request):
 
         query = request.data.get("query")
@@ -113,6 +127,10 @@ class StudyChatView(APIView):
         result = study_chat(
             query,
             request.user.id
+        )
+        log_action(
+            request.user,
+            "CHAT_QUERY"
         )
 
         return Response(result)
