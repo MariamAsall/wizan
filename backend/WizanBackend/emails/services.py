@@ -1,17 +1,16 @@
-import resend
+from django.core.mail import send_mail
 from django.conf import settings
 from django.template.loader import render_to_string
-
-resend.api_key = settings.RESEND_API_KEY
 
 def send_welcome_email(user):
     html = render_to_string("emails/welcome.html", {
         "name": user.first_name or user.username,
     })
 
-    resend.Emails.send({
-        "from": settings.DEFAULT_FROM_EMAIL,
-        "to": user.email,
-        "subject": "Welcome to Wizan 🎉",
-        "html": html,
-    })
+    send_mail(
+        subject="Welcome to Wizan 🎉",
+        message="Welcome to Wizan! Your cognitive journey starts today.", 
+        from_email=f"Wizan <{settings.DEFAULT_FROM_EMAIL}>", 
+        recipient_list=[user.email],
+        html_message=html,
+)
