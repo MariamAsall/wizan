@@ -172,6 +172,8 @@ from .prompt_builder import build_system_prompt
 from .memory_manager import save_session_summary, load_past_summaries
 from ai.llm import safe_llm_call   # ← works with both Gemini and Groq
 
+from ai.filters.pii_filter import filter_pii
+
 env_path = Path(__file__).resolve().parent.parent / ".env"
 load_dotenv(env_path, override=True)
 
@@ -275,6 +277,8 @@ Based on the above, give the user a clear, supportive response about:
     # Why safe_llm_call? Because it handles quota automatically.
     # No loop needed — all data is already in the prompt.
     response_text = safe_llm_call(full_prompt)
+
+    response_text = filter_pii(response_text)
 
     # Step 9 — handle postponements
     # If any tasks are blocked, postpone them automatically

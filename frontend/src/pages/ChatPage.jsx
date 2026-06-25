@@ -46,6 +46,8 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const [feedbacks, setFeedbacks] = useState({});
+
   const handleSend = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
@@ -59,13 +61,18 @@ export default function ChatPage() {
     setLoading(false);
   };
 
-  const sendFeedback = async (message, rating) => {
+  const sendFeedback = async (messageIndex, message, rating) => {
   try {
     await api.post("/chat/feedback/", {
-      question: messages[messages.length - 2]?.text || "",
+      question: messages[messageIndex - 1]?.text || "",
       answer: message.text,
       rating,
     });
+
+    setFeedbacks((prev) => ({
+      ...prev,
+      [messageIndex]: rating,
+    }));
   } catch (err) {
     console.error(err);
   }
@@ -116,18 +123,27 @@ export default function ChatPage() {
 
     <div className="mt-3 flex items-center gap-2">
       <button
-        onClick={() => sendFeedback(msg, 1)}
-        className="rounded-full p-2 hover:bg-green-100 transition"
-      >
+        aria-label="Like response"
+        onClick={() => sendFeedback(i, msg, 1)}
+        className={`rounded-full p-2 transition ${
+        feedbacks[i] === 1
+    ? "bg-green-500 text-white"
+    : "hover:bg-green-100"
+       }`}>
         <ThumbsUp size={16} />
       </button>
 
       <button
-        onClick={() => sendFeedback(msg, -1)}
-        className="rounded-full p-2 hover:bg-red-100 transition"
-      >
-        <ThumbsDown size={16} />
-      </button>
+          aria-label="Dislike response"
+          onClick={() => sendFeedback(i, msg, -1)}
+          className={`rounded-full p-2 transition ${
+            feedbacks[i] === -1
+              ? "bg-red-500 text-white"
+              : "hover:bg-red-100"
+          }`}
+        >
+          <ThumbsDown size={16} />
+    </button>
     </div>
   </>
 )}
@@ -165,6 +181,7 @@ export default function ChatPage() {
       <form onSubmit={handleSend} className="border-t border-border px-6 py-4">
         <div className="flex items-center gap-2 rounded-full border border-border bg-card text-card-foreground px-3 py-1.5 transition focus-within:border-primary focus-within:bg-card">
           <input
+            aria-label="Chat message"
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -172,6 +189,7 @@ export default function ChatPage() {
             className="flex-1 bg-transparent px-2 py-1.5 text-[15px] text-foreground placeholder:text-foreground/50 focus:outline-none"
           />
           <button
+            aria-label="Send message"
             type="submit"
             disabled={!input.trim() || loading}
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full cursor-pointer bg-primary text-background transition hover:bg-primary/80 disabled:bg-secondary/70 disabled:text-foreground/50 disabled:cursor-not-allowed"

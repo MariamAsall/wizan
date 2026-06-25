@@ -57,8 +57,11 @@ import google.generativeai as genai
 from groq import Groq
 from django.conf import settings
 from pgvector.django import CosineDistance
+
+# from backend.WizanBackend.documents import tasks
 from ..models import Embedding
 # from rank_bm25 import BM25Okapi
+from ai.filters.pii_filter import filter_pii
 
 
 genai.configure(api_key=settings.GEMINI_API_KEY)
@@ -88,10 +91,13 @@ def ask_document(query: str, document_id: str) -> dict:
     answer = _generate(
         f"Answer based only on this context:\n\n{context}\n\nQuestion: {query}"
     )
+    answer = filter_pii(answer)
+
     return {
         "answer": answer,
+
         "source_chunks": [
-            {"index": c.chunk_index, "content": c.content[:200]}
+            {"index": c.chunk_index, "content": filter_pii(c.content[:200])}
             for c in chunks
         ],
     }
@@ -115,7 +121,11 @@ Content:
 
     clean = text.strip().strip("```json").strip("```").strip()
     data = json.loads(clean)
-    return data.get("tasks", [])
+    tasks = data.get("tasks", [])
+    for task in tasks:
+        task["title"] = filter_pii(task.get("title", ""))
+        task["description"] = filter_pii(task.get("description", ""))
+    return tasks
 
 def study_chat(query: str, user_id: int) -> dict:
     from .embedder import embed_query
@@ -136,6 +146,7 @@ def study_chat(query: str, user_id: int) -> dict:
     context = "\n\n".join([c.content for c in chunks])
 
     answer = run_resource_agent(query, context)
+    answer = filter_pii(answer)
 
     return {
         "answer": answer,
@@ -143,7 +154,7 @@ def study_chat(query: str, user_id: int) -> dict:
             {
                 "source": c.metadata.get("source", "Unknown"),
                 "page":   c.metadata.get("page", "?"),
-                "excerpt": c.content[:200],
+                "excerpt": filter_pii(c.content[:200]),
             }
             for c in chunks
         ],
