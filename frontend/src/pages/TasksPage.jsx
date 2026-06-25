@@ -263,16 +263,23 @@ if (loading) return (
             </div>
 
             {task.deadline && (
-              <div className="task-deadline">📅 {task.deadline}</div>
-            )}
+  <div className={`task-deadline ${task.deadline < today ? "task-deadline--overdue" : ""}`}>
+    {task.deadline < today ? "⚠️" : "📅"} {task.deadline}
+    {task.deadline < today && (
+      <span className="task-overdue-badge">{t("tasks.overdue")}</span>
+    )}
+  </div>
+)}
           </div>
         ))}
 
-        <div className="w-full flex justify-center items-center mt-6">
+        {
+          tasks.length !== 0 && <div className="w-full flex justify-center items-center mt-6">
           <Button className="btn-regulate" onClick={regulate} disabled={regulating}>
             {regulating ? t("common.loading") : t("tasks.plan_day")}
         </Button>
         </div>
+        }
 
       </div>
 
