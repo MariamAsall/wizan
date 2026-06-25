@@ -13,8 +13,28 @@ from ai.total_score import calculate_total_score
 from ai.task_regulator_tools import get_tasks
 from ai.task_regulator_limits import apply_limits
 from ai.agents.planning_agent import run_planning_agent
+from datetime import datetime, timedelta, time
+from django.utils import timezone
 
+# deadline reminder helper function
+def schedule_deadline_reminder(task, user):
+    if not task.deadline:
+        return
 
+    from emails.tasks import send_deadline_reminder_task
+
+    reminder_dt = datetime.combine(task.deadline, time.min) - timedelta(hours=24)
+    reminder_dt = timezone.make_aware(reminder_dt)
+    now = timezone.now()
+
+    if reminder_dt <= now:
+        return
+
+    countdown = int((reminder_dt - now).total_seconds())
+    send_deadline_reminder_task.apply_async(
+        args=[user.id, task.id],
+        countdown=countdown
+    )
 
 
 class TaskViewSet(viewsets.ModelViewSet):
@@ -25,7 +45,8 @@ class TaskViewSet(viewsets.ModelViewSet):
         return Task.objects.filter(user=self.request.user).order_by('-created_at')
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        task = serializer.save(user=self.request.user)
+        schedule_deadline_reminder(task, self.request.user)
 
     @action(detail=False, methods=['post'], url_path='override')
     def override(self, request):
@@ -260,6 +281,7 @@ class VoiceAddTaskView(APIView):
                 status='pending',
                 source='user_added'
             )
+            schedule_deadline_reminder(new_task, request.user)
 
             serializer = TaskSerializer(new_task)
             return Response({
