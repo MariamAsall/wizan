@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom"
 import api from "../api/axios"
 import "./Login.css"
 
+import { notify } from "../components/notifications"
+
 function validate({ email, password }) {
   const errors = {}
 
@@ -21,11 +23,11 @@ function validate({ email, password }) {
 
 export default function LoginPage() {
   const navigate = useNavigate()
-  const [email, setEmail]             = useState("")
-  const [password, setPassword]       = useState("")
-  const [errors, setErrors]           = useState({})
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [errors, setErrors] = useState({})
   const [serverError, setServerError] = useState("")
-  const [loading, setLoading]         = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -38,11 +40,16 @@ export default function LoginPage() {
     setLoading(true)
     try {
       const { data } = await api.post("/auth/login/", { email, password })
-      localStorage.setItem("access_token",  data.tokens.access)
+      localStorage.setItem("access_token", data.tokens.access)
       localStorage.setItem("refresh_token", data.tokens.refresh)
       localStorage.setItem("user",          JSON.stringify(data.user))
+      
+      notify.success("login", {name: data.user.first_name || data.user.username,})
+
+      localStorage.setItem("user", JSON.stringify(data.user))
       navigate("/quiz")
     } catch (err) {
+      notify.error("login", err)
       const msg =
         err.response?.data?.non_field_errors?.[0] ||
         err.response?.data?.detail ||
@@ -98,6 +105,11 @@ export default function LoginPage() {
               }}
             />
             {errors.password && <p className="field-error-msg">{errors.password}</p>}
+            <p className="text-right mt-1">
+              <Link to="/forgot-password" className="text-xs text-primary hover:underline font-bold">
+                Forgot password?
+              </Link>
+            </p>
           </div>
 
           <button type="submit" className="btn-primary" disabled={loading}>

@@ -17,11 +17,22 @@ from .tasks import process_document_async
 
 from django.shortcuts import get_object_or_404
 
+import bleach
+from audit_logs.utils import log_action
+
+
 
 class DocumentUploadView(APIView):
     permission_classes = [IsAuthenticated]
 
     @method_decorator(ratelimit(key='user_or_ip', rate='5/m', block=True))
+    def get(self, request):
+        docs = Document.objects.filter(user=request.user).order_by('uploaded_at')
+        return Response([
+            {"id": str(d.id), "filename": d.filename, "status": d.status}
+            for d in docs
+        ])
+
     def post(self, request):
         # filename = request.data.get('filename')
         # raw_text = request.data.get('raw_text')  
@@ -64,6 +75,11 @@ class DocumentUploadView(APIView):
             filename=uploaded_file.name,
             raw_text=raw_text,
         )
+
+        log_action(
+            request.user,
+            f"UPLOAD_DOCUMENT: {uploaded_file.name}"
+        )
         process_document_async.delay(str(doc.id))  # async
 
         return Response({"id": doc.id, "status": doc.status}, status=201)
@@ -75,6 +91,11 @@ class DocumentStatusView(APIView):
     def get(self, request, doc_id):
         doc = get_object_or_404(Document, id=doc_id, user=request.user)
         return Response({"id": doc.id, "status": doc.status})
+    
+    def delete(self, request, doc_id):
+        doc = get_object_or_404(Document, id=doc_id, user=request.user)
+        doc.delete()
+        return Response(status=204)
 
 
 class AskDocumentView(APIView):
@@ -115,10 +136,30 @@ class StudyChatView(APIView):
 
     @method_decorator(ratelimit(key='user_or_ip', rate='15/m', block=True))
     def post(self, request):
-        query = request.data.get('query')
+
+        query = request.data.get("query")
+
         if not query:
-            return Response({"error": "query is required"}, status=400)
+            return Response(
+                {"error": "query is required"},
+                status=400
+            )
+
+        query = bleach.clean(
+            query,
+            tags=[],
+            strip=True
+        )
 
         from .services.rag import study_chat
-        result = study_chat(query, request.user.id)
-        return Response(result)    
+
+        result = study_chat(
+            query,
+            request.user.id
+        )
+        log_action(
+            request.user,
+            "CHAT_QUERY"
+        )
+
+        return Response(result)

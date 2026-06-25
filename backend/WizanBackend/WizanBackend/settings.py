@@ -14,7 +14,8 @@ import os
 from dotenv import load_dotenv
 
 from pathlib import Path
-
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -56,6 +57,12 @@ INSTALLED_APPS = [
     'voice_logs',
     "pgvector.django",
     'documents',
+    "feedback",
+    "drf_spectacular",
+    "notifications",
+    "audit_logs",
+    "django_extensions",
+    "emails",
 
     #SIMPLE_JWT
     'rest_framework',
@@ -211,3 +218,23 @@ CELERY_BROKER_URL = "redis://redis:6379/0"
 CELERY_RESULT_BACKEND = "redis://redis:6379/0"
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1','0.0.0.0']
+
+#==========================Sentry====================
+sentry_sdk.init(
+    dsn="https://5b1b552a9f496d697491488df49e7107@o4511619057582080.ingest.us.sentry.io/4511619063742464",
+    integrations=[
+        DjangoIntegration(),
+    ],
+    traces_sample_rate=1.0,
+    send_default_pii=True,
+)
+# Email config
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER')
+
+

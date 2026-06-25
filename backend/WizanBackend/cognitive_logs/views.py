@@ -10,6 +10,7 @@ from django.utils.timezone import localdate
 
 from .models import CognitiveLog
 from .serializers import CognitiveLogSerializers
+from emails.services import send_score_email
 
 
 class CognitiveScoreView(APIView):
@@ -241,6 +242,14 @@ class SubmitQuizAPIView(APIView):
                 {"error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+        ## send score summary email
+        try:
+            cognitive_log.refresh_from_db()
+            email_score = cognitive_log.final_score or score
+            send_score_email(request.user, email_score)
+        except Exception:
+            pass
 
         return Response(
             {

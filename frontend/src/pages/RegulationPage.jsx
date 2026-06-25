@@ -1,224 +1,208 @@
-import { useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
-import axios from "axios";
-import "./RegulationPage.css";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react"
+import { useLocation, useNavigate } from "react-router-dom"
+import { useTranslation } from "react-i18next"
+import api from "../api/axios"
+import { Button } from "../components/ui/button"
+import { Alert, AlertDescription } from "../components/ui/alert"
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "../components/ui/alert-dialog"
+import "./Regulation.css"
+
+const PRIORITY_STYLES = {
+  low: "bg-emerald-100 text-emerald-700",
+  medium: "bg-blue-100 text-blue-700",
+  high: "bg-red-100 text-red-600",
+}
 
 export default function RegulationPage() {
-  const { state } = useLocation();
+  const { t, i18n } = useTranslation()
+  const isAr = i18n.language === "ar"
+  const navigate = useNavigate()
+  const { state } = useLocation()
 
-const navigate = useNavigate();
+  const [allowed, setAllowed] = useState(state?.allowed_tasks ?? [])
+  const [postponed, setPostponed] = useState(state?.postponed_tasks ?? [])
+  const [error, setError] = useState(null)
+  const [overridingId, setOverridingId] = useState(null)
 
-  const [allowed, setAllowed] = useState([]);
-  const [postponed, setPostponed] = useState([]);
+  const [stepsMap, setStepsMap] = useState({})
 
-  const [showOverrideModal, setShowOverrideModal] =
-  useState(false);
+  if (!state) return (
+    <div className="reg-root" dir={isAr ? "rtl" : "ltr"}>
+      <div className="reg-wrap flex flex-col justify-center items-center">
+        <Alert variant="destructive"><AlertDescription>{t("common.error")}</AlertDescription></Alert>
+        <Button className="mt-4 w-fit" onClick={() => navigate("/tasks")}>
+          {isAr ? "→" : "←"} {t("tasks.title")}
+        </Button>
+      </div>
+    </div>
+  )
 
-const [selectedTaskId, setSelectedTaskId] =
-  useState(null);
+  //  steps 
+  const toggleSteps = async (taskId) => {
+    const current = stepsMap[taskId]
 
+    // already fetched — just toggle expanded
+    if (current && current !== "loading") {
+      setStepsMap((prev) => ({
+        ...prev,
+        [taskId]: { ...current, expanded: !current.expanded },
+      }))
+      return
+    }
 
-  useEffect(() => {
-    fetchTasks();
-  }, []);
+    // already loading — do nothing
+    if (current === "loading") return
 
-  const fetchTasks = async () => {
-    const token = localStorage.getItem("access_token");
+    // fetch
+    setStepsMap((prev) => ({ ...prev, [taskId]: "loading" }))
+    try {
+      const res = await api.post(`/tasks/${taskId}/decompose/`)
+      setStepsMap((prev) => ({
+        ...prev,
+        [taskId]: { expanded: true, steps: res.data.steps },
+      }))
+    } catch {
+      setError(t("regulation.decompose_error"))
+      setStepsMap((prev) => { const s = { ...prev }; delete s[taskId]; return s })
+    }
+  }
 
-    const res = await axios.get(
-      "http://localhost:8000/api/tasks/",
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+  const isExpanded = (taskId) =>
+    stepsMap[taskId] && stepsMap[taskId] !== "loading" && stepsMap[taskId].expanded
 
-    const tasks = res.data;
-
-    setAllowed(
-      tasks.filter(
-        (t) =>
-          t.status === "allowed" ||
-          t.status === "overridden"
-      )
-    );
-
-    setPostponed(
-      tasks.filter(
-        (t) => t.status === "postponed"
-      )
-    );
-  };
-
-
-
-const handleOverrideClick = (taskId) => {
-  setSelectedTaskId(taskId);
-  setShowOverrideModal(true);
-};
-const confirmOverride = async () => {
-  if (!selectedTaskId) return;
-
-  try {
-    const token =
-      localStorage.getItem("access_token");
-
-    await axios.post(
-      "http://localhost:8000/api/tasks/override/",
-      {
-        task_id: selectedTaskId,
-        reason: "User decided to proceed",
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    setShowOverrideModal(false);
-    setSelectedTaskId(null);
-
-    fetchTasks();
-  } catch (error) {
-  console.error(error.response?.data || error);
-
-  setShowOverrideModal(false);
-  setSelectedTaskId(null);
-
-  alert(
-    error.response?.data?.error ||
-    "Override failed"
-  );
-}
-};
-
+  // override 
+  const confirmOverride = async () => {
+    try {
+      await api.post("/tasks/override/", { task_id: overridingId, reason: "User decided to proceed" })
+      const task = postponed.find((t) => t.id === overridingId)
+      setPostponed((prev) => prev.filter((t) => t.id !== overridingId))
+      setAllowed((prev) => [...prev, { ...task, status: "overridden" }])
+      setOverridingId(null)
+    } catch (err) {
+      setError(err.response?.data?.error || t("common.error"))
+      setOverridingId(null)
+    }
+  }
 
   return (
-    <div className="regulation-page">
+    <div className="reg-root" dir={isAr ? "rtl" : "ltr"}>
+      <div className="reg-wrap">
 
-      <h1>Today's Regulation</h1>
+        <Button variant="ghost" className="mb-6" onClick={() => navigate("/tasks")}>
+          {isAr ? "→" : "←"} {t("tasks.title")}
+        </Button>
 
-      {state?.message && (
-        <div className="agent-message">
-          🤖 {state.message}
+        <h1 className="reg-title">{t("regulation.title")}</h1>
+
+        {error && (
+          <Alert variant="destructive" className="my-4">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        {state.reply && (
+          <div className="reg-reply">{state.reply}</div>
+        )}
+
+        {/*  allowed  */}
+        <div className="reg-divider mb-3">
+          <span>✅ {t("regulation.allowed")}</span>
         </div>
-      )}
 
-      {state?.plan && (
-        <div className="plan-card">
-          <h3>Today's Plan</h3>
+        {allowed.length === 0 && (
+          <p className="text-sm text-muted-foreground mb-4">{t("tasks.no_tasks")}</p>
+        )}
 
-          <p>
-            Estimated Time:
-            {state.plan.estimated_time} min
-          </p>
+        {allowed.map((task) => (
+          <div key={task.id} className="reg-card">
+            <div className="reg-card-top">
+              <span className="reg-card-title">{task.name}</span>
+              <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${PRIORITY_STYLES[task.priority]}`}>
+                {t(`tasks.priority.${task.priority}`)}
+              </span>
+              <Button size="sm" variant="secondary" onClick={() => toggleSteps(task.id)}>
+                {stepsMap[task.id] === "loading"
+                  ? t("common.loading")
+                  : isExpanded(task.id)
+                    ? t("regulation.steps_hide")
+                    : t("regulation.steps_btn")}
+              </Button>
+            </div>
 
-          {state.plan.steps.map(
-            (step, index) => (
-              <div key={index}>
-                ✅ {step}
+            {task.deadline && <div className="reg-deadline">📅 {task.deadline}</div>}
+            {task.reason && <p className="reg-reason">💡 {task.reason}</p>}
+
+            {isExpanded(task.id) && (
+              <div className="reg-steps">
+                {stepsMap[task.id].steps.map((step, i) => (
+                  <div key={i} className="reg-step cursor-pointer select-none"
+                    onClick={() => setStepsMap((prev) => {
+                      const steps = prev[task.id].steps.map((s, j) =>
+                        j === i ? { ...s, is_completed: !s.is_completed } : s
+                      )
+                      return { ...prev, [task.id]: { ...prev[task.id], steps } }
+                    })}>
+                    <span className={`reg-dot ${step.is_completed ? "done" : ""}`} />
+                    <span className={step.is_completed ? "line-through opacity-50" : ""}>
+                      {step.description ?? step.name ?? step}
+                    </span>
+                  </div>
+                ))}
               </div>
-            )
-          )}
-        </div>
-      )}
+            )}
+          </div>
+        ))}
 
-      <h2>✅ Allowed Tasks</h2>
+        {/*  postponed  */}
+        {postponed.length > 0 && (
+          <>
+            <div className="reg-divider mt-6 mb-3">
+              <span>⏳ {t("regulation.postponed")}</span>
+            </div>
 
-      {allowed.map((task) => (
-        <div className="task-card" key={task.id}>
-          <h3>{task.name}</h3>
+            {postponed.map((task) => (
+              <div key={task.id} className="reg-card postponed">
+                <div className="reg-card-top">
+                  <span className="reg-card-title">{task.name}</span>
+                  <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${PRIORITY_STYLES[task.priority]}`}>
+                    {t(`tasks.priority.${task.priority}`)}
+                  </span>
+                  <Button size="sm" variant="destructive" onClick={() => setOverridingId(task.id)}>
+                    {t("regulation.override")}
+                  </Button>
+                </div>
+                {task.deadline && <div className="reg-deadline">📅 {task.deadline}</div>}
+                {task.reason && <p className="reg-reason">⚠️ {task.reason}</p>}
+              </div>
+            ))}
+          </>
+        )}
 
-          <span className="status allowed">
-            {task.status}
-          </span>
-        </div>
-      ))}
+        {postponed.length === 0 && (
+          <p className="text-sm text-muted-foreground mt-2">{t("regulation.no_postponed")}</p>
+        )}
 
-      <h2>⏳ Postponed Tasks</h2>
-
-      {postponed.map((task) => (
-  <div
-    className="task-card postponed"
-    key={task.id}
-  >
-    <h3>{task.name}</h3>
-
-    <div className="task-actions">
-      <span className="status postponed">
-        Postponed
-      </span>
-
-<button
-  className="btn-override"
-  onClick={() =>
-    handleOverrideClick(task.id)
-  }
->
-  Override
-</button>
-    </div>
-    
-  </div>
-))}
-{showOverrideModal && (
-  <div  className="modal-overlay"
-  onClick={() => {
-    setShowOverrideModal(false);
-    setSelectedTaskId(null);
-  }}>
-   <div
-  className="override-modal"
-  onClick={(e) => e.stopPropagation()}
->
-
-      <div className="warning-icon">
-        ⚠️
       </div>
 
-      <h2>Override Recommendation?</h2>
+      <AlertDialog open={!!overridingId} onOpenChange={(open) => !open && setOverridingId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("regulation.override_confirm_title")}</AlertDialogTitle>
+            <p className="text-sm text-muted-foreground mt-1">{t("regulation.override_confirm_desc")}</p>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("tasks.cancel")}</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={confirmOverride}>
+              {t("regulation.override")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-      <p>
-        This task was postponed because your
-        cognitive load may be high.
-      </p>
-
-     <p className="warning-text">
-  Your cognitive load is already high today.
-  Completing this task may be more difficult than usual.
-  Are you sure you want to continue?
-</p>
-      <div className="modal-buttons">
-        <button
-          className="btn-cancel"
-          onClick={() => {
-            setShowOverrideModal(false);
-            setSelectedTaskId(null);
-          }}
-        >
-          Cancel
-        </button>
-
-        <button
-          className="btn-confirm"
-          onClick={confirmOverride}
-        >
-          Override Anyway
-        </button>
-      </div>
     </div>
-  </div>
-)}
-
-<button
-  className="btn-back"
-  onClick={() => navigate("/tasks")}
->
-  ← Back to Tasks
-</button>
-    </div>
-  );
+  )
 }
