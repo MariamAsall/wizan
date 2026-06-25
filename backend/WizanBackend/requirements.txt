@@ -135,3 +135,6 @@ zope.interface==8.5
 zstandard==0.25.0
 drf-spectacular
 bleach
+django_ratelimit
+django_extensions
+sentry_sdk
