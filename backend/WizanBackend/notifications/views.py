@@ -5,6 +5,7 @@ from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework import status
 
 from .models import Notification
 from .serializers import NotificationSerializer 
@@ -82,3 +83,19 @@ class UnreadNotificationCountView(APIView):
         })
     
 
+class DeleteNotificationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, pk):
+        try:
+            notification = Notification.objects.get(id=pk, user=request.user)
+            notification.delete()
+            return Response({
+                "success": True, 
+                "message": "Notification deleted successfully."
+            }, status=status.HTTP_200_OK)
+        except Notification.DoesNotExist:
+            return Response({
+                "success": False, 
+                "error": "Notification not found."
+            }, status=status.HTTP_404_NOT_FOUND)
