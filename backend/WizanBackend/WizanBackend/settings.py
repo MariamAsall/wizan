@@ -71,6 +71,7 @@ INSTALLED_APPS = [
 
     'corsheaders',
 
+    "channels",
   
 ]
 
@@ -238,3 +239,17 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER')
 
 
+# real-time notifications
+
+
+
+ASGI_APPLICATION = "WizanBackend.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis", 6379)],
+        },
+    },
+}

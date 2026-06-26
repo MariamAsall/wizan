@@ -138,3 +138,5 @@ bleach
 django_ratelimit
 django_extensions
 sentry_sdk
+channels-redis
+daphne

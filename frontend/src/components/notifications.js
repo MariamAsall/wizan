@@ -8,6 +8,7 @@ export const notify = {
       task_create: `Task "${data.task}" added successfully 🎯`,
       task_update: `Task updated successfully ✨`,
       task_delete: "Task deleted successfuly " ,
+      
 
       password_change: `Password updated successfully 🔐`,
       logout: `See you soon 👋`,
