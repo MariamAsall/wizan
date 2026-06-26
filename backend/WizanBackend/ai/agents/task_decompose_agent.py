@@ -4,6 +4,9 @@ from ai.llm import safe_llm_call              # ← changed from get_llm
 from ai.prompt_builder import build_system_prompt
 import json
 from ai.llm import safe_llm_call 
+from ai.filters.pii_filter import filter_pii
+
+
 BASE_PROMPT = """
 You are Wizan's Task Decompose Agent.
 Your job is to break down a single task into small manageable steps
@@ -72,5 +75,7 @@ Respond with ONLY the JSON object. No extra text.
             "tone":           tone,
             "estimated_time": 30
         }
+    for step in result.get("steps", []):
+        step["description"] = filter_pii(step.get("description", ""))
 
     return result
