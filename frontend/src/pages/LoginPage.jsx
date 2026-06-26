@@ -1,6 +1,8 @@
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import api from "../api/axios"
+import { GoogleLogin } from '@react-oauth/google'
+import { useTranslation } from 'react-i18next'
 import "./Login.css"
 
 function validate({ email, password }) {
@@ -26,6 +28,7 @@ export default function LoginPage() {
   const [errors, setErrors] = useState({})
   const [serverError, setServerError] = useState("")
   const [loading, setLoading] = useState(false)
+  const { t } = useTranslation()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -52,6 +55,25 @@ export default function LoginPage() {
       setLoading(false)
     }
   }
+
+// const handleGoogleLogin = useGoogleLogin({
+//   onSuccess: async (response) => {
+//     try {
+//       const { data } = await api.post("/auth/google/", {
+//         token: response.access_token,
+//       })
+//       localStorage.setItem("access_token", data.tokens.access)
+//       localStorage.setItem("refresh_token", data.tokens.refresh)
+//       localStorage.setItem("user", JSON.stringify(data.user))
+//       navigate("/quiz")
+//     } catch {
+//       setServerError("Google login failed. Please try again.")
+//     }
+//   },
+//   onError: () => {
+//     setServerError("Google login failed. Please try again.")
+//   }
+// })
 
   return (
     <div className="login-root">
@@ -112,15 +134,23 @@ export default function LoginPage() {
 
         <div className="login-divider"><span>or</span></div>
 
-        <button type="button" className="btn-google">
-          <span className="google-icon">
-            <span style={{ background: "#4285F4", display: "block" }} />
-            <span style={{ background: "#34A853", display: "block" }} />
-            <span style={{ background: "#FBBC05", display: "block" }} />
-            <span style={{ background: "#EA4335", display: "block" }} />
-          </span>
-          Continue with Google
-        </button>
+        <GoogleLogin
+        className="bg-red-500"
+  onSuccess={async (response) => {
+    try {
+      const { data } = await api.post("/auth/google/", {
+        token: response.credential, 
+      })
+      localStorage.setItem("access_token", data.tokens.access)
+      localStorage.setItem("refresh_token", data.tokens.refresh)
+      localStorage.setItem("user", JSON.stringify(data.user))
+      navigate("/quiz")
+    } catch {
+      setServerError("Google login failed. Please try again.")
+    }
+  }}
+  onError={() => setServerError("Google login failed. Please try again.")}
+/>
 
         <p className="text-center text-sm mt-6 text-muted-foreground">
           No account?{" "}
