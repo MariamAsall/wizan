@@ -60,3 +60,19 @@ def send_score_email(user, score):
         recipient_list=[user.email],
         html_message=html,
     )
+
+
+def send_deadline_reminder(user, task_name, deadline):
+    html = render_to_string("emails/reminder.html", {
+        "name": user.first_name or user.username,
+        "task_name": task_name,
+        "deadline": deadline,
+    })
+
+    send_mail(
+        subject=f"⏰ Reminder: '{task_name}' is due tomorrow",
+        message=f"Hi {user.first_name}, your task '{task_name}' is due tomorrow ({deadline}).",
+        from_email=f"Wizan <{settings.DEFAULT_FROM_EMAIL}>",
+        recipient_list=[user.email],
+        html_message=html,
+    )

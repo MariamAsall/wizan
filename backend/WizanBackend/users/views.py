@@ -16,7 +16,9 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from emails.services import send_reset_email
-
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+from django.conf import settings
 
 def get_tokens_for_user(user):
     refresh= RefreshToken.for_user(user)
@@ -96,6 +98,52 @@ class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
     permission_classes = [AllowAny]
+
+
+class GoogleLoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        token = request.data.get("token")
+
+        if not token:
+            return Response(
+                {"error": "Token is required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            google_info = id_token.verify_oauth2_token(
+                token,
+                google_requests.Request(),
+                settings.GOOGLE_CLIENT_ID
+            )
+        except ValueError:
+            return Response(
+                {"error": "Invalid Google token."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        email = google_info.get("email")
+        first_name = google_info.get("given_name", "")
+        last_name = google_info.get("family_name", "")
+        username = email.split("@")[0]
+
+        user, created = User.objects.get_or_create(
+            email=email,
+            defaults={
+                "username": username,
+                "first_name": first_name,
+                "last_name": last_name,
+            }
+        )
+        tokens = get_tokens_for_user(user)
+
+        return Response({
+            "message": "Login successful",
+            "tokens": tokens,
+            "user": UserProfileSerializer(user).data,
+        }, status=status.HTTP_200_OK)
 
 
 

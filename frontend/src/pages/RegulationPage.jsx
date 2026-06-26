@@ -29,6 +29,8 @@ export default function RegulationPage() {
 
   const [stepsMap, setStepsMap] = useState({})
 
+  const today = new Date().toISOString().split("T")[0]
+
   if (!state) return (
     <div className="reg-root" dir={isAr ? "rtl" : "ltr"}>
       <div className="reg-wrap flex flex-col justify-center items-center">
@@ -132,7 +134,14 @@ export default function RegulationPage() {
               </Button>
             </div>
 
-            {task.deadline && <div className="reg-deadline">📅 {task.deadline}</div>}
+            {task.deadline && (
+  <div className={`task-deadline ${task.deadline < today ? "task-deadline--overdue" : ""}`}>
+    {task.deadline < today ? "⚠️" : "📅"} {task.deadline}
+    {task.deadline < today && (
+      <span className="task-overdue-badge">{t("tasks.overdue")}</span>
+    )}
+  </div>
+)}
             {task.reason && <p className="reg-reason">💡 {task.reason}</p>}
 
             {isExpanded(task.id) && (
