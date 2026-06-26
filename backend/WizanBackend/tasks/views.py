@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from django.utils.decorators import method_decorator
 from django_ratelimit.decorators import ratelimit
 from .models import Task, TaskLog, TaskStep
-from .serializers import TaskSerializer, TaskOverrideSerializer
+from .serializers import TaskSerializer, TaskOverrideSerializer,TaskRegulateRequestSerializer,TaskRegulateResponseSerializer,TaskDecomposeResponseSerializer,VoiceTaskResponseSerializer
 from ai.task_regulator_agent import run_task_regulator
 from ai.task_regulator_memory import get_session, save_session
 from ai.agents.task_decompose_agent import run_task_decompose_agent
@@ -35,6 +35,7 @@ def schedule_deadline_reminder(task, user):
         args=[user.id, task.id],
         countdown=countdown
     )
+from drf_spectacular.utils import extend_schema
 
 from notifications.services import create_notification
 
@@ -60,6 +61,10 @@ class TaskViewSet(viewsets.ModelViewSet):
     )
         
     @action(detail=False, methods=['post'], url_path='override')
+    @extend_schema(
+    request=TaskOverrideSerializer,
+    responses={200: dict},
+)
     def override(self, request):
         serializer = TaskOverrideSerializer(data=request.data)
         if not serializer.is_valid():
@@ -124,6 +129,10 @@ class TaskViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'], url_path='regulate')
     @method_decorator(ratelimit(key='user_or_ip', rate='10/m', block=True))
+    @extend_schema(
+    request=TaskRegulateRequestSerializer,
+    responses={200: TaskRegulateResponseSerializer},
+)
     def regulate(self, request):
         user = request.user
         message = request.data.get("message", "Show me what I can do today")
@@ -178,6 +187,9 @@ class TaskViewSet(viewsets.ModelViewSet):
             "session_id": result["session_id"]
         })
 
+    @extend_schema(
+    responses={200: TaskDecomposeResponseSerializer},
+)
     @action(detail=True, methods=['post'], url_path='decompose')
     @method_decorator(ratelimit(key='user_or_ip', rate='10/m', block=True))
     def decompose(self, request, pk=None):
@@ -224,8 +236,13 @@ from django.conf import settings
 from voice_logs.services import structure_with_ai
 
 gemini_client = genai.Client(api_key=settings.GEMINI_API_KEY)
+@extend_schema(
+    request=None,
+    responses={201: VoiceTaskResponseSerializer},
+)
 class VoiceAddTaskView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = TaskSerializer
 
     @method_decorator(ratelimit(key='user_or_ip', rate='10/m', block=True))
     def post(self, request):

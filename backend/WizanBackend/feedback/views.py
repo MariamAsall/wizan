@@ -3,12 +3,17 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from .models import ChatFeedback
-from .serializers import ChatFeedbackSerializer
+from .serializers import ChatFeedbackSerializer,FeedbackStatsSerializer
+from drf_spectacular.utils import extend_schema
 
-
+@extend_schema(
+    request=ChatFeedbackSerializer,
+    responses={201: None},
+)
 class ChatFeedbackView(APIView):
 
     permission_classes = [IsAuthenticated]
+    serializer_class = ChatFeedbackSerializer
 
     def post(self, request):
 
@@ -34,8 +39,14 @@ class ChatFeedbackView(APIView):
             status=status.HTTP_201_CREATED
         )
     
-
+@extend_schema(
+    responses={200: FeedbackStatsSerializer},
+)
 class FeedbackStatsView(APIView):
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = FeedbackStatsSerializer
+    
     def get(self, request):
         likes = ChatFeedback.objects.filter(rating=1).count()
         dislikes = ChatFeedback.objects.filter(rating=-1).count()
