@@ -19,6 +19,8 @@
 .task-card-top { @apply flex items-center gap-2 mb-2; }
 .task-card-title { @apply flex-1 text-[15px] font-bold text-foreground; }
 .task-deadline { @apply text-xs text-muted-foreground mt-1; }
+.task-deadline--overdue { @apply text-red-500; }
+.task-overdue-badge { @apply ms-2 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-600; }
 
 .tasks-loading { @apply min-h-[calc(100vh-56px)] flex flex-col items-center justify-center gap-3 text-muted-foreground; }
 .tasks-spinner { width:28px; height:28px; border:2px solid var(--primary); border-top-color:transparent; border-radius:50%; animation:spin 0.7s linear infinite; }
