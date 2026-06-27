@@ -40,6 +40,7 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'backend']
 # Application definition
 
 INSTALLED_APPS = [
+    # 'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -71,6 +72,7 @@ INSTALLED_APPS = [
 
     'corsheaders',
 
+    "channels",
   
 ]
 
@@ -173,6 +175,8 @@ REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": (
         "rest_framework.renderers.JSONRenderer",
     ),
+    
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "EXCEPTION_HANDLER": "WizanBackend.exception_handlers.custom_exception_handler",
 }
 
@@ -216,8 +220,9 @@ CORS_ALLOWED_ORIGINS = [
 ]
 CORS_ALLOW_CREDENTIALS = True
 
-CELERY_BROKER_URL = "redis://redis:6379/0"
-CELERY_RESULT_BACKEND = "redis://redis:6379/0"
+# settings.py
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://127.0.0.1:6379/0")
+CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://127.0.0.1:6379/0")
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1','0.0.0.0']
 
@@ -240,3 +245,17 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER')
 
 
+
+
+
+ASGI_APPLICATION = "WizanBackend.asgi.application"
+
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.pubsub.RedisPubSubChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis", 6379)], 
+        },
+    },
+}

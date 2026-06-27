@@ -21,6 +21,8 @@ import { Toaster } from "react-hot-toast"
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 
+// import useNotifications from "./hooks/useNotifications"
+
 import ProtectedRoute from './components/ProtectedRoute'
 import LandingPage from './pages/LandingPage'
 import PublicLayout from './layouts/PublicLayout';
@@ -28,6 +30,7 @@ import PublicLayout from './layouts/PublicLayout';
 function App() {
   const { i18n } = useTranslation()
 
+  // useNotifications()
   useEffect(() => {
     // Restore saved language on first load
     const saved = localStorage.getItem('wizan-lang') || 'en'
@@ -40,7 +43,7 @@ function App() {
     <>
    
       <Toaster
-        position="button-right"
+        position="buttom-right"
         reverseOrder={false}
         toastOptions={{
           duration: 4000,

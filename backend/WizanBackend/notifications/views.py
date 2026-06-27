@@ -5,11 +5,16 @@ from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework import status
 
 from .models import Notification
-from .serializers import NotificationSerializer 
+from .serializers import NotificationSerializer,NotificationCountSerializer,SuccessSerializer,UnreadCountSerializer
+from drf_spectacular.utils import extend_schema
 
 
+@extend_schema(
+    responses=NotificationSerializer(many=True),
+)
 class NotificationListView(generics.ListAPIView):
     serializer_class = NotificationSerializer
     permission_classes = [IsAuthenticated]
@@ -19,9 +24,12 @@ class NotificationListView(generics.ListAPIView):
             user=self.request.user
         )
     
-
+@extend_schema(
+    responses=NotificationCountSerializer,
+)
 class NotificationCountView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = NotificationCountSerializer
 
     def get(self, request):
 
@@ -34,9 +42,13 @@ class NotificationCountView(APIView):
             "unread_count": count
         })
     
-
+@extend_schema(
+    request=None,
+    responses=SuccessSerializer,
+)
 class MarkNotificationReadView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = SuccessSerializer
 
     def post(self, request, pk):
 
@@ -52,9 +64,13 @@ class MarkNotificationReadView(APIView):
             "success": True
         })
     
-
+@extend_schema(
+    request=None,
+    responses=SuccessSerializer,
+)
 class MarkAllNotificationsReadView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = SuccessSerializer
 
     def post(self, request):
 
@@ -67,9 +83,12 @@ class MarkAllNotificationsReadView(APIView):
             "success": True
         })
     
-
+@extend_schema(
+    responses=UnreadCountSerializer,
+)
 class UnreadNotificationCountView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = UnreadCountSerializer
 
     def get(self, request):
         count = Notification.objects.filter(
@@ -82,3 +101,19 @@ class UnreadNotificationCountView(APIView):
         })
     
 
+class DeleteNotificationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, pk):
+        try:
+            notification = Notification.objects.get(id=pk, user=request.user)
+            notification.delete()
+            return Response({
+                "success": True, 
+                "message": "Notification deleted successfully."
+            }, status=status.HTTP_200_OK)
+        except Notification.DoesNotExist:
+            return Response({
+                "success": False, 
+                "error": "Notification not found."
+            }, status=status.HTTP_404_NOT_FOUND)

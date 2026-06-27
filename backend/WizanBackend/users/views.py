@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import User
-from .serializers import RegisterSerializer, LoginSerializer, UserProfileSerializer, ChangePasswordSerializer
+from .serializers import RegisterSerializer, LoginSerializer, UserProfileSerializer, ChangePasswordSerializer, PasswordResetRequestSerializer,PasswordResetConfirmSerializer
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics
@@ -19,6 +19,8 @@ from emails.services import send_reset_email, send_welcome_email
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from django.conf import settings
+from drf_spectacular.utils import extend_schema
+
 
 def get_tokens_for_user(user):
     refresh= RefreshToken.for_user(user)
@@ -32,8 +34,14 @@ def get_tokens_for_user(user):
         "access": str(refresh.access_token),
     }
 
+
+@extend_schema(
+    request=LoginSerializer,
+    responses={200: UserProfileSerializer},
+)
 class LoginView (APIView):
     permission_classes=[AllowAny]
+    serializer_class = LoginSerializer
 
     def post(self,request):
         serializer= LoginSerializer(data= request.data)
@@ -51,6 +59,10 @@ class LoginView (APIView):
 
         )
 
+@extend_schema(
+    request=None,
+    responses={200: None},
+)
 class RefreshTokenView(APIView):
 
     def post(self, request):
@@ -71,8 +83,11 @@ class RefreshTokenView(APIView):
             )
         
 
+@extend_schema(
+    request=None,
+    responses={200: None},
+)
 class LogoutView(APIView):
-
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -164,8 +179,14 @@ class ProfileView(generics.RetrieveUpdateAPIView):
     
 
 
+@extend_schema(
+    request=ChangePasswordSerializer,
+    responses={200: None},
+)
 class ChangePasswordView(APIView):
+
     permission_classes = [IsAuthenticated]
+    serializer_class = ChangePasswordSerializer
 
     def post(self, request):
         serializer = ChangePasswordSerializer(
@@ -183,8 +204,14 @@ class ChangePasswordView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@extend_schema(
+    request=PasswordResetRequestSerializer,
+    responses={200: None},
+)
 class PasswordResetRequestView(APIView):
+
     permission_classes = [AllowAny]
+    serializer_class = PasswordResetRequestSerializer
 
     def post(self, request):
         email = request.data.get("email")
@@ -202,8 +229,14 @@ class PasswordResetRequestView(APIView):
         }, status=status.HTTP_200_OK)
 
 
+@extend_schema(
+    request=PasswordResetConfirmSerializer,
+    responses={200: None},
+)
 class PasswordResetConfirmView(APIView):
+
     permission_classes = [AllowAny]
+    serializer_class = PasswordResetConfirmSerializer
 
     def post(self, request):
         token = request.data.get("token")

@@ -231,3 +231,12 @@ class ChangePasswordSerializer(serializers.Serializer):
         user = self.context["request"].user
         user.set_password(self.validated_data["new_password"])
         user.save()
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    uid = serializers.CharField()
+    token = serializers.CharField()
+    new_password = serializers.CharField()
