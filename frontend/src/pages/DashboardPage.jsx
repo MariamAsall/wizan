@@ -1,10 +1,15 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
+import { useTranslation } from "react-i18next"
+
+
 import "./Dashboard.css"
 import api from "../api/axios"
 
 export default function DashboardPage() {
   const navigate = useNavigate()
+const { t, i18n } = useTranslation()
+  const isAr = i18n.language === "ar"
 
   const [tasks, setTasks] = useState([])
   const [briefing, setBriefing] = useState("")
@@ -30,15 +35,15 @@ useEffect(() => {
 
       } catch (err) {
         if (err.response?.status === 404) {
-          setBriefing("Please take the quiz first 🧠")
+          setBriefing(t("dashboard.quiz_first"))
         } else {
-          setBriefing("Unable to load AI briefing at the moment.")
+          setBriefing(t("dashboard.ai_error"))
         }
       }
 
     } catch (err) {
       console.error("Dashboard Error:", err)
-      setBriefing("Unable to load dashboard data.")
+      setBriefing(t("dashboard.dashboard_error"))
     } finally {
       setLoading(false)
     }
@@ -73,16 +78,17 @@ useEffect(() => {
       )
     )
 
-  if (loading) {
-    return (
-      <div className="dash-root">
-        <div className="dash-wrap">Loading...</div>
-      </div>
-    )
-  }
+ if (loading) {
+  return (
+    <div className="tasks-loading">
+      <div className="tasks-spinner" />
+      <p>{t("dashboard.loading")}</p>
+    </div>
+  )
+}
 
   return (
-    <div className="dash-root">
+    <div className="dash-root" dir={isAr ? "rtl" : "ltr"}>
       <div className="dash-wrap">
 
         {/* HERO */}
@@ -90,15 +96,13 @@ useEffect(() => {
           <div className="hero-top">
 
             <div>
-              <h1 className="hero-title">
-                Welcome back,{" "}
-                {user?.first_name ||
-                  user?.username ||
-                  "User"} 👋
-              </h1>
+            <h1 className="hero-title">
+  {t("dashboard.welcome")}{" "}
+  {user?.first_name || user?.username || t("dashboard.user")} 👋
+    </h1>
 
               <p className="hero-sub">
-                Here is your daily productivity overview.
+                {t("dashboard.subtitle")}
               </p>
             </div>
 
@@ -106,7 +110,7 @@ useEffect(() => {
               className="profile-btn"
               onClick={() => navigate("/profile")}
             >
-              👤 Profile
+              👤 {t("dashboard.profile")}
             </button>
 
           </div>
@@ -117,7 +121,7 @@ useEffect(() => {
 
           <div className="wellness-card">
             <div className="wellness-label">
-              Total Tasks
+              {t("dashboard.total_tasks")}
             </div>
             <div className="wellness-value">
               {tasks.length}
@@ -126,7 +130,7 @@ useEffect(() => {
 
           <div className="wellness-card">
             <div className="wellness-label">
-              Completed
+              {t("dashboard.completed")}
             </div>
             <div className="wellness-value">
               {completedTasks}
@@ -135,7 +139,7 @@ useEffect(() => {
 
           <div className="wellness-card">
             <div className="wellness-label">
-              Pending
+              {t("dashboard.pending")}
             </div>
             <div className="wellness-value">
               {pendingTasks}
@@ -144,7 +148,7 @@ useEffect(() => {
 
           <div className="wellness-card">
             <div className="wellness-label">
-              Progress
+              {t("dashboard.progress")}
             </div>
             <div className="wellness-value">
               {progress}%
@@ -157,7 +161,7 @@ useEffect(() => {
         <div className="overview-card">
 
           <h2 className="section-title">
-            Productivity Progress
+              {t("dashboard.productivity_progress")}
           </h2>
 
           <div className="progress-container">
@@ -169,7 +173,10 @@ useEffect(() => {
             </div>
 
             <p className="progress-text">
-              {completedTasks} of {tasks.length} tasks completed
+            {t("dashboard.progress_text", {
+  completed: completedTasks,
+  total: tasks.length,
+})}
             </p>
           </div>
 
@@ -179,11 +186,11 @@ useEffect(() => {
         <div className="ai-card">
 
           <div className="ai-header">
-            🧠 AI Daily Briefing
+            🧠 {t("dashboard.ai_briefing")}
           </div>
 
           <p className="ai-text">
-            {briefing || "No briefing available."}
+             {briefing || t("dashboard.no_briefing")}
           </p>
 
         </div>
@@ -193,7 +200,7 @@ useEffect(() => {
 
           <div className="section-head">
             <h2 className="section-title">
-              Today's Tasks
+              {t("dashboard.today_tasks")}
             </h2>
 
             <span className="badge-green">
@@ -203,7 +210,7 @@ useEffect(() => {
 
           {tasks.length === 0 ? (
             <p className="dash-sub">
-              No tasks available.
+              {t("dashboard.no_tasks")}
             </p>
           ) : (
             tasks.slice(0, 5).map((task) => {
@@ -238,12 +245,7 @@ useEffect(() => {
                         : `cost-${task.priority}`
                     }
                   >
-                    {{
-                      low: "Low",
-                      medium: "Medium",
-                      high: "High",
-                    }[task.priority] ||
-                      task.priority}
+                    {t(`tasks.priority.${task.priority}`)}
                   </span>
                 </div>
               )
@@ -258,7 +260,7 @@ useEffect(() => {
             className="btn-dash-cta"
             onClick={() => navigate("/tasks")}
           >
-            View Full Task Board →
+            {t("dashboard.view_tasks")}
           </button>
         </div>
 
