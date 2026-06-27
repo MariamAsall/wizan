@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
+import { useTranslation } from "react-i18next"
+
 import "./Dashboard.css"
 import api from "../api/axios"
 
 export default function DashboardPage() {
   const navigate = useNavigate()
-
+const { t } = useTranslation()
   const [tasks, setTasks] = useState([])
   const [briefing, setBriefing] = useState("")
   const [loading, setLoading] = useState(true)
@@ -73,13 +75,14 @@ useEffect(() => {
       )
     )
 
-  if (loading) {
-    return (
-      <div className="dash-root">
-        <div className="dash-wrap">Loading...</div>
-      </div>
-    )
-  }
+ if (loading) {
+  return (
+    <div className="tasks-loading">
+      <div className="tasks-spinner" />
+      <p>{t ? t("dashboard loading ...") : "Loading..."}</p> 
+    </div>
+  )
+}
 
   return (
     <div className="dash-root">

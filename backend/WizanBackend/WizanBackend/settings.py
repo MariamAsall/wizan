@@ -40,7 +40,7 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'backend']
 # Application definition
 
 INSTALLED_APPS = [
-    'daphne',
+    # 'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -244,7 +244,6 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER')
 
 
-# real-time notifications
 
 
 
@@ -253,9 +252,9 @@ ASGI_APPLICATION = "WizanBackend.asgi.application"
 
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels_redis.pubsub.RedisPubSubChannelLayer", # جرب استخدام pubsub فهو يعالج مشاكل الـ Timeout غالباً
+        "BACKEND": "channels_redis.pubsub.RedisPubSubChannelLayer",
         "CONFIG": {
-            "hosts": [("redis", 6379)], # تأكد أن الاسم يطابق اسم حاوية الـ redis في docker-compose
+            "hosts": [("redis", 6379)], 
         },
     },
 }

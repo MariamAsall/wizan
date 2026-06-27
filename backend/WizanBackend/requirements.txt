@@ -140,3 +140,5 @@ django_extensions
 sentry_sdk
 channels-redis
 daphne
+openai
+django-ratelimit
