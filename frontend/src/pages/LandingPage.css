@@ -1,0 +1,210 @@
+@reference "../index.css";
+
+/* Landing root */
+.landing-root {
+  @apply bg-background text-foreground overflow-x-hidden;
+}
+
+/* Hero */
+.landing-hero {
+  @apply min-h-screen flex flex-col justify-center px-6 md:px-12 pt-32 pb-20 max-w-[1320px] mx-auto;
+}
+.landing-eyebrow {
+  @apply flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-[.12em] text-primary mb-7;
+}
+.landing-eyebrow::before {
+  content: '';
+  @apply w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0;
+}
+.landing-hero-grid {
+  @apply grid gap-14 items-center;
+  grid-template-columns: 1.1fr 0.9fr;
+}
+@media (max-width: 980px) {
+  .landing-hero-grid { grid-template-columns: 1fr; }
+}
+.landing-h1 {
+  @apply font-heading text-[clamp(40px,6vw,76px)] leading-[1.02] tracking-tight mb-7 text-foreground;
+}
+.landing-h1 em {
+  @apply not-italic text-primary;
+  font-family: var(--font-heading);
+}
+.landing-hero-sub {
+  @apply text-[18px] leading-relaxed text-muted-foreground max-w-[480px] mb-9;
+}
+.landing-hero-actions {
+  @apply flex gap-3.5 items-center flex-wrap;
+}
+
+/* Buttons */
+.landing-btn-primary {
+  @apply text-sm font-bold px-6 py-3 rounded-full bg-foreground text-background transition-all hover:-translate-y-0.5 hover:shadow-lg cursor-pointer border-0 inline-block;
+}
+.landing-btn-ghost {
+  @apply text-sm font-bold px-5 py-3 rounded-full border-[1.5px] border-border text-foreground transition-all hover:border-primary hover:text-primary inline-block;
+}
+
+/* Scale card */
+.landing-scale-wrap {
+  @apply bg-card border border-border rounded-[24px] p-8 shadow-lg;
+}
+.landing-scale-readout {
+  @apply flex justify-between text-[13px] text-muted-foreground mb-5;
+}
+.landing-scale-readout b {
+  @apply text-foreground font-mono;
+}
+.landing-slider-row {
+  @apply flex items-center gap-3 mt-2.5;
+}
+.landing-slider-label {
+  @apply text-[11px] text-muted-foreground whitespace-nowrap;
+}
+
+/* Ticker strip */
+.landing-strip {
+  @apply bg-foreground text-background py-3.5 overflow-hidden whitespace-nowrap;
+}
+.landing-strip-inner {
+  @apply inline-flex gap-10 text-[11px] font-bold tracking-[.08em] pl-10;
+}
+.landing-strip-inner span { @apply opacity-80; }
+
+/* Ticker strip animation */
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.landing-strip-inner {
+  animation: ticker 12s linear infinite;
+}
+
+/* Sections */
+.landing-section {
+  @apply px-6 md:px-12 py-24 max-w-[1320px] mx-auto;
+}
+.landing-section-head {
+  @apply max-w-[680px] mb-14;
+}
+.landing-section-eyebrow {
+  @apply text-[11px] font-bold uppercase tracking-[.1em] text-primary mb-3.5;
+}
+.landing-section-head h2 {
+  @apply font-heading text-[clamp(26px,3.4vw,40px)] leading-[1.18] mb-3.5 text-foreground;
+}
+.landing-section-head p {
+  @apply text-[16px] text-muted-foreground leading-relaxed;
+}
+
+/* State cards */
+.landing-states {
+  @apply grid gap-6;
+  grid-template-columns: repeat(3, 1fr);
+}
+@media (max-width: 900px) {
+  .landing-states { grid-template-columns: 1fr; }
+}
+.landing-state-card {
+  @apply bg-card border border-border rounded-[18px] p-7;
+}
+.landing-state-score {
+  @apply flex items-center gap-2 text-[11px] font-bold tracking-[.06em] text-muted-foreground mb-3.5 font-mono;
+}
+.landing-dot { @apply w-2 h-2 rounded-full; }
+.landing-dot-low  { @apply bg-destructive; }
+.landing-dot-mid  { @apply bg-accent; }
+.landing-dot-high { @apply bg-secondary-foreground opacity-60; }
+.landing-state-card h3 {
+  @apply font-heading text-[20px] mb-2.5 text-foreground;
+}
+.landing-state-card p {
+  @apply text-[14px] text-muted-foreground leading-[1.55] mb-5;
+}
+.landing-state-bar {
+  @apply h-1.5 rounded bg-muted overflow-hidden;
+}
+.landing-state-bar i {
+  @apply block h-full rounded;
+}
+
+/* Moment cards */
+.landing-moment-grid {
+  @apply grid gap-5;
+  grid-template-columns: repeat(4, 1fr);
+}
+@media (max-width: 980px) { .landing-moment-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .landing-moment-grid { grid-template-columns: 1fr; } }
+
+.landing-moment-card {
+  @apply transition-all duration-300 rounded-[18px] p-1 hover:-translate-y-1.5 hover:shadow-xl;
+}
+.landing-moment-art { @apply mb-4; }
+.landing-moment-art svg { @apply w-full rounded-[14px] block; }
+.landing-moment-card h4 { @apply text-[15px] font-bold mb-2 text-foreground; }
+.landing-moment-card p  { @apply text-[13.5px] text-muted-foreground leading-[1.55]; }
+
+/* Arabic band */
+.landing-arabic-band {
+  @apply bg-foreground text-background py-12 px-6 text-center;
+}
+.landing-arabic-band .arabic {
+  font-family: var(--font-ar);
+  @apply text-[20px] mb-2.5 block;
+  direction: rtl;
+}
+.landing-arabic-band .translation {
+  @apply text-[13px] opacity-60 max-w-[560px] mx-auto;
+}
+
+/* Mini quiz */
+.landing-quiz-grid {
+  @apply grid gap-12 items-center;
+  grid-template-columns: 1.1fr 0.9fr;
+}
+@media (max-width: 900px) { .landing-quiz-grid { grid-template-columns: 1fr; } }
+
+.landing-quiz-panel {
+  @apply bg-card border border-border rounded-[20px] p-9 relative min-h-[260px];
+}
+.landing-quiz-q {
+  @apply text-[18px] font-bold mb-5 text-foreground;
+}
+.landing-quiz-opts { @apply flex flex-col gap-2.5; }
+.landing-quiz-opt {
+  @apply text-left px-4 py-3 rounded-[12px] border-[1.5px] border-border bg-transparent text-[14px] cursor-pointer transition-all hover:border-primary hover:bg-primary/5 text-foreground;
+}
+.landing-quiz-verdict {
+  @apply text-[14px] text-muted-foreground mt-1;
+}
+.landing-quiz-progress {
+  @apply absolute left-0 bottom-0 h-[3px] w-full bg-muted rounded-b-[20px] overflow-hidden;
+}
+.landing-quiz-progress i {
+  @apply block h-full bg-primary transition-all duration-300;
+}
+.landing-quiz-visual { @apply text-center; }
+.landing-quiz-visual svg { @apply w-[200px] mx-auto mb-3.5; }
+.landing-quiz-visual-label { @apply text-[13px] text-muted-foreground; }
+
+/* CTA section */
+.landing-cta {
+  @apply bg-foreground text-background rounded-[28px] py-20 px-12 text-center max-w-[1320px] mx-auto mb-20;
+}
+.landing-cta h2 {
+  @apply font-heading text-[clamp(28px,4vw,44px)] mb-4 leading-[1.15];
+}
+.landing-cta p { @apply text-[16px] opacity-75 mb-8; }
+.landing-cta .landing-btn-primary {
+  @apply bg-background text-foreground;
+}
+
+/* Footer */
+.landing-footer {
+  @apply flex justify-between items-center px-6 md:px-12 py-8 border-t border-border max-w-[1320px] mx-auto;
+}
+.landing-footer .meta { @apply text-[13px] text-muted-foreground; }
+@media (max-width: 640px) {
+  .landing-footer { @apply flex-col gap-2.5 text-center; }
+}

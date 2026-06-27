@@ -21,6 +21,10 @@ import { Toaster } from "react-hot-toast"
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 
+import ProtectedRoute from './components/ProtectedRoute'
+import LandingPage from './pages/LandingPage'
+import PublicLayout from './layouts/PublicLayout';
+
 function App() {
   const { i18n } = useTranslation()
 
@@ -52,26 +56,30 @@ function App() {
 
     <BrowserRouter>
       <Routes>
-        {/* Public — no navbar */}
-        <Route path="/login"    element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-        {/* Protected — with navbar via MainLayout */}
-        <Route element={<MainLayout />}>
-          <Route path="/quiz"      element={<QuizPage />} />
-          <Route path="/result" element={<QuizResultPage />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/tasks"     element={<TasksPage />} />
-          <Route path="/chat"      element={<ChatPage />} />
-          <Route path="/documents"      element={<DocumentsPage />} />
-          <Route path="/regulation" element={<RegulationPage />} />
-          <Route path="/profile" element={<Profile />} />
-        </Route>
+{/* Public routes — navbar with no links */}
+<Route element={<PublicLayout />}>
+  <Route path="/" element={<LandingPage />} />
+  <Route path="/login" element={<LoginPage />} />
+  <Route path="/register" element={<RegisterPage />} />
+  <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+  <Route path="/reset-password" element={<ResetPasswordPage />} />
+</Route>
 
-        <Route path="/" element={<Navigate to="/login" />} />
-      </Routes>
+  {/* Protected routes */}
+<Route element={<ProtectedRoute />}>
+  <Route element={<MainLayout />}>
+    <Route path="/quiz" element={<QuizPage />} />
+    <Route path="/result" element={<QuizResultPage />} />
+    <Route path="/dashboard" element={<DashboardPage />} />
+    <Route path="/tasks" element={<TasksPage />} />
+    <Route path="/chat" element={<ChatPage />} />
+    <Route path="/documents" element={<DocumentsPage />} />
+    <Route path="/regulation" element={<RegulationPage />} />
+    <Route path="/profile" element={<Profile />} />
+  </Route>
+</Route>
+</Routes>
    
     </BrowserRouter>
     </>

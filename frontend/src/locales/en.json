@@ -6,8 +6,60 @@
     "dashboard": "Dashboard",
     "tasks": "Tasks",
     "chat": "Chat",
-    "documents": "Documents"
+    "documents": "Documents",
+    "register": "Sign up",
+    "login": "Sign in",
+    "logout": "Logout"
   },
+  "login": {
+  "eyebrow": "Welcome back",
+  "title": "Your mind,<br><em>measured</em> daily.",
+  "sub": "Wizan checks in with you every morning and builds your day around how you actually feel.",
+  "email": "Email",
+  "password": "Password",
+  "submit": "Start my day →",
+  "submitting": "Signing in…",
+  "forgotPassword": "Forgot password?",
+  "noAccount": "No account?",
+  "signUp": "Sign up",
+  "error": "Login failed. Please check your credentials.",
+  "googleButton": "Continue with Google"
+},
+"register": {
+  "eyebrow": "Get started",
+  "title": "Start your <em>journey.</em>",
+  "sub": "Create your Wizan account and let it learn how you work best.",
+  "firstName": "First name",
+  "lastName": "Last name",
+  "username": "Username",
+  "email": "Email",
+  "password": "Password",
+  "confirmPassword": "Confirm password",
+  "submit": "Create account →",
+  "submitting": "Creating account…",
+  "hasAccount": "Already have an account?",
+  "signIn": "Sign in",
+  "strength": {
+    "weak": "Weak password",
+    "fair": "Fair password",
+    "good": "Good password",
+    "strong": "Strong password"
+  },
+  "errors": {
+    "firstName": "First name is required.",
+    "lastName": "Last name is required.",
+    "username": "Username is required.",
+    "usernameMin": "Username must be at least 3 characters.",
+    "usernameFormat": "Username can only contain letters and numbers.",
+    "email": "Email is required.",
+    "emailFormat": "Enter a valid email address.",
+    "password": "Password is required.",
+    "passwordFormat": "Password must be 8+ chars with uppercase, lowercase, number, and special character (@$!%*?&).",
+    "confirmPassword": "Please confirm your password.",
+    "passwordMismatch": "Passwords do not match.",
+    "failed": "Registration failed. Please try again."
+  }
+},
   "forgotPassword": {
   "title": "Forgot your password?",
   "sub": "Enter your email and we'll send you a reset link.",
@@ -160,5 +212,124 @@
   "common": {
     "loading": "Loading...",
     "error": "Something went wrong"
+  },
+  "landing": {
+    "nav": {
+      "logo": "Wizan",
+      "how": "How it works",
+      "moments": "A morning",
+      "try": "Try it",
+      "login": "Log in",
+      "signup": "Sign up"
+    },
+    "hero": {
+      "eyebrow": "Cognitive load management, for students",
+      "title": "Plan your day<br>against the mind<br>you woke up with, <em>not&nbsp;yesterday's.</em>",
+      "sub": "Wizan starts every morning with a two-minute check on your mental capacity, then rebalances your tasks, your study plan, and even the tone of your AI assistant around that number.",
+      "ctaPrimary": "Take this morning's quiz →",
+      "ctaGhost": "See how the balance works",
+      "scoreLabel": "Cognitive score",
+      "loadLabel": "Today's load",
+      "sliderLow": "low capacity",
+      "sliderHigh": "high capacity"
+    },
+    "how": {
+      "eyebrow": "How the balance shifts",
+      "title": "The same task list lands differently depending on what you brought to it.",
+      "sub": "Three students, three mornings, three completely different plans — generated from one quiz.",
+      "score1": "SCORE 28/100",
+      "score2": "SCORE 58/100",
+      "score3": "SCORE 91/100",
+      "card1": {
+        "title": "Postponed, gently",
+        "body": "Heavy tasks get pushed to a lighter day automatically. The planning agent softens its tone and only surfaces what's truly urgent."
+      },
+      "card2": {
+        "title": "Allowed, with steps",
+        "body": "Mid-load tasks are broken into smaller sub-steps so nothing feels like one large undifferentiated block of effort."
+      },
+      "card3": {
+        "title": "Cleared for deep work",
+        "body": "Hard limits lift. The regulator agent stacks your most demanding tasks first, while you have the headroom for them."
+      }
+    },
+    "moments": {
+      "eyebrow": "A morning, in four moments",
+      "title": "What it actually feels like to use Wizan.",
+      "sub": "Hover each scene — it's the same student, four points in one morning.",
+      "card1": {
+        "title": "1. Two minutes, eyes barely open",
+        "body": "A short quiz — sleep, focus, mood — before you've even opened a task list."
+      },
+      "card2": {
+        "title": "2. A plan that matches the number",
+        "body": "Today's score reorders the list — heavy things wait, light things lead."
+      },
+      "card3": {
+        "title": "3. One task fully broken down",
+        "body": "Big assignment in, ordered sub-steps out — in a tone that fits your state."
+      },
+      "card4": {
+        "title": "4. Just say the task",
+        "body": "Speak a task out loud and Wizan transcribes it, then figures out the priority and deadline on its own — no typing, no forms."
+      }
+    },
+    "quiz": {
+      "eyebrow": "Try it, right here",
+      "title": "Three quick questions. One real number.",
+      "sub": "This is a shortened version of the actual morning quiz — answer honestly and watch the scale on the right react.",
+      "q1": "How many hours did you sleep last night?",
+      "q1_opt1": "8+ hrs",
+      "q1_opt2": "5–7 hrs",
+      "q1_opt3": "Under 5",
+      "q2": "How scattered does your focus feel right now?",
+      "q2_opt1": "Sharp",
+      "q2_opt2": "A bit foggy",
+      "q2_opt3": "All over the place",
+      "q3": "How's your stress level this morning?",
+      "q3_opt1": "Calm",
+      "q3_opt2": "Manageable",
+      "q3_opt3": "High",
+      "resultLabelPrefix": "Your score this morning is ",
+      "resultLabelSuffix": "/100",
+      "calculating": "Calculating your plan…",
+      "retake": "Retake quiz",
+      "visualLabel": "Wizan's read on your morning, live",
+      "verdict_low": "Light day recommended — heavier tasks get postponed automatically.",
+      "verdict_mid": "Solid morning — tasks get broken into manageable steps.",
+      "verdict_high": "High capacity — hard limits lift, deep work is cleared.",
+      "taskSingular": "task",
+      "taskPlural": "tasks"
+    },
+    "cta": {
+      "title": "Find out what today's<br>balance looks like.",
+      "sub": "Two minutes, one quiz, a plan that actually matches the day you're having.",
+      "button": "Take the morning quiz →"
+    },
+    "footer": {
+      "logo": "Wizan",
+      "meta": "Capstone project · Cognitive load management for students"
+    },
+    "modal": {
+      "close": "Close",
+      "tabLogin": "Log in",
+      "tabSignup": "Sign up",
+      "labelEmail": "Email",
+      "labelPassword": "Password",
+      "labelFirstName": "First name",
+      "labelLastName": "Last name",
+      "labelUsername": "Username",
+      "labelConfirmPassword": "Confirm password",
+      "loginSubmit": "Log in →",
+      "signupSubmit": "Create account →",
+      "loginSwitchPrefix": "No account yet? ",
+      "loginSwitchLink": "Sign up",
+      "signupSwitchPrefix": "Already have one? ",
+      "signupSwitchLink": "Log in",
+      "pleaseWait": "Please wait…",
+      "genericError": "Something went wrong. Please try again.",
+      "passwordMismatch": "Passwords do not match.",
+      "createdLoginFallback": "Account created — log in to continue."
+    }
   }
 }
