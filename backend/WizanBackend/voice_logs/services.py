@@ -8,6 +8,10 @@ from google import genai
 from google.api_core.exceptions import ResourceExhausted
 from groq import Groq
 from django.conf import settings
+import logging
+
+
+from ai.llm import safe_llm_call ,voice_llm_call
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +26,7 @@ gemini_client = genai.Client(
 groq_client = Groq(
     api_key=settings.GROQ_API_KEY
 )
+
 
 
 # --------------------------------------------------
@@ -124,8 +129,13 @@ def transcribe_audio(audio_file):
 # --------------------------------------------------
 
 def structure_with_ai(prompt):
-
-    gemini_prompt = f"""
+    # CHANGED: was Gemini (try) → Groq (fallback) with two separate
+    # try/except blocks. Now routes through safe_llm_call() (ai/llm.py),
+    # which already handles primary/fallback + circuit breaker via ITI's
+    # Student Bedrock Gateway — same function every other text-generation
+    # agent in this app uses. Transcription above stays untouched: no
+    # working audio-to-text model is available on the gateway yet.
+    full_prompt = f"""
 {prompt}
 
 Return ONLY valid JSON.
@@ -142,57 +152,8 @@ No explanations.
 """
 
     try:
-        response = gemini_client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=gemini_prompt
-        )
-
-        result = extract_json(response.text)
-
-        return {
-            "name": result.get("name", "Untitled task"),
-            "priority": result.get("priority", "medium"),
-            "deadline": result.get("deadline")
-        }
-
-    except ResourceExhausted as error:
-        logger.warning(f"Gemini quota exceeded: {error}")
-
-    except Exception as error:
-        logger.error(f"Gemini structuring failed: {error}")
-
-    # --------------------------------------------------
-    # GROQ FALLBACK
-    # --------------------------------------------------
-
-    try:
-        response = groq_client.chat.completions.create(
-            model="llama-3.1-8b-instant",
-            messages=[
-                {
-                    "role": "user",
-                    "content": f"""
-{prompt}
-
-Return ONLY valid JSON.
-
-Schema:
-{{
-    "name": "",
-    "priority": "",
-    "deadline": ""
-}}
-
-No markdown.
-No explanations.
-"""
-                }
-            ],
-        )
-
-        result = extract_json(
-            response.choices[0].message.content
-        )
+        text = voice_llm_call(full_prompt)
+        result = extract_json(text)
 
         return {
             "name": result.get("name", "Untitled task"),
@@ -201,7 +162,7 @@ No explanations.
         }
 
     except Exception as error:
-        logger.error(f"Groq structuring failed: {error}")
+        logger.error(f"Gateway structuring failed: {error}")
 
         return {
             "name": "Untitled task",

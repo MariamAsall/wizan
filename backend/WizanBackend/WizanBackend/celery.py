@@ -6,7 +6,8 @@ os.environ.setdefault(
     "WizanBackend.settings"
 )
 
-app = Celery("WizanBackend")
+broker = os.getenv("CELERY_BROKER_URL", "redis://127.0.0.1:6379/0")
+app = Celery('WizanBackend', broker=broker, backend=broker)
 
 app.config_from_object(
     "django.conf:settings",
