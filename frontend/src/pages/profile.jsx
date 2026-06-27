@@ -134,6 +134,25 @@ export default function Profile() {
   async function deleteAccount() {
   try {
     setDeleting(true)
+<<<<<<< HEAD
+=======
+
+    await api.delete("/users/me/")
+
+    notify.success("Account deleted successfully")
+
+    localStorage.clear()
+
+    window.location.href = "/login"
+  } catch (err) {
+    console.error(err)
+    notify.error("Failed to delete account")
+  } finally {
+    setDeleting(false)
+    setShowDeleteModal(false)
+  }
+}
+>>>>>>> 1b082d2 (Added Delete button)
 
     await api.delete("/users/me/")
 
