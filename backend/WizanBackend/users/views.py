@@ -21,6 +21,11 @@ from drf_spectacular.utils import extend_schema
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from django.conf import settings
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+from django.conf import settings
+from drf_spectacular.utils import extend_schema
+
 
 def get_tokens_for_user(user):
     refresh= RefreshToken.for_user(user)

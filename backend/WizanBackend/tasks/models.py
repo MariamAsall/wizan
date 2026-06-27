@@ -24,6 +24,7 @@ class Task(models.Model):
     source = models.CharField(max_length=20,default='user_added')
     postponed_to = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    deadline_reminder_sent = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.name} ({self.status})"
