@@ -103,6 +103,7 @@
   "cancel": "Cancel",
   "delete_confirm": "Are you sure you want to delete this task?",
   "deadline_past": "Deadline cannot be in the past.",
+  "overdue": "Overdue",
   "loading": "Loading tasks...",
   "error_add": "Failed to add task.",
   "error_load": "Failed to load tasks.",

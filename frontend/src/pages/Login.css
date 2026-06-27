@@ -38,3 +38,19 @@
 
 .field-error        { @apply border-red-400 focus:border-red-400; }
 .field-error-msg    { @apply text-xs text-red-500 mt-1 ml-1; }
+
+
+.nsm7Bb-HzV7m-LgbsSe {
+  border-radius: 10px !important;
+}
+
+.nsm7Bb-HzV7m-LgbsSe .nsm7Bb-HzV7m-LgbsSe-bN97Pc-sM5MNb {
+    -webkit-justify-content: center !important;
+    justify-content: center !important;
+}
+
+.nsm7Bb-HzV7m-LgbsSe .nsm7Bb-HzV7m-LgbsSe-BPrWId {
+    -webkit-flex-grow: 0 !important;
+    -webkit-box-flex: 0 !important;
+    flex-grow: 0 !important;
+}
