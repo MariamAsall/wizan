@@ -211,69 +211,6 @@
   },
   "common": {
     "loading": "Loading...",
-    "error": "Something went wrong",
-     "save": "Save",
-    "saving": "Saving...",
-    "cancel": "Cancel"
-  },
-  "dashboard": {
-    "loading": "Loading dashboard ...",
-    "welcome": "Welcome back,",
-    "user": "User",
-    "subtitle": "Here is your daily productivity overview.",
-    "profile": "Profile",
-
-    "total_tasks": "Total Tasks",
-    "completed": "Completed",
-    "pending": "Pending",
-    "progress": "Progress",
-
-    "productivity_progress": "Productivity Progress",
-    "progress_text": "{{completed}} of {{total}} tasks completed",
-
-    "ai_briefing": "AI Daily Briefing",
-    "no_briefing": "No briefing available.",
-
-    "today_tasks": "Today's Tasks",
-    "no_tasks": "No tasks available.",
-
-    "view_tasks": "View Full Task Board →",
-
-    "quiz_first": "Please take the quiz first 🧠",
-    "ai_error": "Unable to load AI briefing at the moment.",
-    "dashboard_error": "Unable to load dashboard data."
-}
-
-,
-
-  "profile": {
-    "loading": "Loading...",
-    "edit": "Edit Profile",
-    "change_password": "Change Password",
-
-    "username": "Username",
-    "first_name": "First Name",
-    "last_name": "Last Name",
-    "phone": "Phone",
-    "language": "Language",
-    "dob": "Date of Birth",
-
-    "english": "English",
-    "arabic": "Arabic",
-
-    "current_password": "Current Password",
-    "new_password": "New Password",
-    "confirm_password": "Confirm Password"
-  }
-
-
-  
-  
-}
-
-
-
- 
     "error": "Something went wrong"
   },
   "landing": {

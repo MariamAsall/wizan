@@ -5,9 +5,6 @@ from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django_ratelimit.decorators import ratelimit
 
-from drf_spectacular.utils import extend_schema
-from rest_framework import serializers
-
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -22,24 +19,11 @@ from django.shortcuts import get_object_or_404
 
 import bleach
 from audit_logs.utils import log_action
-from .serializers import (
-    DocumentUploadSerializer,
-    DocumentStatusSerializer,
-    AskDocumentSerializer,
-    AskDocumentResponseSerializer,
-    SuggestTasksResponseSerializer,
-    StudyChatRequestSerializer,
-    StudyChatResponseSerializer,
-)
 
 
-@extend_schema(
-    request=DocumentUploadSerializer,
-    responses={201: DocumentStatusSerializer},
-)
+
 class DocumentUploadView(APIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = DocumentUploadSerializer
 
     @method_decorator(ratelimit(key='user_or_ip', rate='5/m', block=True))
     def get(self, request):
@@ -100,12 +84,9 @@ class DocumentUploadView(APIView):
 
         return Response({"id": doc.id, "status": doc.status}, status=201)
 
-@extend_schema(
-    responses={200: DocumentStatusSerializer},
-)
+
 class DocumentStatusView(APIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = DocumentStatusSerializer
 
     def get(self, request, doc_id):
         doc = get_object_or_404(Document, id=doc_id, user=request.user)
@@ -117,14 +98,8 @@ class DocumentStatusView(APIView):
         return Response(status=204)
 
 
-
-@extend_schema(
-    request=AskDocumentSerializer,
-    responses={200: AskDocumentResponseSerializer},
-)
 class AskDocumentView(APIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = AskDocumentSerializer
 
     @method_decorator(ratelimit(key='user_or_ip', rate='10/m', block=True))
     def post(self, request, doc_id):
@@ -143,12 +118,8 @@ class AskDocumentView(APIView):
         return Response(result)
 
 
-@extend_schema(
-    responses={200: SuggestTasksResponseSerializer},
-)
 class SuggestTasksView(APIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = SuggestTasksResponseSerializer
 
     @method_decorator(ratelimit(key='user_or_ip', rate='10/m', block=True))
     def post(self, request, doc_id):
@@ -159,16 +130,9 @@ class SuggestTasksView(APIView):
 
         tasks = suggest_tasks_from_document(str(doc.id))
         return Response({"tasks": tasks})
-
-
-
-@extend_schema(
-    request=StudyChatRequestSerializer,
-    responses={200: StudyChatResponseSerializer},
-)  
+    
 class StudyChatView(APIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = StudyChatRequestSerializer
 
     @method_decorator(ratelimit(key='user_or_ip', rate='15/m', block=True))
     def post(self, request):
