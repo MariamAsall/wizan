@@ -104,3 +104,63 @@
 .modal-form {
   @apply flex flex-col gap-3;
 }
+
+/* DELETE BUTTON */
+.delete-btn {
+  @apply px-3 py-1.5 rounded-lg;
+  @apply bg-red-600 text-white border border-red-600;
+  @apply transition-all duration-200;
+}
+
+.delete-btn:hover {
+  @apply bg-red-700 border-red-700;
+}
+
+.delete-btn:disabled {
+  @apply opacity-60 cursor-not-allowed;
+}
+
+/* DELETE MODAL */
+.delete-modal {
+  @apply w-[420px] bg-card border border-border rounded-2xl p-6;
+}
+
+.delete-modal h3 {
+  @apply text-xl font-bold text-red-600 mb-3;
+}
+
+.delete-modal p {
+  @apply text-sm text-muted-foreground leading-6;
+}
+
+.delete-warning {
+  @apply mt-3 text-red-500 font-medium;
+}
+
+.delete-actions {
+  @apply flex justify-end gap-3 mt-6;
+}
+
+.delete-actions button {
+  @apply px-4 py-2 rounded-xl border border-border transition;
+}
+
+.delete-actions .cancel-btn {
+  @apply bg-transparent text-foreground;
+}
+
+.delete-actions .cancel-btn:hover {
+  @apply border-primary text-primary;
+}
+
+.delete-actions .confirm-delete-btn {
+  @apply bg-red-600 text-white border-red-600;
+}
+
+.delete-actions .confirm-delete-btn:hover {
+  @apply bg-red-700 border-red-700;
+}
+
+.delete-actions .confirm-delete-btn:disabled {
+  @apply opacity-60 cursor-not-allowed;
+}
