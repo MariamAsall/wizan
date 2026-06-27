@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from django.utils.decorators import method_decorator
 from django_ratelimit.decorators import ratelimit
 from .models import Task, TaskLog, TaskStep
-from .serializers import TaskSerializer, TaskOverrideSerializer
+from .serializers import TaskSerializer, TaskOverrideSerializer,TaskRegulateRequestSerializer,TaskRegulateResponseSerializer,TaskDecomposeResponseSerializer,VoiceTaskResponseSerializer
 from ai.task_regulator_agent import run_task_regulator
 from ai.task_regulator_memory import get_session, save_session
 from ai.agents.task_decompose_agent import run_task_decompose_agent
@@ -13,7 +13,7 @@ from ai.total_score import calculate_total_score
 from ai.task_regulator_tools import get_tasks
 from ai.task_regulator_limits import apply_limits
 from ai.agents.planning_agent import run_planning_agent
-from datetime import datetime, timedelta, time
+from datetime import datetime, timedelta, time 
 from django.utils import timezone
 
 # deadline reminder helper function
@@ -35,6 +35,7 @@ def schedule_deadline_reminder(task, user):
         args=[user.id, task.id],
         countdown=countdown
     )
+from drf_spectacular.utils import extend_schema
 
 from notifications.services import create_notification
 
@@ -60,6 +61,10 @@ class TaskViewSet(viewsets.ModelViewSet):
     )
         
     @action(detail=False, methods=['post'], url_path='override')
+    @extend_schema(
+    request=TaskOverrideSerializer,
+    responses={200: dict},
+)
     def override(self, request):
         serializer = TaskOverrideSerializer(data=request.data)
         if not serializer.is_valid():
@@ -124,6 +129,10 @@ class TaskViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'], url_path='regulate')
     @method_decorator(ratelimit(key='user_or_ip', rate='10/m', block=True))
+    @extend_schema(
+    request=TaskRegulateRequestSerializer,
+    responses={200: TaskRegulateResponseSerializer},
+)
     def regulate(self, request):
         user = request.user
         message = request.data.get("message", "Show me what I can do today")
@@ -178,6 +187,9 @@ class TaskViewSet(viewsets.ModelViewSet):
             "session_id": result["session_id"]
         })
 
+    @extend_schema(
+    responses={200: TaskDecomposeResponseSerializer},
+)
     @action(detail=True, methods=['post'], url_path='decompose')
     @method_decorator(ratelimit(key='user_or_ip', rate='10/m', block=True))
     def decompose(self, request, pk=None):
@@ -212,15 +224,10 @@ class TaskViewSet(viewsets.ModelViewSet):
 
 
 import json
-import datetime
+
 
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework import status
 
-from .models import Task  
-from .serializers import TaskSerializer  
 from voice_logs.services import transcribe_audio as transcribe_audio_service
 
 # استيراد جينيريتور الـ AI (Gemini) لاستخراج البيانات منظمّة
@@ -229,19 +236,25 @@ from django.conf import settings
 from voice_logs.services import structure_with_ai
 
 gemini_client = genai.Client(api_key=settings.GEMINI_API_KEY)
+@extend_schema(
+    request=None,
+    responses={201: VoiceTaskResponseSerializer},
+)
 class VoiceAddTaskView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = TaskSerializer
 
     @method_decorator(ratelimit(key='user_or_ip', rate='10/m', block=True))
     def post(self, request):
         try:
-            # 1. [جديد 🔥] التحقق من التاريخ القادم من الـ Frontend يدوياً قبل أي شيء لمنع التواريخ القديمة
+            # 1. التحقق من التاريخ القادم من الـ Frontend يدوياً لمنع التواريخ القديمة وتحويله لكائن تاريخ
             deadline_str = request.data.get("deadline")
+            validated_deadline_date = None
+
             if deadline_str:
                 try:
-                    # تحويل النص القادم إلى كائن تاريخ للمقارنة
-                    selected_date = datetime.datetime.strptime(deadline_str, "%Y-%m-%d").date()
-                    if selected_date < datetime.date.today():
+                    validated_deadline_date = datetime.strptime(deadline_str, "%Y-%m-%d").date()
+                    if validated_deadline_date < timezone.localdate():
                         return Response(
                             {"success": False, "error": "The deadline cannot be in the past."}, 
                             status=status.HTTP_400_BAD_REQUEST
@@ -261,12 +274,11 @@ class VoiceAddTaskView(APIView):
             if not transcript:
                 return Response({"success": False, "error": "No speech detected."}, status=status.HTTP_400_BAD_REQUEST)
 
-            # 3. قراءة البيانات اليدوية الأخرى إن وجدت (مثل الـ priority اليدوي)
-            # إذا أرسلها الفرونت يدوياً سنعتمد عليها، وإلا سنطلب من Gemini استخراجها
+            # 3. قراءة البيانات اليدوية الأخرى إن وجدت
             frontend_priority = request.data.get("priority")
 
-            # 4. إرسال النص لـ Gemini ليفهمه ويستخرج الحقول الذكية إذا لم تكن مرسلة يدوياً
-            today_date = datetime.date.today().strftime("%Y-%m-%d")
+            # 4. استخدام توقيت دجانجو المحلي لضمان دقة حسابات الـ AI
+            today_date = timezone.localdate().strftime("%Y-%m-%d")
             
             prompt = f"""
             You are a task management assistant. Analyze the user's spoken task in Arabic and extract:
@@ -280,34 +292,46 @@ class VoiceAddTaskView(APIView):
 
             extracted_data = structure_with_ai(prompt)
 
-            # 6. دمج البيانات (إذا قادم ميعاد أو أولوية من الفرونت يدوياً نفضلها، وإلا نأخذ ما استخرجه الـ AI)
-            final_name = extracted_data.get("name", transcript)
-            final_priority = frontend_priority or extracted_data.get("priority", "medium")
-            final_deadline = deadline_str or extracted_data.get("deadline")
+            if not isinstance(extracted_data, dict):
+                extracted_data = {}
 
-            # [إضافي] تحقق أمان للتاريخ المستخرج من الـ AI نفسه لضمان عدم خطأه في الحساب
-            if final_deadline and not deadline_str:
-                ai_date = datetime.datetime.strptime(final_deadline, "%Y-%m-%d").date()
-                if ai_date < datetime.date.today():
-                    final_deadline = None # تجاهل تاريخ الـ AI لو كان قديماً بالخطأ
+            # 5. دمج البيانات المستخرجة
+            final_name = extracted_data.get("name") or transcript
+            final_priority = frontend_priority or extracted_data.get("priority") or "medium"
+            ai_deadline = extracted_data.get("deadline")
 
-            # 7. حفظ المهمة بالبيانات الذكية واليدوية المدمجة في جدول الـ Task الحقيقي
+            # تحديد التاريخ النهائي والتأكد من تحويله بالكامل إلى كائن date وليس str
+            final_deadline_obj = validated_deadline_date
+
+            if not final_deadline_obj and ai_deadline:
+                try:
+                    ai_deadline_clean = str(ai_deadline).strip()
+                    if ai_deadline_clean.lower() not in ['null', 'none', '']:
+                        parsed_date = datetime.strptime(ai_deadline_clean, "%Y-%m-%d").date()
+                        if parsed_date >= timezone.localdate():
+                            final_deadline_obj = parsed_date
+                except (ValueError, TypeError):
+                    final_deadline_obj = None
+
+            # 6. حفظ المهمة بالبيانات المدمجة والآمنة (نمرر كائن التاريخ الحقيقي هنا)
             new_task = Task.objects.create(
                 user=request.user,
                 name=final_name,
                 priority=final_priority,
-                deadline=final_deadline if final_deadline != "" else None,
+                deadline=final_deadline_obj, # كائن من نوع datetime.date أو None
                 status='pending',
                 source='user_added'
             )
+            
+            # الآن دالة التذكير ستعمل بنجاح دون أي خطأ في الـ combine
             schedule_deadline_reminder(new_task, request.user)
-            )
+            
             create_notification(
                 user=request.user,
                 title="New Voice Task 🎤",
-                message=f"{final_name} was added successfully",
+                message=f"'{final_name}' was added successfully",
                 notification_type="success"
-)
+            )
 
             serializer = TaskSerializer(new_task)
             return Response({
@@ -318,4 +342,7 @@ class VoiceAddTaskView(APIView):
 
         except Exception as e:
             print("Voice Task Structuring Error:", str(e))
-            return Response({"success": False, "error": "Failed to understand task details."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"success": False, "error": "Failed to understand task details."}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

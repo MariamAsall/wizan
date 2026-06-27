@@ -2,14 +2,18 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-
 from .models import ChatFeedback
-from .serializers import ChatFeedbackSerializer
+from .serializers import ChatFeedbackSerializer,FeedbackStatsSerializer
+from drf_spectacular.utils import extend_schema
 
-
+@extend_schema(
+    request=ChatFeedbackSerializer,
+    responses={201: None},
+)
 class ChatFeedbackView(APIView):
 
     permission_classes = [IsAuthenticated]
+    serializer_class = ChatFeedbackSerializer
 
     def post(self, request):
 
@@ -34,3 +38,32 @@ class ChatFeedbackView(APIView):
             {"message": "Feedback saved"},
             status=status.HTTP_201_CREATED
         )
+    
+@extend_schema(
+    responses={200: FeedbackStatsSerializer},
+)
+class FeedbackStatsView(APIView):
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = FeedbackStatsSerializer
+    
+    def get(self, request):
+        likes = ChatFeedback.objects.filter(rating=1).count()
+        dislikes = ChatFeedback.objects.filter(rating=-1).count()
+
+        total = likes + dislikes
+
+        if total > 0:
+            like_percentage = round((likes / total) * 100, 2)
+            dislike_percentage = round((dislikes / total) * 100, 2)
+        else:
+            like_percentage = 0
+            dislike_percentage = 0
+
+        return Response({
+            "likes": likes,
+            "dislikes": dislikes,
+            "total": total,
+            "like_percentage": like_percentage,
+            "dislike_percentage": dislike_percentage,
+        })
