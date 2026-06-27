@@ -7,6 +7,22 @@ from dotenv import load_dotenv
 
 from ai.resilience.circuit_breaker import CircuitBreaker
 
+
+from google import genai
+from groq import Groq
+from django.conf import settings
+from google.api_core.exceptions import ResourceExhausted
+import logging
+logger = logging.getLogger(__name__)
+
+
+gemini_client = genai.Client(
+    api_key=settings.GEMINI_API_KEY
+)
+
+groq_client = Groq(
+    api_key=settings.GROQ_API_KEY
+)
 # Why this path? Because llm.py is inside ai/ folder
 # parent = ai/
 # parent.parent = WizanBackend/  ← where .env lives
@@ -38,6 +54,35 @@ if not _api_key or not _base_url:
 
 PRIMARY_MODEL_ID = os.getenv("SBG_PRIMARY_MODEL_ID", "anthropic.claude-sonnet-4-6")
 FALLBACK_MODEL_ID = os.getenv("SBG_FALLBACK_MODEL_ID", "anthropic.claude-haiku-4-5-20251001")
+
+VOICE_MODEL_ID = os.getenv(
+    "SBG_VOICE_MODEL_ID",
+    "deepseek.r1-v1:0"
+)
+
+def structure_with_gemini(prompt):
+    response = gemini_client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt,
+    )
+
+    return response.text.strip()
+
+def structure_with_groq(prompt):
+    response = groq_client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[
+            {
+                "role": "user",
+                "content": prompt,
+            }
+        ],
+        temperature=0,
+    )
+
+    return response.choices[0].message.content.strip()
+
+
 
 _CHAT_URL = f"{_base_url.rstrip('/')}/student/chat"
 
@@ -99,6 +144,18 @@ def _call_gateway(prompt: str, model_id: str) -> str:
     response.raise_for_status()
     return _extract_text(response.json())
 
+
+def voice_llm_call(prompt):
+    try:
+        return structure_with_gemini(prompt)
+
+    except ResourceExhausted:
+        logger.warning("Gemini quota exceeded. Falling back to Groq.")
+
+    except Exception as e:
+        logger.error(f"Gemini failed: {e}")
+
+    return structure_with_groq(prompt)
 
 def get_llm(fallback=False):
     """

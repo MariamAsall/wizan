@@ -8,8 +8,10 @@ from google import genai
 from google.api_core.exceptions import ResourceExhausted
 from groq import Groq
 from django.conf import settings
+import logging
 
-from ai.llm import safe_llm_call
+
+from ai.llm import safe_llm_call ,voice_llm_call
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +26,7 @@ gemini_client = genai.Client(
 groq_client = Groq(
     api_key=settings.GROQ_API_KEY
 )
+
 
 
 # --------------------------------------------------
@@ -149,7 +152,7 @@ No explanations.
 """
 
     try:
-        text = safe_llm_call(full_prompt)
+        text = voice_llm_call(full_prompt)
         result = extract_json(text)
 
         return {
