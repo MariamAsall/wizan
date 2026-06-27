@@ -171,6 +171,30 @@ export default function Profile() {
 }
 
 if (loading)
+    }
+  }
+  async function deleteAccount() {
+  try {
+    setDeleting(true)
+
+    await api.delete("/users/me/")
+
+    notify.success("Account deleted successfully")
+
+    localStorage.clear()
+
+    window.location.href = "/login"
+  } catch (err) {
+    console.error(err)
+    notify.error("Failed to delete account")
+  } finally {
+    setDeleting(false)
+    setShowDeleteModal(false)
+  }
+}
+
+  if (loading) return <div className="profile-page">Loading...</div>
+
   return (
     <div className="profile-page">
       {t("profile.loading")}
@@ -201,6 +225,16 @@ if (loading)
               <button onClick={() => setEditMode(true)}>  {t("profile.edit")}</button>
               <button onClick={() => setShowPasswordModal(true)}>
                 {t("profile.change_password")}
+              </button>
+
+
+               <button
+                  className="delete-btn"
+                  onClick={() => setShowDeleteModal(true)}
+                >
+                  Delete Account
+                </button>
+                Change Password
               </button>
 
 
@@ -319,6 +353,43 @@ if (loading)
 
               </form>
 
+            </div>
+          </div>
+        )}
+        {showDeleteModal && (
+  <div className="overlay">
+    <div className="delete-modal">
+
+      <h3>⚠️ Delete Account</h3>
+
+      <p>
+        Are you sure you want to delete your account?
+      </p>
+
+      <p className="delete-warning">
+        This action cannot be undone.
+      </p>
+
+      <div className="delete-actions">
+        <button
+          className="cancel-btn"
+          onClick={() => setShowDeleteModal(false)}
+        >
+          Cancel
+        </button>
+
+        <button
+          className="confirm-delete-btn"
+          onClick={deleteAccount}
+          disabled={deleting}
+        >
+          {deleting ? "Deleting..." : "Delete"}
+        </button>
+      </div>
+
+    </div>
+  </div>
+)}
             </div>
           </div>
         )}
