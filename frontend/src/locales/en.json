@@ -1,0 +1,224 @@
+{
+  "wizan": "Wizān",
+  "nav": {
+    "quiz": "Quiz",
+    "result": "Score Result",
+    "dashboard": "Dashboard",
+    "tasks": "Tasks",
+    "chat": "Chat",
+    "documents": "Documents"
+  },
+  "forgotPassword": {
+  "title": "Forgot your password?",
+  "sub": "Enter your email and we'll send you a reset link.",
+  "email": "Email",
+  "submit": "Send reset link",
+  "submitting": "Sending...",
+  "success": "If this email exists, a reset link has been sent.",
+  "error": "Something went wrong. Please try again.",
+  "backToLogin": "← Back to login"
+},
+"resetPassword": {
+  "title": "Reset your password",
+  "sub": "Enter your new password below.",
+  "password": "New password",
+  "confirm": "Confirm password",
+  "submit": "Reset password",
+  "submitting": "Resetting...",
+  "success": "Password reset successful. You can now log in.",
+  "error": "Invalid or expired link. Please request a new one.",
+  "mismatch": "Passwords do not match.",
+  "backToLogin": "← Back to login"
+},
+  "quiz": {
+    "title": "Morning Check-in",
+    "start": "Start Quiz",
+    "step": "Question",
+    "of": "of",
+    "drag": "Drag to select",
+    "tap": "Tap to select",
+    "back": "← Back",
+    "next": "Next →",
+    "submit": "See my score →",
+    "submitting": "Submitting...",
+    "loading": "Loading your check-in...",
+    "already_done": "You've already completed today's check-in.",
+    "error_generic": "Something went wrong. Please try again.",
+    "error_load": "Failed to load questions. Please refresh."
+  },
+  "result": 
+  {
+  "loading": "Calculating your score...",
+  "error": "Failed to load your results. Please try again.",
+
+  "allowedToday": "Allowed today",
+  "postponed": "Postponed",
+  "wizanTip": "Wizān tip",
+  "goDashboard": "Go to my dashboard →",
+
+  "taskType": "type",
+  "taskTypes": "types",
+
+  "postponedDesc": "{{count}} task {{label}} moved to tomorrow when your score is higher",
+
+ "load": {
+  "LOW": {
+    "title": "Great cognitive day",
+    "desc": "You're energized and ready. Wizan unlocked all your tasks for today."
+  },
+  "MEDIUM": {
+    "title": "Good cognitive day",
+    "desc": "You're in solid shape today. Wizan has arranged your tasks efficiently."
+  },
+  "HIGH": {
+    "title": "High cognitive load",
+    "desc": "Take it easy today. Only essential tasks are available."
+  }
+},
+
+  "tips": {
+  "LOW": "Great energy! Tackle your hardest tasks first while you're sharp.",
+  "MEDIUM": "Take a 5-minute break every 45 minutes to maintain focus.",
+  "HIGH": "Try to keep today's workload light and prioritize rest."
+},
+
+  "tasks": {
+    "advanced_task": "Deep focus tasks",
+    "intermediate_task": "Intermediate tasks",
+    "basic_task": "Basic tasks"
+  }
+},
+"tasks": {
+  "title": "Task Board",
+  "add_placeholder": "Add a new task…",
+  "add_button": "+ Add Task",
+  "plan_day": "Plan My Day →",
+  "allowed": "Allowed Today",
+  "postponed": "Postponed",
+  "no_tasks": "No tasks yet.",
+  "edit": "Edit",
+  "delete": "Delete",
+  "edit_title": "Edit Task",
+  "save": "Save Changes",
+  "cancel": "Cancel",
+  "delete_confirm": "Are you sure you want to delete this task?",
+  "deadline_past": "Deadline cannot be in the past.",
+  "overdue": "Overdue",
+  "loading": "Loading tasks...",
+  "error_add": "Failed to add task.",
+  "error_load": "Failed to load tasks.",
+  "error_empty": "Task name cannot be empty.",
+  "all_tasks": "All Tasks",
+  "mic": "Record a task",
+"mic_error": "Please allow microphone access.",
+"status": {
+  "allowed":   "Allowed",
+  "pending":   "Pending",
+  "postponed": "Postponed",
+  "overridden":"Overridden"
+},
+  "priority": {
+    "select": "Choose priority",
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High"
+  }
+},
+ 
+"regulation": {
+  "title": "Today's Plan",
+  "allowed": "You Can Do Today",
+  "postponed": "Postponed",
+  "steps_btn": "Break it down",
+  "steps_hide": "Hide steps",
+  "override": "Override",
+  "override_confirm_title": "Are you sure?",
+  "override_confirm_desc": "This task was postponed because your cognitive load may be too high. Proceeding might affect your productivity.",
+  "decompose_error": "Failed to load steps.",
+  "no_postponed": "All tasks are cleared for today! 🎉"
+},
+"chat": {
+  "title": "Study Chat",
+  "subtitle": "Ask anything about your course material.",
+  "welcomeMessage": "Ask me something from your materials.",
+  "placeholder": "Ask about your course material",
+  "send": "Send"
+},
+  "documents": {
+    "title": "Documents",
+    "subtitle": "Upload files so you can ask questions about them in the chat",
+    "dropzone": "Drag and drop a pdf file here or click to browse",
+    "pdfs": "Only pdf files",
+    "empty": "No documents yet",
+    "uploadError": "Failed to upload file, please try again",
+  "deleteError": "Failed to delete file, please try again",
+  "deleteTitle": "Delete Document",
+  "deleteMessage": "Are you sure you want to delete this file? This action cannot be undone.",
+  "cancel": "Cancel",
+  "confirm": "Delete"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+     "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel"
+  },
+  "dashboard": {
+    "loading": "Loading dashboard ...",
+    "welcome": "Welcome back,",
+    "user": "User",
+    "subtitle": "Here is your daily productivity overview.",
+    "profile": "Profile",
+
+    "total_tasks": "Total Tasks",
+    "completed": "Completed",
+    "pending": "Pending",
+    "progress": "Progress",
+
+    "productivity_progress": "Productivity Progress",
+    "progress_text": "{{completed}} of {{total}} tasks completed",
+
+    "ai_briefing": "AI Daily Briefing",
+    "no_briefing": "No briefing available.",
+
+    "today_tasks": "Today's Tasks",
+    "no_tasks": "No tasks available.",
+
+    "view_tasks": "View Full Task Board →",
+
+    "quiz_first": "Please take the quiz first 🧠",
+    "ai_error": "Unable to load AI briefing at the moment.",
+    "dashboard_error": "Unable to load dashboard data."
+}
+
+,
+
+  "profile": {
+    "loading": "Loading...",
+    "edit": "Edit Profile",
+    "change_password": "Change Password",
+
+    "username": "Username",
+    "first_name": "First Name",
+    "last_name": "Last Name",
+    "phone": "Phone",
+    "language": "Language",
+    "dob": "Date of Birth",
+
+    "english": "English",
+    "arabic": "Arabic",
+
+    "current_password": "Current Password",
+    "new_password": "New Password",
+    "confirm_password": "Confirm Password"
+  }
+
+
+  
+  
+}
+
+
+
+ 
