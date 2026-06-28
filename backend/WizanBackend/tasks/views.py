@@ -49,9 +49,6 @@ class TaskViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         task = serializer.save(user=self.request.user)
-        schedule_deadline_reminder(task, self.request.user)
-
-        task = serializer.save(user=self.request.user)
 
         create_notification(
         user=self.request.user,
