@@ -105,3 +105,4 @@ zstandard==0.25.0
 sentry_sdk
 django_extensions
 channels
+channels-redis>=4.0.0
