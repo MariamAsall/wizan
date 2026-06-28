@@ -4,11 +4,11 @@ from django.conf import settings
 
 class Task(models.Model):
     STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('allowed', 'Allowed'),
-        ('completed', 'Completed'),
-        ('postponed', 'Postponed'),
-        ('overridden', 'Overridden'),
+            ('pending', 'Pending'),
+            ('allowed', 'Allowed'),
+            ('completed', 'Completed'),
+            ('postponed', 'Postponed'),
+            ('overridden', 'Overridden'),
     ]
 
     PRIORITY_CHOICES = [
