@@ -6,6 +6,7 @@ class Task(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('allowed', 'Allowed'),
+        ('completed', 'Completed'),
         ('postponed', 'Postponed'),
         ('overridden', 'Overridden'),
     ]
