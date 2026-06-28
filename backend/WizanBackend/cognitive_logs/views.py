@@ -9,12 +9,17 @@ from django.db import transaction
 from django.utils.timezone import localdate
 
 from .models import CognitiveLog
-from .serializers import CognitiveLogSerializers
+from .serializers import CognitiveLogSerializers,CognitiveScoreSerializer,AllowedTaskSerializer,SubmitQuizSerializer,SubmitQuizResponseSerializer,SkipQuizResponseSerializer,CognitiveBriefingSerializer
 from emails.services import send_score_email
+from drf_spectacular.utils import extend_schema
 
 
+@extend_schema(
+    responses=CognitiveScoreSerializer,
+)
 class CognitiveScoreView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = CognitiveScoreSerializer
 
     def get(self, request):
         latest_log = (
@@ -32,8 +37,12 @@ class CognitiveScoreView(APIView):
         })
 
 
+@extend_schema(
+    responses=AllowedTaskSerializer,
+)
 class AllowedTaskViews(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = AllowedTaskSerializer
 
     def get(self, request):
 
@@ -105,8 +114,13 @@ class CognitiveLogListView(generics.ListAPIView):
         )
 
 
+@extend_schema(
+    request=SubmitQuizSerializer,
+    responses=SubmitQuizResponseSerializer,
+)
 class SubmitQuizAPIView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = SubmitQuizSerializer
 
     def post(self, request):
 
@@ -260,8 +274,13 @@ class SubmitQuizAPIView(APIView):
         )
 
 
+@extend_schema(
+    request=None,
+    responses=SkipQuizResponseSerializer,
+)
 class SkipQuizAPIView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = SkipQuizResponseSerializer
 
     def post(self, request):
 
@@ -295,8 +314,12 @@ class SkipQuizAPIView(APIView):
         }, status=status.HTTP_201_CREATED)
 
 
+@extend_schema(
+    responses=CognitiveBriefingSerializer,
+)
 class CognitiveBriefingView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = CognitiveBriefingSerializer
 
     def get(self, request):
 

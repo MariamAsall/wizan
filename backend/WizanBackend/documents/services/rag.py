@@ -54,7 +54,6 @@
 
 import json
 import google.generativeai as genai
-from groq import Groq
 from django.conf import settings
 from pgvector.django import CosineDistance
 
@@ -62,17 +61,22 @@ from pgvector.django import CosineDistance
 from ..models import Embedding
 # from rank_bm25 import BM25Okapi
 from ai.filters.pii_filter import filter_pii
+from ai.llm import safe_llm_call
 
 
 genai.configure(api_key=settings.GEMINI_API_KEY)
-groq_client = Groq(api_key=settings.GROQ_API_KEY)
+# NOTE: embeddings stay on Gemini (embedder.py) — no Bedrock embedding
+# model is currently approved on this gateway/account (confirmed via
+# the team's model-test table: every embedding model returns
+# REGION_NOT_ALLOWED or BEDROCK_ERROR). Only TEXT GENERATION moved to
+# the gateway here.
 
 def _generate(prompt: str) -> str:
-    response = groq_client.chat.completions.create(
-        model="llama-3.1-8b-instant",
-        messages=[{"role": "user", "content": prompt}],
-    )
-    return response.choices[0].message.content
+    # CHANGED: was a direct Groq client call. Now routes through
+    # safe_llm_call() (ai/llm.py), which goes through ITI's Student
+    # Bedrock Gateway with its own primary/fallback + circuit breaker —
+    # same function every other agent in this app already uses.
+    return safe_llm_call(prompt)
 
 def search_chunks(query_vector, document_id, top_k=5):
     return (

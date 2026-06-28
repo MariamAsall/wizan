@@ -2,11 +2,17 @@ import { useEffect, useState } from "react"
 import api from "../api/axios"
 import "./profile.css"
 import { notify } from "../components/notifications"
+import { useTranslation } from "react-i18next"
+
 
 
 export default function Profile() {
+  
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+
+  const { t, i18n } = useTranslation()
+  const isAr = i18n.language === "ar"
 
   const [editMode, setEditMode] = useState(false)
   const [showPasswordModal, setShowPasswordModal] = useState(false)
@@ -123,10 +129,14 @@ export default function Profile() {
     }
   }
 
-  if (loading) return <div className="profile-page">Loading...</div>
-
+if (loading)
   return (
     <div className="profile-page">
+      {t("profile.loading")}
+    </div>
+  )
+  return (
+   <div className="profile-page" dir={isAr ? "rtl" : "ltr"}>
       <div className="profile-container">
 
         {/* HERO */}
@@ -147,9 +157,9 @@ export default function Profile() {
             <p>{user.email}</p>
 
             <div className="hero-actions">
-              <button onClick={() => setEditMode(true)}>Edit</button>
+              <button onClick={() => setEditMode(true)}>  {t("profile.edit")}</button>
               <button onClick={() => setShowPasswordModal(true)}>
-                Change Password
+                {t("profile.change_password")}
               </button>
             </div>
           </div>
@@ -159,31 +169,54 @@ export default function Profile() {
         {!editMode ? (
           <div className="profile-card">
 
-            <Row label="Username" value={user.username} />
-            <Row label="Phone" value={user.phone_number || "-"} />
-            <Row label="Language" value={user.language} />
-            <Row label="DOB" value={user.date_of_birth || "-"} />
+<Row
+  label={t("profile.username")}
+  value={user.username}
+/>
+<Row
+  label={t("profile.phone")}
+  value={user.phone_number || "-"}
+/>
 
+<Row
+  label={t("profile.language")}
+  value={
+    user.language === "ar"
+      ? t("profile.arabic")
+      : t("profile.english")
+  }
+/>
+<Row
+  label={t("profile.dob")}
+  value={user.date_of_birth || "-"}
+/>
           </div>
         ) : (
           <form className="profile-card form" onSubmit={saveProfile}>
 
-            <input name="username" value={form.username} onChange={handleChange} placeholder="Username" />
-            <input name="first_name" value={form.first_name} onChange={handleChange} placeholder="First name" />
-            <input name="last_name" value={form.last_name} onChange={handleChange} placeholder="Last name" />
-            <input name="phone_number" value={form.phone_number} onChange={handleChange} placeholder="Phone" />
+            <input name="username" value={form.username} onChange={handleChange} placeholder={t("profile.username")} />
+            <input name="first_name" value={form.first_name} onChange={handleChange} placeholder={t("profile.first_name")} />
+            <input name="last_name" value={form.last_name} onChange={handleChange} placeholder={t("profile.last_name")} />
+            <input name="phone_number" value={form.phone_number} onChange={handleChange} placeholder={t("profile.phone")} />
 
             <input type="date" name="date_of_birth" value={form.date_of_birth} onChange={handleChange} />
 
             <select name="language" value={form.language} onChange={handleChange}>
-              <option value="en">English</option>
-              <option value="ar">Arabic</option>
+              <option value="en">
+  {t("profile.english")}
+</option>
+
+<option value="ar">
+  {t("profile.arabic")}
+</option>
             </select>
 
             <div className="actions">
-              <button type="button" onClick={() => setEditMode(false)}>Cancel</button>
+              <button type="button" onClick={() => setEditMode(false)}>{t("common.cancel")}</button>
               <button disabled={saving}>
-                {saving ? "Saving..." : "Save"}
+              {saving
+  ? t("common.saving")
+  : t("common.save")}
               </button>
             </div>
 
@@ -195,14 +228,14 @@ export default function Profile() {
           <div className="overlay">
             <div className="modal">
 
-              <h3>Change Password</h3>
+              <h3>{t("profile.change_password")}</h3>
 
               <form onSubmit={changePassword} className="modal-form">
 
                 <input
                   type="password"
                   name="old_password"
-                  placeholder="Current password"
+                  placeholder={t("profile.current_password")}
                   value={passwordForm.old_password}
                   onChange={handlePasswordChange}
                 />
@@ -210,7 +243,7 @@ export default function Profile() {
                 <input
                   type="password"
                   name="new_password"
-                  placeholder="New password"
+                  placeholder={t("profile.new_password")}
                   value={passwordForm.new_password}
                   onChange={handlePasswordChange}
                 />
@@ -218,18 +251,20 @@ export default function Profile() {
                 <input
                   type="password"
                   name="confirm_password"
-                  placeholder="Confirm password"
+                  placeholder={t("profile.confirm_password")}
                   value={passwordForm.confirm_password}
                   onChange={handlePasswordChange}
                 />
 
                 <div className="actions">
                   <button type="button" onClick={() => setShowPasswordModal(false)}>
-                    Cancel
+                    {t("common.cancel")}
                   </button>
 
                   <button disabled={changingPassword}>
-                    {changingPassword ? "Saving..." : "Save"}
+                   {changingPassword
+  ? t("common.saving")
+  : t("common.save")}
                   </button>
                 </div>
 

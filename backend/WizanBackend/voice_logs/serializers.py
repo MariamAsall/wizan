@@ -35,3 +35,15 @@ class VoiceLogSerializer(serializers.ModelSerializer):
             "created_at",
         ]
         read_only_fields = fields
+
+
+class TranscribeResponseSerializer(serializers.Serializer):
+    success = serializers.BooleanField()
+    transcript = serializers.CharField()
+
+
+class VoicePlanResponseSerializer(serializers.Serializer):
+    plan = serializers.CharField()
+    session_id = serializers.CharField()
+    voice_log_id = serializers.IntegerField()
+    score_context = serializers.DictField()
