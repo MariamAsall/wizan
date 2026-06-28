@@ -150,30 +150,38 @@ class LoginSerializer(serializers.Serializer):
         return attrs
 
 
+
+# serializers.py
+
+from rest_framework import serializers
+from .models import User
+
+
 class UserProfileSerializer(serializers.ModelSerializer):
 
-    full_name = serializers.SerializerMethodField()
+    email = serializers.EmailField(read_only=True)
 
     class Meta:
-        model  = User
+        model = User
         fields = [
             "id",
-            "username",
             "email",
+            "username",
             "first_name",
             "last_name",
-            "full_name",
-            "role",
             "phone_number",
             "date_of_birth",
+            "language",
             "profile_picture",
-            "is_approved",
-            "date_joined",
+            "role",
         ]
-        read_only_fields = fields   # always read-only
 
-    def get_full_name(self, obj: User) -> str:
-        return obj.get_full_name()
+        read_only_fields = [
+            "id",
+            "email",
+            "role",
+        ]
+
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
@@ -223,3 +231,12 @@ class ChangePasswordSerializer(serializers.Serializer):
         user = self.context["request"].user
         user.set_password(self.validated_data["new_password"])
         user.save()
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    uid = serializers.CharField()
+    token = serializers.CharField()
+    new_password = serializers.CharField()

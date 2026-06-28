@@ -1,0 +1,54 @@
+@reference "../index.css";
+
+.result-root { @apply min-h-[calc(100vh-56px)] bg-background; }
+.result-wrap { @apply max-w-[560px] mx-auto text-center px-5 py-10; }
+.result-title { @apply text-[32px] font-extrabold mb-6 text-foreground; }
+
+/* loading */
+.result-loading {
+  @apply min-h-[calc(100vh-56px)] flex flex-col items-center justify-center gap-3;
+  color: var(--muted-foreground);
+}
+.result-spinner {
+  width: 28px; height: 28px;
+  border: 2px solid var(--primary);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: result-spin 0.7s linear infinite;
+}
+@keyframes result-spin { to { transform: rotate(360deg); } }
+.result-error { @apply text-destructive text-sm font-medium; }
+
+/* score card */
+.result-score-card {
+  @apply mb-8 flex flex-col items-center gap-4;
+}
+.result-score-number {
+  @apply text-[78px] font-extrabold leading-none;
+}
+.result-score-max {
+  @apply text-[32px] text-muted-foreground;
+}
+.result-state { @apply text-center; }
+.result-state-title { @apply text-[22px] font-extrabold mb-1; }
+.result-state-desc { @apply text-sm text-muted-foreground; }
+
+.result-info-card {
+  @apply mt-6 px-4 py-2 rounded-xl bg-card border border-border flex flex-col gap-2 text-start;
+}
+.result-info-emoji {
+  @apply me-2;
+}
+.result-info-title {
+  @apply text-sm font-semibold text-foreground;
+}
+.result-info-desc {
+  @apply text-sm text-muted-foreground;
+}
+
+/* actions */
+.result-btn {
+  @apply py-3 px-2 mt-8 w-1/2 rounded-[10px] text-sm font-bold border-0 cursor-pointer bg-foreground text-background;
+}
+.result-btn:hover { opacity: 0.9; }
+

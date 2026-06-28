@@ -14,7 +14,8 @@ import os
 from dotenv import load_dotenv
 
 from pathlib import Path
-
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -33,29 +34,50 @@ SECRET_KEY = 'django-insecure-idr$oh3z#zqee-@#xdac-mm$cv+k)jmv^o%(6$@y!1ml8s1z*k
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', 'backend']
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    # 'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+
+
     'users',
+    'quiz',
+    'cognitive_logs',
+    'ai',
+    'tasks',
+    'voice_logs',
+    "pgvector.django",
+    'documents',
+    "feedback",
+    "drf_spectacular",
+    "notifications",
+    "audit_logs",
+    "django_extensions",
+    "emails",
 
     #SIMPLE_JWT
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist', 
 
+    'corsheaders',
+
+    "channels",
   
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -63,6 +85,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'ai.middleware.prompt_injection.PromptInjectionMiddleware',
 ]
 
 ROOT_URLCONF = 'WizanBackend.urls'
@@ -97,6 +120,10 @@ DATABASES = {
         'PORT': os.environ.get('DB_PORT', ''),
     }
 }
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -148,6 +175,9 @@ REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": (
         "rest_framework.renderers.JSONRenderer",
     ),
+    
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "EXCEPTION_HANDLER": "WizanBackend.exception_handlers.custom_exception_handler",
 }
 
 
@@ -181,3 +211,50 @@ SIMPLE_JWT = {
     
 }
 
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:5181",
+    "http://localhost:5173",
+
+]
+CORS_ALLOW_CREDENTIALS = True
+
+# settings.py
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/0")
+CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://redis:6379/0")
+
+
+#==========================Sentry====================
+sentry_sdk.init(
+    dsn="https://5b1b552a9f496d697491488df49e7107@o4511619057582080.ingest.us.sentry.io/4511619063742464",
+    integrations=[
+        DjangoIntegration(),
+    ],
+    traces_sample_rate=1.0,
+    send_default_pii=True,
+)
+# Email config
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER')
+
+
+
+
+
+ASGI_APPLICATION = "WizanBackend.asgi.application"
+
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis", 6379)], 
+        },
+    },
+}
