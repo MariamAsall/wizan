@@ -91,7 +91,7 @@ export default function TasksPage() {
       setDeadline("")
       setError(null)
     } catch {
-      notify.error("task_create")
+
       setError(t("tasks.error_add"))
     }
   }
@@ -101,10 +101,8 @@ export default function TasksPage() {
       await api.delete(`/tasks/${deletingId}/`)
       setTasks((prev) => prev.filter((t) => t.id !== deletingId))
       setDeletingId(null)
-      notify.success("task_delete")
-      
     } catch {
-      notify.error("task_delete")
+      notify.error("task_create")
       setError(t("common.error"))
     }
   }

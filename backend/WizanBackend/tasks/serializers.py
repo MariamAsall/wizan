@@ -38,31 +38,3 @@ class TaskOverrideSerializer(serializers.Serializer):
     reason = serializers.CharField(max_length=500)
 
 
-class TaskRegulateRequestSerializer(serializers.Serializer):
-    message = serializers.CharField(required=False)
-    session_id = serializers.CharField(required=False, allow_blank=True)
-
-
-class TaskRegulateResponseSerializer(serializers.Serializer):
-    reply = serializers.CharField()
-    allowed_tasks = TaskSerializer(many=True)
-    postponed_tasks = TaskSerializer(many=True)
-    session_id = serializers.CharField()
-
-
-class TaskDecomposeResponseSerializer(serializers.Serializer):
-    task_id = serializers.IntegerField()
-    task_name = serializers.CharField()
-    tone = serializers.CharField()
-    estimated_time = serializers.CharField()
-    steps = serializers.ListField(
-        child=serializers.DictField()
-    )
-
-
-class VoiceTaskResponseSerializer(serializers.Serializer):
-    success = serializers.BooleanField()
-    message = serializers.CharField()
-    task = TaskSerializer()
-
-

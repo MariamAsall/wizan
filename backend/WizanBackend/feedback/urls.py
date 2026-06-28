@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import ChatFeedbackView,FeedbackStatsView
+from .views import ChatFeedbackView
 
 urlpatterns = [
     path(
@@ -7,5 +7,4 @@ urlpatterns = [
         ChatFeedbackView.as_view(),
         name="chat-feedback"
     ),
-    path("chat/feedback/stats/", FeedbackStatsView.as_view()),
 ]
