@@ -21,6 +21,7 @@ from drf_spectacular.utils import extend_schema
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from django.conf import settings
+from emails.services import send_reset_email, send_welcome_email
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from django.conf import settings
@@ -133,14 +134,20 @@ class GoogleLoginView(APIView):
             )
 
         try:
-            google_info = id_token.verify_oauth2_token(
-                token,
-                google_requests.Request(),
-                settings.GOOGLE_CLIENT_ID
+            import requests
+            google_response = requests.get(
+                "https://www.googleapis.com/oauth2/v3/userinfo",
+                headers={"Authorization": f"Bearer {token}"}
             )
-        except ValueError:
+            if google_response.status_code != 200:
+                return Response(
+                    {"error": "Invalid Google token."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            google_info = google_response.json()
+        except Exception:
             return Response(
-                {"error": "Invalid Google token."},
+                {"error": "Failed to verify Google token."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -157,6 +164,7 @@ class GoogleLoginView(APIView):
                 "last_name": last_name,
             }
         )
+
         tokens = get_tokens_for_user(user)
 
         return Response({

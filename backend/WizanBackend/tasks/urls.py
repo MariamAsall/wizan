@@ -1,11 +1,11 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import TaskViewSet, VoiceAddTaskView
+from .views import TaskViewSet
 
 router = DefaultRouter()
 router.register('tasks', TaskViewSet, basename='task')
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('add-task-by-voice/', VoiceAddTaskView.as_view(), name='task-add-by-voice'),
+    # path('add-task-by-voice/', VoiceAddTaskView.as_view(), name='task-add-by-voice'),
 ]

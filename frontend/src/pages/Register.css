@@ -5,7 +5,7 @@
 .register-blob-sun { @apply absolute rounded-full pointer-events-none opacity-[0.10] w-[380px] h-[380px] bg-accent -top-[80px] -left-[100px]; }
 .register-blob-sage { @apply absolute rounded-full pointer-events-none opacity-[0.10] w-[280px] h-[280px] bg-primary -bottom-[60px] -right-[60px]; }
 
-.register-card { @apply relative z-10 w-full max-w-[440px] rounded-[24px] border p-10 bg-card border-border shadow-lg; }
+.register-card { @apply relative z-10 w-full max-w-[440px] rounded-[24px] border p-10 mt-14 bg-card border-border shadow-lg; }
 
 .register-eyebrow { @apply text-[11px] font-bold uppercase tracking-[.1em] mb-2 text-primary; }
 .register-title { @apply text-[32px] font-extrabold leading-tight mb-1.5 text-foreground; }
