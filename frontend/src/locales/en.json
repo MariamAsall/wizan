@@ -96,7 +96,9 @@
     "loading": "Loading your check-in...",
     "already_done": "You've already completed today's check-in.",
     "error_generic": "Something went wrong. Please try again.",
-    "error_load": "Failed to load questions. Please refresh."
+    "error_load": "Failed to load questions. Please refresh.",
+    "skip": "Skip for now"
+
   },
   "result": 
   {
@@ -167,7 +169,9 @@
   "allowed":   "Allowed",
   "pending":   "Pending",
   "postponed": "Postponed",
-  "overridden":"Overridden"
+  "overridden":"Overridden",
+  "completed": "Completed"
+
 },
   "priority": {
     "select": "Choose priority",
@@ -264,17 +268,7 @@
     "current_password": "Current Password",
     "new_password": "New Password",
     "confirm_password": "Confirm Password"
-  }
-
-
-  
-  
-
-
-
-
- 
-  ,
+  },
   "landing": {
     "nav": {
       "logo": "Wizan",
