@@ -60,11 +60,57 @@ class TaskViewSet(viewsets.ModelViewSet):
         notification_type="success"
     )
         
+
+
+    @action(detail=True, methods=["patch"], url_path="toggle-complete")
+    def toggle_complete(self, request, pk=None):
+        task = self.get_object()
+
+        old_status = task.status
+
+        if task.status == "completed":
+            task.status = "allowed"
+        elif task.status == "allowed":
+            task.status = "completed"
+        else:
+            return Response(
+                {
+                    "error": "Only allowed and completed tasks can be toggled."
+                },
+                status=400
+            )
+
+        task.save()
+
+        TaskLog.objects.create(
+            task=task,
+            old_status=old_status,
+            new_status=task.status,
+            reason="Status toggled by user"
+        )
+
+        create_notification(
+            user=request.user,
+            title="Task Updated",
+            message=f"{task.name} is now {task.status}",
+            notification_type="success"
+        )
+
+        return Response({
+            "task_id": task.id,
+            "status": task.status
+        })
+
+
+
+
     @action(detail=False, methods=['post'], url_path='override')
     @extend_schema(
     request=TaskOverrideSerializer,
     responses={200: dict},
-)
+        )
+    
+
     def override(self, request):
         serializer = TaskOverrideSerializer(data=request.data)
         if not serializer.is_valid():

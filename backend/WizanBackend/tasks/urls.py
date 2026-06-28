@@ -8,4 +8,5 @@ router.register('tasks', TaskViewSet, basename='task')
 urlpatterns = [
     path('', include(router.urls)),
     path('add-task-by-voice/', VoiceAddTaskView.as_view(), name='task-add-by-voice'),
+    
 ]
