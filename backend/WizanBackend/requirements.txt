@@ -106,3 +106,5 @@ sentry_sdk
 django_extensions
 channels
 channels-redis>=4.0.0
+spacy>=3.0.0
+presidio_analyzer
