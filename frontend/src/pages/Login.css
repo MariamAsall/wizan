@@ -1,0 +1,55 @@
+@reference "../index.css";
+/* ── Login page ─────────────────────────────────────────────────── */
+.login-root { @apply relative min-h-[calc(100vh-56px)] flex items-center justify-center px-5 py-10 overflow-hidden bg-background; }
+
+/* decorative blobs */
+.login-blob-sage {
+  @apply absolute rounded-full pointer-events-none opacity-[0.12] w-[400px] h-[400px] bg-primary -top-[100px] -right-[100px];
+}
+.login-blob-sun {
+  @apply absolute rounded-full pointer-events-none opacity-[0.12] w-[300px] h-[300px] bg-accent -bottom-[80px] -left-[80px];
+}
+
+.login-card { @apply relative z-10 w-full max-w-[440px] rounded-[24px] border p-10 mt-14 bg-card border-border shadow-lg; }
+.login-eyebrow { @apply text-[11px] font-bold uppercase tracking-[.1em] mb-2 text-primary; }
+.login-title { @apply text-[32px] font-extrabold leading-tight mb-1.5 text-foreground; }
+.login-title em { @apply italic text-primary font-heading; }
+.login-sub { @apply text-sm leading-relaxed mb-8 text-muted-foreground; }
+
+/* form */
+.form-label { @apply block text-[11px] font-bold uppercase tracking-[.04em] mb-1.5 text-muted-foreground; }
+.form-field { @apply w-full px-4 py-3 text-sm rounded-[10px] outline-none transition-all border-[1.5px] border-border bg-background text-foreground font-sans focus:border-primary focus:bg-card; }
+
+.btn-primary { @apply w-full mt-2 py-3.5 rounded-[10px] text-[15px] font-bold transition-all hover:-translate-y-px cursor-pointer border-0 bg-foreground text-background font-sans hover:bg-foreground/90; }
+
+/* OAuth */
+.login-divider { @apply relative text-center text-sm my-5 text-muted-foreground; }
+.login-divider::before, .login-divider::after { @apply content-[''] absolute top-1/2 h-px w-[42%] bg-border; }
+.login-divider::before { @apply left-0; }
+.login-divider::after  { @apply right-0; }
+.login-divider span { @apply relative z-10 px-3 bg-card; }
+
+.btn-google { @apply w-full flex items-center justify-center gap-3 py-3.5 rounded-[10px] text-[14px] font-bold transition-all cursor-pointer border-[1.5px] border-border bg-card text-foreground font-sans hover:bg-muted; }
+
+
+.login-error { @apply text-sm text-red-600 bg-red-50 border border-red-200 rounded-[8px] px-4 py-2.5 mb-4; }
+
+.field-error        { @apply border-red-400 focus:border-red-400; }
+.field-error-msg    { @apply text-xs text-red-500 mt-1 ml-1; }
+
+
+.nsm7Bb-HzV7m-LgbsSe {
+  border-radius: 10px !important;
+}
+
+.nsm7Bb-HzV7m-LgbsSe .nsm7Bb-HzV7m-LgbsSe-bN97Pc-sM5MNb {
+    -webkit-justify-content: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+}
+
+.nsm7Bb-HzV7m-LgbsSe .nsm7Bb-HzV7m-LgbsSe-BPrWId {
+    -webkit-flex-grow: 0 !important;
+    -webkit-box-flex: 0 !important;
+    flex-grow: 0 !important;
+}

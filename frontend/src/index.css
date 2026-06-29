@@ -1,0 +1,132 @@
+@import url('https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap');
+@import "tailwindcss";
+@custom-variant rtl (&:where([dir="rtl"], [dir="rtl"] *));
+@custom-variant ltr (&:where([dir="ltr"], [dir="ltr"] *));
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/inter";
+
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+    --font-sans: 'Inter Variable', sans-serif;
+    --font-heading: var(--font-heading);
+    --font-ar: var(--font-ar);
+    --font-en: var(--font-en);
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-destructive: var(--destructive);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+}
+
+:root {
+    --background: oklch(95.798% 0.01635 91.562);
+    --foreground: oklch(0.22 0.02 267.086);
+
+    --card: oklch(0.99 0.012 92.318);
+    --card-foreground: oklch(0.22 0.02 267.086);
+
+    --popover: oklch(0.99 0.012 92.318);
+    --popover-foreground: oklch(0.22 0.02 267.086);
+
+    --primary: oklch(0.4869 0.12471 254.563);
+    --primary-foreground: oklch(0.9638 0.030 92.318);
+
+    --secondary: oklch(0.90 0.035 208.500);
+    --secondary-foreground: oklch(0.22 0.02 267.086);
+
+    --accent: oklch(0.8111 0.10677 25.286);
+    --accent-foreground: oklch(0.22 0.02 267.086);
+
+    --muted: oklch(0.94 0.012 92.318);
+    --muted-foreground: oklch(0.52 0.023 267.086);
+
+    --destructive: oklch(0.58 0.18 25.286);
+    --border: oklch(0.90 0.015 92.318);
+    --input: oklch(0.90 0.015 92.318);
+    --ring: oklch(0.55 0.12 254.563);
+    --radius: 0.75rem;
+
+    --font-heading: "Instrument Serif", serif;
+    --font-ar: "Alexandria", sans-serif;
+    --font-en: "Cabinet Grotesk", sans-serif;
+}
+
+.dark {
+    --background: oklch(0.20 0.020 267.086);
+    --foreground: oklch(0.93 0.020 92.318);
+
+    --card: oklch(0.27 0.025 267.086);
+    --card-foreground: oklch(0.93 0.020 92.318);
+
+    --popover: oklch(0.24 0.022 267.086);
+    --popover-foreground: oklch(0.93 0.020 92.318);
+
+    --primary: oklch(0.72 0.10471 254.563);
+    --primary-foreground: oklch(0.18 0.020 267.086);
+
+    --secondary: oklch(0.30 0.045 208.500);
+    --secondary-foreground: oklch(0.93 0.020 92.318);
+
+    --accent: oklch(0.78 0.110 25.286);
+    --accent-foreground: oklch(0.18 0.020 267.086);
+
+    --muted: oklch(0.25 0.015 267.086);
+    --muted-foreground: oklch(0.62 0.020 267.086);
+
+    --destructive: oklch(0.65 0.18 25.286);
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.62 0.105 254.563);
+}
+
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+
+    body {
+        @apply bg-background text-foreground;
+        font-family: var(--font-ar);
+    }
+
+    html[lang="en"] body {
+        font-family: var(--font-en);
+    }
+}
+
+.font-heading {
+    font-family: var(--font-heading);
+}
+
+.label {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 500;
+}
+
+
+
+/* Smooth direction transition */
+* {
+  transition: margin 0.2s ease, padding 0.2s ease;
+}

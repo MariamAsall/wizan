@@ -1,0 +1,56 @@
+@reference "../index.css";
+/* ── Chat page ──────────────────────────────────────────────────── */
+.chat-root { @apply min-h-[calc(100vh-56px)] flex flex-col bg-background; }
+.chat-wrap { @apply max-w-[680px] w-full mx-auto px-5 py-8 flex flex-col flex-1; }
+
+/* header */
+.chat-title { @apply text-[28px] font-extrabold mb-1 text-foreground; }
+.chat-sub   { @apply text-sm text-muted-foreground; }
+
+/* messages */
+.chat-messages { @apply flex flex-col gap-4 mb-6 flex-1; }
+
+.msg-user {
+  @apply self-end max-w-[85%] px-4 py-3.5 text-sm leading-relaxed rounded-[18px] bg-foreground text-background;
+  border-bottom-right-radius: 4px;
+}
+
+.msg-ai-wrap { @apply self-start max-w-[85%]; }
+.msg-ai {
+  @apply px-4 py-3.5 text-sm leading-relaxed rounded-[18px] border bg-card border-border text-foreground;
+  border-bottom-left-radius: 4px;
+}
+.msg-ai-name {
+  @apply text-[11px] font-bold uppercase tracking-[.06em] mb-1.5 text-primary;
+}
+
+/* citation chip */
+.citation {
+  @apply inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full mx-0.5 cursor-pointer bg-secondary text-secondary-foreground border border-ring/30;
+}
+
+/* source chips */
+.source-chips { @apply flex flex-wrap gap-2 mt-2; }
+.source-chip {
+  @apply flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-[10px] border transition-all cursor-pointer bg-muted border-border text-muted-foreground;
+}
+.source-chip:hover { @apply border-primary bg-primary/10 text-primary; }
+.source-icon {
+  @apply w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold flex-shrink-0 bg-destructive/10 text-destructive;
+}
+
+/* input bar */
+.chat-input-bar {
+  @apply flex gap-2.5 items-end rounded-2xl border-[1.5px] px-4 py-3 transition-all bg-card border-border;
+}
+.chat-input-bar:focus-within { @apply border-primary; }
+
+.chat-textarea {
+  @apply flex-1 border-0 outline-none resize-none max-h-[120px] bg-transparent text-sm text-foreground font-sans;
+}
+.chat-textarea::placeholder { @apply text-muted-foreground; }
+
+.btn-send {
+  @apply px-4 py-2 rounded-xl text-sm font-bold transition-all cursor-pointer bg-primary text-primary-foreground border-0 mb-0.5 font-sans;
+}
+.btn-send:hover { @apply bg-primary/90; }

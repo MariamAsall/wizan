@@ -1,0 +1,30 @@
+@reference "../index.css";
+
+.tasks-root { @apply min-h-[calc(100vh-56px)] bg-background; }
+.tasks-wrap { @apply max-w-[720px] mx-auto px-5 py-8; }
+
+.tasks-title { @apply text-[28px] font-extrabold mb-1 text-foreground; }
+
+.add-task-bar { @apply flex gap-2.5 mb-7; }
+.add-task-input { @apply flex-1 px-4 py-3 text-sm rounded-[10px] outline-none transition-all border-[1.5px] border-border bg-background text-foreground font-sans focus:border-primary focus:bg-card; }
+.btn-add-task { @apply px-5 py-3 rounded-[10px] text-sm font-bold whitespace-nowrap transition-all cursor-pointer border-0 bg-primary text-primary-foreground hover:bg-primary/90; }
+.btn-regulate { @apply px-10 py-5 rounded-[10px] text-sm font-bold whitespace-nowrap transition-all cursor-pointer border-0 bg-foreground text-background hover:bg-foreground/90 disabled:opacity-60 disabled:cursor-not-allowed; }
+
+.task-section-divider { @apply flex items-center gap-2 mb-3; }
+.task-section-divider span { @apply text-[11px] font-bold uppercase tracking-[.08em] whitespace-nowrap text-muted-foreground; }
+.task-section-divider::after { @apply content-[''] block h-px w-full bg-border; }
+
+.task-card { @apply rounded-2xl border p-4 mb-2.5 transition-all bg-card border-border hover:border-primary hover:translate-x-[3px]; }
+.task-card.postponed { @apply bg-muted opacity-60 hover:border-border hover:translate-x-0; }
+.task-card-top { @apply flex items-center gap-2 mb-2; }
+.task-card-title { @apply flex-1 text-[15px] font-bold text-foreground; }
+.task-deadline { @apply text-xs text-muted-foreground mt-1; }
+.task-deadline--overdue { @apply text-red-500; }
+.task-overdue-badge { @apply ms-2 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-600; }
+
+.tasks-loading { @apply min-h-[calc(100vh-56px)] flex flex-col items-center justify-center gap-3 text-muted-foreground; }
+.tasks-spinner { width:28px; height:28px; border:2px solid var(--primary); border-top-color:transparent; border-radius:50%; animation:spin 0.7s linear infinite; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+button {@apply cursor-pointer}
