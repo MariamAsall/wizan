@@ -62,6 +62,8 @@ export default function QuizPage() {
   const { t, i18n } = useTranslation()
   const isAr = i18n.language === "ar"
   const [questions, setQuestions] = useState([])
+const [canSkip, setCanSkip] = useState(false)
+
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -70,10 +72,15 @@ export default function QuizPage() {
 
   useEffect(() => {
     api.get("/quiz/questions/")
-      .then((res) => {
-        const merged = res.data.map((q, i) => ({ ...q, ...QUESTIONS_UI[i] }))
-        setQuestions(merged)
-      })
+  .then((res) => {
+    const merged = res.data.questions.map((q, i) => ({
+      ...q,
+      ...QUESTIONS_UI[i],
+    }))
+
+    setQuestions(merged)
+    setCanSkip(res.data.can_skip)
+  })
       .catch((err) => {
         setError(t("quiz.error_load"))
       })
@@ -124,6 +131,9 @@ export default function QuizPage() {
       }
     }
   }
+  const handleSkip = () => {
+  navigate("/dashboard")
+}
 
   if (loading) return (
     <div className="quiz-loading">
@@ -136,6 +146,14 @@ export default function QuizPage() {
     <div className="quiz-root" dir={isAr ? "rtl" : "ltr"}>
       <div className="quiz-wrap">
         <h1 className="quiz-title">{t("quiz.title")}</h1>
+        {canSkip && (
+  <button
+    className="btn-skip"
+    onClick={handleSkip}
+  >
+    {t("quiz.skip")}
+  </button>
+)}
 
         {error && (
           <div className="quiz-error-msg">{error}</div>

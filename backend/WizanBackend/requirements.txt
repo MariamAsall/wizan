@@ -102,3 +102,9 @@ webencodings==0.5.1
 websockets==15.0.1
 xxhash==3.7.0
 zstandard==0.25.0
+sentry_sdk
+django_extensions
+channels
+channels-redis>=4.0.0
+spacy>=3.0.0
+presidio_analyzer

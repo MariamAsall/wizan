@@ -52,31 +52,46 @@ useEffect(() => {
   fetchDashboard()
 }, [])
 
-  const completedTasks = tasks.filter(
-    (task) => task.status === "allowed"
-  ).length
 
-  const pendingTasks = tasks.length - completedTasks
+const dashboardTasks = tasks.filter(
+  task =>
+    task.status === "allowed" ||
+    task.status === "completed"
+);
 
-  const progress =
-    tasks.length > 0
-      ? Math.round((completedTasks / tasks.length) * 100)
-      : 0
 
-  const toggle = (id) =>
-    setTasks((prev) =>
-      prev.map((t) =>
-        t.id === id
-          ? {
-              ...t,
-              status:
-                t.status === "allowed"
-                  ? "pending"
-                  : "allowed",
-            }
-          : t
+const completedTasks = dashboardTasks.filter(
+  task => task.status === "completed"
+).length;
+
+const pendingTasks = dashboardTasks.filter(
+  task => task.status === "allowed"
+).length;
+
+const progress =
+  dashboardTasks.length > 0
+    ? Math.round((completedTasks / dashboardTasks.length) * 100)
+    : 0;
+
+
+
+
+
+const toggleTask = async (id) => {
+  try {
+    const res = await api.patch(`/tasks/${id}/toggle-complete/`);
+
+    setTasks(prev =>
+      prev.map(task =>
+        task.id === id
+          ? { ...task, status: res.data.status }
+          : task
       )
-    )
+    );
+  } catch (err) {
+    console.error(err);
+  }
+};
 
  if (loading) {
   return (
@@ -124,7 +139,7 @@ useEffect(() => {
               {t("dashboard.total_tasks")}
             </div>
             <div className="wellness-value">
-              {tasks.length}
+              {dashboardTasks.length}
             </div>
           </div>
 
@@ -175,7 +190,7 @@ useEffect(() => {
             <p className="progress-text">
             {t("dashboard.progress_text", {
   completed: completedTasks,
-  total: tasks.length,
+  total: dashboardTasks.length,
 })}
             </p>
           </div>
@@ -204,17 +219,17 @@ useEffect(() => {
             </h2>
 
             <span className="badge-green">
-              {tasks.length}
+              {dashboardTasks.length}
             </span>
           </div>
 
-          {tasks.length === 0 ? (
+          {dashboardTasks.length === 0 ? (
             <p className="dash-sub">
               {t("dashboard.no_tasks")}
             </p>
           ) : (
-            tasks.slice(0, 5).map((task) => {
-              const isDone = task.status === "allowed"
+            dashboardTasks.map((task) => {
+              const isDone = task.status === "completed"
 
               return (
                 <div
@@ -222,10 +237,8 @@ useEffect(() => {
                   className="task-row"
                 >
                   <button
-                    className={`task-checkbox ${
-                      isDone ? "done" : ""
-                    }`}
-                    onClick={() => toggle(task.id)}
+                    className={`task-checkbox ${isDone ? "done" : ""}`}
+                    onClick={() => toggleTask(task.id)}
                   >
                     {isDone && "✓"}
                   </button>
