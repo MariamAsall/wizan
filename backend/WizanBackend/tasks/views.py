@@ -181,6 +181,25 @@ class TaskViewSet(viewsets.ModelViewSet):
         message = request.data.get("message", "Show me what I can do today")
         session_id = request.data.get("session_id", None)
 
+        #  check how many times user regulated today 
+        today = timezone.now().date()
+        regulated_count = TaskLog.objects.filter(
+            task__user=user,
+            new_status="allowed",
+            changed_at__date=today
+        ).values('task').distinct().count()
+
+        if regulated_count >= 2:
+            allowed = Task.objects.filter(user=user, status="allowed")
+            postponed = Task.objects.filter(user=user, status="postponed")
+
+            return Response({
+                "reply": "You've already planned your day twice! Here are your current tasks.",
+                "allowed_tasks": TaskSerializer(allowed, many=True).data,
+                "postponed_tasks": TaskSerializer(postponed, many=True).data,
+                "session_id": f"regulate_{user.id}"
+            })
+
         if session_id is None:
             session_id = f"regulate_{user.id}"
 
