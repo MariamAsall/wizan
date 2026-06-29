@@ -2,6 +2,11 @@
   "hash": "1e2e242f",
   "configHash": "036584fc",
   "lockfileHash": "9d59545d",
+<<<<<<< HEAD
+  "browserHash": "03b9f5f0",
+  "optimized": {},
+  "chunks": {}
+=======
   "browserHash": "db2124e8",
   "optimized": {
     "@react-oauth/google": {
@@ -107,4 +112,5 @@
       "isDynamicEntry": false
     }
   }
+>>>>>>> origin/develop
 }
