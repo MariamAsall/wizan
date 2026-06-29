@@ -1,4 +1,5 @@
 from rest_framework import serializers
+import bleach
 
 
 class DocumentUploadSerializer(serializers.Serializer):
@@ -12,6 +13,13 @@ class DocumentStatusSerializer(serializers.Serializer):
 
 class AskDocumentSerializer(serializers.Serializer):
     query = serializers.CharField()
+
+    def validate_query(self, value):
+        return bleach.clean(
+            value,
+            tags=[],
+            strip=True,
+        )
 
 
 class SourceSerializer(serializers.Serializer):
@@ -32,6 +40,13 @@ class SuggestTasksResponseSerializer(serializers.Serializer):
 
 class StudyChatRequestSerializer(serializers.Serializer):
     query = serializers.CharField()
+
+    def validate_query(self, value):
+        return bleach.clean(
+            value,
+            tags=[],
+            strip=True,
+        )
 
 
 class StudyChatResponseSerializer(serializers.Serializer):

@@ -20,7 +20,6 @@ from .tasks import process_document_async
 
 from django.shortcuts import get_object_or_404
 
-import bleach
 from audit_logs.utils import log_action
 from .serializers import (
     DocumentUploadSerializer,
@@ -130,18 +129,20 @@ class AskDocumentView(APIView):
     def post(self, request, doc_id):
         doc = get_object_or_404(Document, id=doc_id, user=request.user)
 
-        if doc.status != 'ready':
-            return Response({"error": "Document not ready yet"}, status=400)
+        if doc.status != "ready":
+            return Response(
+                {"error": "Document not ready yet"},
+                status=400,
+            )
 
-        query = request.data.get('query')
-        if not query:
-             return Response(
-                {"error": "Query is required"},
-                status=status.HTTP_400_BAD_REQUEST
-             )
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        query = serializer.validated_data["query"]
+
         result = ask_document(query, str(doc.id))
-        return Response(result)
 
+        return Response(result)
 
 @extend_schema(
     responses={200: SuggestTasksResponseSerializer},
@@ -165,7 +166,7 @@ class SuggestTasksView(APIView):
 @extend_schema(
     request=StudyChatRequestSerializer,
     responses={200: StudyChatResponseSerializer},
-)  
+)
 class StudyChatView(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = StudyChatRequestSerializer
@@ -173,26 +174,18 @@ class StudyChatView(APIView):
     @method_decorator(ratelimit(key='user_or_ip', rate='15/m', block=True))
     def post(self, request):
 
-        query = request.data.get("query")
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        if not query:
-            return Response(
-                {"error": "query is required"},
-                status=400
-            )
-
-        query = bleach.clean(
-            query,
-            tags=[],
-            strip=True
-        )
+        query = serializer.validated_data["query"]
 
         from .services.rag import study_chat
 
         result = study_chat(
-            query,
-            request.user.id
+            query=query,
+            user_id=request.user.id,
         )
+
         log_action(
             request.user,
             "CHAT_QUERY"
