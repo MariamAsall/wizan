@@ -10,6 +10,19 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics
 from django.contrib.auth.models import update_last_login
+
+
+from django.contrib.auth import get_user_model
+
+from .serializers import DeleteAccountResponseSerializer
+from drf_spectacular.utils import extend_schema
+
+User = get_user_model()
+
+
+from django.utils import timezone
+
+
     
 
 from django.contrib.auth.tokens import default_token_generator
@@ -265,3 +278,25 @@ class PasswordResetConfirmView(APIView):
                 {"error": "Invalid request"},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        
+
+@extend_schema(
+    request=None,
+    responses={200: DeleteAccountResponseSerializer},
+)
+class DeleteMyAccountView(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = DeleteAccountResponseSerializer
+
+    def delete(self, request):
+        user = request.user
+
+        user.is_deleted = True
+        user.is_active = False
+        user.deleted_at = timezone.now()
+        user.save()
+
+        return Response(
+            {"message": "Account deactivated successfully"},
+            status=status.HTTP_200_OK
+        )
