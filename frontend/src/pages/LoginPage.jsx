@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next"
 import { useGoogleLogin } from "@react-oauth/google"
 import api from "../api/axios"
 import "./Login.css"
+import { notify } from "../components/notifications" 
 
 function validate({ email, password }, t) {
   const errors = {}
@@ -37,12 +38,14 @@ export default function LoginPage() {
       localStorage.setItem("refresh_token", data.tokens.refresh)
       localStorage.setItem("user",          JSON.stringify(data.user))
       navigate("/quiz")
+      notify.success("login", { name: data.user.username } )
     } catch (err) {
       const msg =
         err.response?.data?.non_field_errors?.[0] ||
         err.response?.data?.detail ||
         t("login.error")
       setServerError(msg)
+      notify.error("login")
     } finally {
       setLoading(false)
     }
