@@ -8,6 +8,8 @@ from .views import (
     PasswordResetRequestView,
     PasswordResetConfirmView,
     GoogleLoginView,
+    DeleteMyAccountView
+    
 )
 
 urlpatterns = [
@@ -21,4 +23,12 @@ urlpatterns = [
     path("password/reset/", PasswordResetRequestView.as_view()),
     path("password/reset/confirm/", PasswordResetConfirmView.as_view()),
     path("google/", GoogleLoginView.as_view()),
+
+        path(
+        "me/",
+        DeleteMyAccountView.as_view(),
+        name="delete-my-account"
+    ),
+
+
 ]

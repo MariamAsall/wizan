@@ -240,3 +240,6 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
     uid = serializers.CharField()
     token = serializers.CharField()
     new_password = serializers.CharField()
+
+class DeleteAccountResponseSerializer(serializers.Serializer):
+    message = serializers.CharField()
